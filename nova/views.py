@@ -1,6 +1,7 @@
 import os
 import io
 import datetime
+import shutil
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar
 from nova.models import User, Dataset, Access
@@ -245,6 +246,7 @@ def delete(dataset_id=None):
     dataset, access = result
 
     if dataset:
+        shutil.rmtree(os.path.join(app.config['NOVA_ROOT_PATH'], dataset.path))
         db.session.delete(dataset)
         db.session.delete(access)
         db.session.commit()
