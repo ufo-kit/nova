@@ -28,12 +28,16 @@
         <td>{{ dataset.created | naturaltime }}</td>
         <td>
           <div class="btn-group-xs" role="group">
-            <a href="/download/{{ dataset.id }}" type="button" class="btn
-              btn-default"><i class="fa fa-download"></i></a>
-            <a href="/share/{{ dataset.id }}" type="button" class="btn btn-default"><i class="fa fa-share-alt"></i></a>
+            {% if dataset.closed %}
+            <a href="/open/{{ dataset.id }}" type="button" class="btn btn-default" title="Open dataset"><i class="fa fa-lock"></i></a>
+            {% else %}
+            <a href="/close/{{ dataset.id }}" type="button" class="btn btn-success" title="Close dataset"><i class="fa fa-unlock-alt"></i></a>
+            {% endif %}
+            <a href="/download/{{ dataset.id }}" type="button" class="btn btn-default" title="Download"><i class="fa fa-download"></i></a>
+            <a href="/share/{{ dataset.id }}" type="button" class="btn btn-default" title="Share"><i class="fa fa-share-alt"></i></a>
             {% if access.writable %}
-            <a href="/process/{{ dataset.id }}" type="button" class="btn btn-default"><i class="fa fa-cogs"></i></a>
-            <a href="/delete/{{ dataset.id }}" type="button" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+            <a href="/process/{{ dataset.id }}" type="button" class="btn btn-default" title="Process"><i class="fa fa-cogs"></i></a>
+            <a href="/delete/{{ dataset.id }}" type="button" class="btn btn-danger" title="Delete"><i class="fa fa-trash"></i></a>
             {% endif %}
           </div>
         </td>

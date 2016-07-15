@@ -165,6 +165,32 @@ def create():
     return render_template('dataset/create.html', form=form)
 
 
+@app.route('/close/<int:dataset_id>')
+@login_required(admin=False)
+def close(dataset_id):
+    dataset = db.session.query(Dataset).\
+        filter(Dataset.id == dataset_id).\
+        filter(Access.user == current_user).\
+        filter(Access.dataset_id == dataset_id).first()
+
+    dataset.closed = True
+    db.session.commit()
+    return redirect(url_for('index'))
+
+
+@app.route('/open/<int:dataset_id>')
+@login_required(admin=False)
+def open(dataset_id):
+    dataset = db.session.query(Dataset).\
+        filter(Dataset.id == dataset_id).\
+        filter(Access.user == current_user).\
+        filter(Access.dataset_id == dataset_id).first()
+
+    dataset.closed = False
+    db.session.commit()
+    return redirect(url_for('index'))
+
+
 @app.route('/share/<int:dataset_id>')
 @app.route('/share/<int:dataset_id>/<int:user_id>')
 @login_required(admin=False)
