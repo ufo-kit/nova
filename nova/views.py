@@ -246,7 +246,7 @@ def delete(dataset_id=None):
     dataset, access = result
 
     if dataset:
-        shutil.rmtree(os.path.join(app.config['NOVA_ROOT_PATH'], dataset.path))
+        shutil.rmtree(fs.path_of(dataset))
         db.session.delete(dataset)
         db.session.delete(access)
         db.session.commit()
@@ -263,7 +263,7 @@ def upload(dataset_id):
             filter(Dataset.id == dataset_id).first()
 
     f = io.BytesIO(request.data)
-    memtar.extract_tar(f, os.path.join(app.config['NOVA_ROOT_PATH'], dataset.path))
+    memtar.extract_tar(f, fs.path_of(dataset))
     return ''
 
 
@@ -275,9 +275,7 @@ def clone(dataset_id):
             filter(Access.dataset_id == dataset_id).\
             filter(Dataset.id == dataset_id).first()
 
-    root = app.config['NOVA_ROOT_PATH']
-    path = os.path.join(root, dataset.path)
-    fileobj = memtar.create_tar(path)
+    fileobj = memtar.create_tar(fs.path_of(dataset))
     fileobj.seek(0)
 
     def generate():

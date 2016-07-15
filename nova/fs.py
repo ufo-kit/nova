@@ -29,3 +29,6 @@ class Filesystem(object):
                     total_size += os.stat(path).st_size
 
         return num_files, total_size
+
+    def path_of(self, dataset):
+        return os.path.join(self.path, dataset.path)
