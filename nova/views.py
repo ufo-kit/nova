@@ -1,18 +1,16 @@
 import os
 import io
-import shutil
 import datetime
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar
 from nova.models import User, Dataset, Access
 from flask import (Response, render_template, request, flash, redirect,
                    abort, url_for)
-from flask_login import login_required, login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user
 from flask_wtf import Form
 from wtforms import StringField, BooleanField
 from wtforms.validators import DataRequired
 from itsdangerous import Signer
-
 
 
 def login_required(admin=False):
@@ -133,7 +131,6 @@ def generate_token():
 @app.route('/user/token/revoke')
 @login_required(admin=False)
 def revoke_token():
-    signer = Signer(current_user.password.hash)
     current_user.token = None
     db.session.commit()
     return redirect(url_for('settings'))
@@ -183,34 +180,14 @@ def share(dataset_id, user_id=None):
     return redirect(url_for('index'))
 
 
-def copytree(src, dst, symlinks=False, ignore=None):
-    for item in os.listdir(src):
-        s = os.path.join(src, item)
-        d = os.path.join(dst, item)
-        if os.path.isdir(s):
-            copytree(s, d, symlinks, ignore)
-        else:
-            if not os.path.exists(d) or os.stat(s).st_mtime - os.stat(d).st_mtime > 1:
-                shutil.copy2(s, d)
-
-
-def copy(dataset, parent):
-    root = app.config['NOVA_ROOT_PATH']
-    src = os.path.join(root, parent.path)
-    dst = os.path.join(root, dataset.path)
-    app.logger.info("Copy data from {} to {}".format(src, dst))
-    copytree(src, dst)
-
-
-processors = {
-    'copy': copy
-}
-
-
 @app.route('/process/<int:dataset_id>')
 @app.route('/process/<int:dataset_id>/<process>', methods=['GET', 'POST'])
 @login_required(admin=False)
 def process(dataset_id, process=None):
+    processors = {
+        'copy': logic.copy
+    }
+
     parent = db.session.query(Dataset).filter(Dataset.id == dataset_id).first()
 
     if not process:
@@ -252,7 +229,7 @@ def detail(dataset_id=None, path=''):
 
     dirs = fs.get_dirs(dataset, path)
     files = fs.get_files(dataset, path)
-    params = dict(dataset=dataset, path=path, subpaths=subpaths, 
+    params = dict(dataset=dataset, path=path, subpaths=subpaths,
                   files=files, dirs=dirs, origin=origin)
 
     return render_template('dataset/detail.html', **params)

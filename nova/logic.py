@@ -1,6 +1,7 @@
 import os
 import datetime
 import hashlib
+import shutil
 from flask import abort
 from nova import app, db, models
 from itsdangerous import Signer, BadSignature
@@ -31,3 +32,21 @@ def check_token(token):
         abort(401)
 
     return user
+
+
+def copy(dataset, parent):
+    def copytree(src, dst, symlinks=False, ignore=None):
+        for item in os.listdir(src):
+            s = os.path.join(src, item)
+            d = os.path.join(dst, item)
+            if os.path.isdir(s):
+                copytree(s, d, symlinks, ignore)
+            else:
+                if not os.path.exists(d) or os.stat(s).st_mtime - os.stat(d).st_mtime > 1:
+                    shutil.copy2(s, d)
+
+    root = app.config['NOVA_ROOT_PATH']
+    src = os.path.join(root, parent.path)
+    dst = os.path.join(root, dataset.path)
+    app.logger.info("Copy data from {} to {}".format(src, dst))
+    copytree(src, dst)
