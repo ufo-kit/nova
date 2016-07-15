@@ -1,4 +1,4 @@
-## Installation
+### Server
 
 1. Install Flask and dependencies
 
@@ -23,3 +23,16 @@
 If you run from source make sure to upgrade the database with
 
     $ python manage.py db upgrade
+
+
+### Client
+
+1. Log in and generate a token
+2. Use the token to initialize a directory
+
+        $ cd path/to/dataset
+        $ nova init --token 1.xyz --remote http://localhost:5000
+
+3. Push the data to the remote
+
+        $ nova push
