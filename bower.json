@@ -1,0 +1,17 @@
+{
+  "name": "nova",
+  "version": "0.0.0",
+  "authors": [
+    "Matthias Vogelgesang"
+  ],
+  "description": "NOVA data management",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "nova/static"
+  ],
+  "dependencies": {
+    "fontawesome": "~4.6.3",
+    "bootswatch-dist": "cosmo"
+  }
+}

@@ -1,0 +1,138 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import io
+import argparse
+import requests
+import ConfigParser
+from nova import memtar
+
+
+class Config(object):
+    def __init__(self, args, dataset_id=None):
+        self.root = os.path.abspath('.nova')
+        args = vars(args)
+
+        self.token = args.get('token', None)
+        self.remote = args.get('remote', None)
+        self.id = args.get('id', None) or dataset_id
+
+        if os.path.exists(self.path):
+            parser = ConfigParser.RawConfigParser()
+            parser.read(self.path)
+
+            self.token = parser.get('core', 'token')
+            self.remote = parser.get('core', 'remote')
+            self.id = parser.get('core', 'id')
+
+    @property
+    def path(self):
+        return os.path.join(self.root, 'config')
+
+    def write(self):
+        parser = ConfigParser.RawConfigParser()
+        parser.add_section('core')
+        parser.set('core', 'remote', self.remote)
+        parser.set('core', 'token', self.token)
+        parser.set('core', 'id', self.id)
+
+        print self.root
+        if not os.path.exists(self.root):
+            os.mkdir(self.root)
+
+        with open(self.path, 'wb') as f:
+            parser.write(f)
+
+    def url(self, u):
+        if not self.remote:
+            sys.exit("No remote specified in configuration or as an argument.")
+
+        return '{}{}'.format(self.remote, u)
+
+    def __repr__(self):
+        return '<Config remote={}, token={}, id={}>'.format(self.remote, self.token, self.id)
+
+
+def push(args):
+    config = Config(args)
+    params = dict(token=config.token)
+    f = memtar.create_tar(os.path.abspath('.'))
+    f.seek(0L)
+    url = config.remote + '/upload/' + config.id
+    r = requests.post(url, params=params, data=f)
+    print r.status_code
+
+
+def clone(args):
+    config = Config(args)
+    params = dict(token=config.token)
+
+    if not args.name:
+        r = requests.get(config.url('/api/datasets/') + config.id, params=params)
+        name = r.json()['name']
+    else:
+        name = args.name
+
+    url = config.url('/clone/' + config.id)
+    r = requests.get(url, params=params)
+    f = io.BytesIO(r.content)
+    memtar.extract_tar(f, os.path.join(os.path.abspath('.'), name))
+
+    config.root = os.path.join(os.path.abspath(name), '.nova')
+    config.write()
+
+
+def init(args):
+    name = args.name if args.name else os.path.basename(os.path.abspath(os.curdir))
+    config = Config(args)
+
+    # create dataset on remote
+    data = dict(name=name)
+    params = dict(token=args.token)
+    r = requests.post(config.url('/api/datasets'), params=params, data=data)
+    result = r.json()
+
+    # write initial configuration
+    config.id = result['id']
+    config.write()
+
+
+def list_datasets(args):
+    config = Config(args)
+    params = dict(token=config.token)
+    r = requests.get(config.url('/api/datasets'), params=params)
+
+    for d in r.json():
+        print d['id'], d['name']
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
+    cmd_parsers = parser.add_subparsers(title="Commands")
+
+    init_parser = cmd_parsers.add_parser('init', help="Initialize dataset in current directory")
+    init_parser.add_argument('--name', type=str, help="Dataset name, if not given current directory name")
+    init_parser.add_argument('--remote', type=str, help="URL of remote NOVA instance")
+    init_parser.add_argument('--token', type=str,
+                             help="Access token")
+    init_parser.set_defaults(run=init)
+
+    list_parser = cmd_parsers.add_parser('list', help="List datasets assigned to me")
+    list_parser.add_argument('--remote', type=str, help="URL of remote NOVA instance")
+    list_parser.add_argument('--token', type=str, help="Access token")
+    list_parser.set_defaults(run=list_datasets)
+
+    push_parser = cmd_parsers.add_parser('push', help="Finalize data and push to remote")
+    push_parser.set_defaults(run=push)
+
+    clone_parser = cmd_parsers.add_parser('clone', help="Clone dataset")
+    clone_parser.add_argument('--remote', type=str, help="URL of remote NOVA instance")
+    clone_parser.add_argument('--token', type=str, help="Access token")
+    clone_parser.add_argument('--id', required=True, type=str, help="Dataset identifier")
+    clone_parser.add_argument('--name', type=str, help="Alternative directory name")
+    clone_parser.set_defaults(run=clone)
+
+    args = parser.parse_args()
+    args.run(args)

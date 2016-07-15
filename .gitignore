@@ -1,0 +1,5 @@
+*.pyc
+build/
+dist/
+nova.egg-info/
+nova/static/

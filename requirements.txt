@@ -1,0 +1,10 @@
+humanize
+Flask==0.11.0
+Flask-Admin
+Flask-Cache
+Flask-Login
+Flask-Migrate
+Flask-SQLAlchemy
+Flask-WTF
+SQLAlchemy-Utils
+passlib
