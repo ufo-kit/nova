@@ -4,7 +4,7 @@ import datetime
 import shutil
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar
-from nova.models import User, Dataset, Access
+from nova.models import User, Dataset, Access, Deletion
 from flask import (Response, render_template, request, flash, redirect,
                    abort, url_for)
 from flask_login import login_user, logout_user, current_user
@@ -80,20 +80,27 @@ def logout():
 @login_required(admin=False)
 def index():
     result = db.session.query(Dataset, Access).\
-            filter(Access.user == current_user).\
-            filter(Access.dataset_id == Dataset.id).\
-            all()
+        filter(Access.user == current_user).\
+        filter(Access.dataset_id == Dataset.id).\
+        all()
 
     datasets, accesses = zip(*result) if result else ([], [])
 
     shared = db.session.query(Dataset, Access).\
-            filter(Access.user == current_user).\
-            filter(Access.dataset_id == Dataset.id).\
-            filter(Access.owner == False).\
-            filter(Access.seen == False).\
-            all()
+        filter(Access.user == current_user).\
+        filter(Access.dataset_id == Dataset.id).\
+        filter(Access.owner == False).\
+        filter(Access.seen == False).\
+        all()
 
     shared, shared_accesses = zip(*shared) if shared else ([], [])
+
+    deleted = db.session.query(Deletion).\
+        filter(Deletion.user == current_user).\
+        all()
+
+    for d in deleted:
+        db.session.delete(d)
 
     for access in shared_accesses:
         access.seen = True
@@ -102,7 +109,9 @@ def index():
 
     # XXX: we should cache this and compute outside
     num_files, total_size = fs.get_statistics(datasets)
-    return render_template('index.html', result=result, shared=shared, num_files=num_files, total_size=total_size)
+    return render_template('index.html', result=result, shared=shared,
+                           deleted=deleted, num_files=num_files,
+                           total_size=total_size)
 
 
 @app.route('/user/admin')
@@ -266,16 +275,25 @@ def detail(dataset_id=None, path=''):
 @login_required(admin=False)
 def delete(dataset_id=None):
     result = db.session.query(Dataset, Access).\
-            filter(Access.user == current_user).\
-            filter(Access.dataset_id == dataset_id).first()
+        filter(Access.user == current_user).\
+        filter(Access.dataset_id == dataset_id).first()
 
     dataset, access = result
+
+    shared_with = db.session.query(Access).\
+        filter(Access.user != current_user).\
+        filter(Access.dataset_id == dataset_id).all()
+
+    for access in shared_with:
+        db.session.add(Deletion(user=access.user, dataset_name=dataset.name))
+        db.session.delete(access)
 
     if dataset:
         shutil.rmtree(fs.path_of(dataset))
         db.session.delete(dataset)
         db.session.delete(access)
-        db.session.commit()
+
+    db.session.commit()
 
     return redirect(url_for('index'))
 

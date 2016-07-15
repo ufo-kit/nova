@@ -85,3 +85,17 @@ class Access(db.Model):
     def __repr__(self):
         return '<Access(user={}, dataset={}, owner={}, writable={}>'.format(
                 self.user.name, self.dataset.name, self.owner, self.writable)
+
+
+class Deletion(db.Model):
+
+    __tablename__ = 'deletions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    dataset_name = db.Column(db.String)
+
+    user = db.relationship('User')
+
+    def __repr__(self):
+        return '<Deletion(user={}, dataset={})>'.format(self.user.name, self.dataset_name)

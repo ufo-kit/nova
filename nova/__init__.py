@@ -40,7 +40,7 @@ fs = Filesystem(app)
 migrate = Migrate(app, db)
 
 
-from nova.models import User, Dataset, Access
+from nova.models import User, Dataset, Access, Deletion
 
 class AdminModelView(ModelView):
     def is_accessible(self):
@@ -50,6 +50,7 @@ admin = Admin(app)
 admin.add_view(AdminModelView(User, db.session))
 admin.add_view(AdminModelView(Dataset, db.session))
 admin.add_view(AdminModelView(Access, db.session))
+admin.add_view(AdminModelView(Deletion, db.session))
 
 
 from nova.resources import Datasets, Dataset
