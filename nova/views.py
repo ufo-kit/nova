@@ -306,6 +306,9 @@ def upload(dataset_id):
             filter(Access.dataset_id == dataset_id).\
             filter(Dataset.id == dataset_id).first()
 
+    if dataset.closed:
+        return 'Dataset closed', 423
+
     f = io.BytesIO(request.data)
     memtar.extract_tar(f, fs.path_of(dataset))
     return ''
