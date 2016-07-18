@@ -49,3 +49,13 @@ class Dataset(Resource):
                 filter(models.Dataset.id == dataset_id).\
                 first()
         return dict(name=dataset.name)
+
+    def put(self, dataset_id):
+        user = get_user()
+        dataset = db.session.query(models.Dataset).\
+                filter(models.Access.user == user).\
+                filter(models.Dataset.id == dataset_id).\
+                first()
+
+        dataset.closed = request.form.get('closed', False)
+        db.session.commit()

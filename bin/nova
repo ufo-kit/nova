@@ -6,6 +6,7 @@ import io
 import argparse
 import requests
 import ConfigParser
+import logging
 from nova import memtar
 
 
@@ -51,6 +52,13 @@ class Config(object):
 
         return '{}{}'.format(self.remote, u)
 
+    @property
+    def dataset_url(self):
+        if not self.id:
+            sys.exit("No identifier specified.")
+
+        return self.url('/api/datasets/{}'.format(self.id))
+
     def __repr__(self):
         return '<Config remote={}, token={}, id={}>'.format(self.remote, self.token, self.id)
 
@@ -68,7 +76,7 @@ def clone(config):
     params = dict(token=config.token)
 
     if not config.name:
-        r = requests.get(config.url('/api/datasets/') + config.id, params=params)
+        r = requests.get(config.dataset_url, params=params)
         name = r.json()['name']
     else:
         name = config.name
@@ -80,6 +88,15 @@ def clone(config):
 
     config.root = os.path.join(os.path.abspath(name), '.nova')
     config.write()
+
+
+def close(config):
+    params = dict(token=config.token)
+    data = dict( id=config.id, closed=True)
+    r = requests.put(config.dataset_url, params=params, data=data)
+
+    if r.status_code != 200:
+        logging.error(r.reason)
 
 
 def init(config):
@@ -130,6 +147,9 @@ if __name__ == '__main__':
     clone_parser.add_argument('--id', required=True, type=str, help="Dataset identifier")
     clone_parser.add_argument('--name', type=str, help="Alternative directory name")
     clone_parser.set_defaults(run=clone)
+
+    close_parser = cmd_parsers.add_parser('close', help="Close dataset")
+    close_parser.set_defaults(run=close)
 
     args = parser.parse_args()
     args.run(Config(args))

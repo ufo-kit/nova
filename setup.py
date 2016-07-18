@@ -12,7 +12,7 @@ setup(
     url='http://github.com/ufo-kit/nova',
     license='LGPL',
     packages=find_packages(exclude=['*.tests']),
-    scripts=['bin/novactl', 'bin/nova'],
+    scripts=['bin/nova'],
     exclude_package_data={'': ['README.rst']},
     description="NOVA data suite",
     install_requires=[
