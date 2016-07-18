@@ -14,6 +14,7 @@ class Config(object):
         self.root = os.path.abspath('.nova')
         args = vars(args)
 
+        self.name = args.get('name', None)
         self.token = args.get('token', None)
         self.remote = args.get('remote', None)
         self.id = args.get('id', None) or dataset_id
@@ -54,8 +55,7 @@ class Config(object):
         return '<Config remote={}, token={}, id={}>'.format(self.remote, self.token, self.id)
 
 
-def push(args):
-    config = Config(args)
+def push(config):
     params = dict(token=config.token)
     f = memtar.create_tar(os.path.abspath('.'))
     f.seek(0L)
@@ -64,15 +64,14 @@ def push(args):
     print r.status_code
 
 
-def clone(args):
-    config = Config(args)
+def clone(config):
     params = dict(token=config.token)
 
-    if not args.name:
+    if not config.name:
         r = requests.get(config.url('/api/datasets/') + config.id, params=params)
         name = r.json()['name']
     else:
-        name = args.name
+        name = config.name
 
     url = config.url('/clone/' + config.id)
     r = requests.get(url, params=params)
@@ -83,13 +82,12 @@ def clone(args):
     config.write()
 
 
-def init(args):
-    name = args.name if args.name else os.path.basename(os.path.abspath(os.curdir))
-    config = Config(args)
+def init(config):
+    name = config.name if config.name else os.path.basename(os.path.abspath(os.curdir))
 
     # create dataset on remote
     data = dict(name=name)
-    params = dict(token=args.token)
+    params = dict(token=config.token)
     r = requests.post(config.url('/api/datasets'), params=params, data=data)
     result = r.json()
 
@@ -98,8 +96,7 @@ def init(args):
     config.write()
 
 
-def list_datasets(args):
-    config = Config(args)
+def list_datasets(config):
     params = dict(token=config.token)
     r = requests.get(config.url('/api/datasets'), params=params)
 
@@ -135,4 +132,4 @@ if __name__ == '__main__':
     clone_parser.set_defaults(run=clone)
 
     args = parser.parse_args()
-    args.run(args)
+    args.run(Config(args))
