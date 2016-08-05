@@ -67,7 +67,15 @@ Token-based authentication
 
 Storing user name and password for the local client is not advised, hence each
 user can generate a token that is used by the API to authenticate and authorize
-resource access.
+resource access. To prevent third-party abuse, tokens can be revoked at any
+time.
+
+
+Error handling
+--------------
+
+All server-side errors must be mapped to appropriate HTTP status codes with a
+JSON response detailing the error.
 
 
 Related and prior work

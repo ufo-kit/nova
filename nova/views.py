@@ -6,7 +6,7 @@ from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar
 from nova.models import User, Dataset, Access, Deletion
 from flask import (Response, render_template, request, flash, redirect,
-                   abort, url_for)
+                   abort, url_for, jsonify)
 from flask_login import login_user, logout_user, current_user
 from flask_wtf import Form
 from wtforms import StringField, BooleanField
@@ -44,6 +44,29 @@ class SignupForm(Form):
 
 class CreateForm(Form):
     name = StringField('name', validators=[DataRequired()])
+
+
+class InvalidUsage(Exception):
+    status_code = 400
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+
+        self.message = message
+        self.payload = payload
+        self.status_code = status_code or self.status_code
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
+
+
+@app.errorhandler(InvalidUsage)
+def handle_invalid_usage(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
 
 
 @login_manager.user_loader
@@ -310,6 +333,9 @@ def upload(dataset_id):
             filter(Access.user == user).\
             filter(Access.dataset_id == dataset_id).\
             filter(Dataset.id == dataset_id).first()
+
+    if dataset is None:
+        raise InvalidUsage('Dataset not found', status_code=404)
 
     if dataset.closed:
         return 'Dataset closed', 423
