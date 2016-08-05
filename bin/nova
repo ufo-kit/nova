@@ -2,30 +2,47 @@
 
 import os
 import io
+import sys
 import argparse
 import requests
 import ConfigParser
 import logging
+import xdg.BaseDirectory
 from nova import memtar
 
 
 class Config(object):
-    def __init__(self, args, dataset_id=None):
-        self.root = os.path.abspath('.nova')
-        args = vars(args)
-
-        self.name = args.get('name', None)
-        self.token = args.get('token', None)
-        self.remote = args.get('remote', None)
-        self.id = args.get('id', None) or dataset_id
+    def __init__(self, dataset_id=None, root=None):
+        self.root = root or os.path.abspath('.nova')
+        self.name = None
+        self.token = None
+        self.remote = None
+        self.id = dataset_id
 
         if os.path.exists(self.path):
             parser = ConfigParser.RawConfigParser()
             parser.read(self.path)
 
-            self.token = parser.get('core', 'token')
-            self.remote = parser.get('core', 'remote')
-            self.id = parser.get('core', 'id')
+            def get(section, option):
+                try:
+                    return parser.get(section, option)
+                except ConfigParser.NoOptionError:
+                    return None
+
+            self.token = get('core', 'token')
+            self.remote = get('core', 'remote')
+            self.id = get('core', 'id')
+
+    def override(self, args, global_conf):
+        args = vars(args)
+
+        def get(arg):
+            return args.get(arg, None)
+
+        self.token = get('token') or global_conf.token or self.token
+        self.remote = get('remote') or global_conf.remote or self.remote
+        self.name = get('name') or self.name
+        self.id = get('id') or self.id
 
     @property
     def path(self):
@@ -48,6 +65,7 @@ class Config(object):
     def url(self, u):
         if not self.remote:
             logging.error("No remote specified in configuration or as an argument.")
+            sys.exit(1)
 
         return '{}{}'.format(self.remote, u)
 
@@ -114,6 +132,7 @@ def init(config):
     r = requests.post(config.url('/api/datasets'), params=params, data=data)
     result = r.json()
 
+    print result
     # write initial configuration
     config.id = result['id']
     config.write()
@@ -158,4 +177,10 @@ if __name__ == '__main__':
     close_parser.set_defaults(run=close)
 
     args = parser.parse_args()
-    args.run(Config(args))
+
+    global_conf = Config(root=xdg.BaseDirectory.load_first_config('nova'))
+
+    config = Config()
+    config.override(args, global_conf);
+    print config
+    args.run(config)
