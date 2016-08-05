@@ -7,4 +7,5 @@ Flask-Migrate
 Flask-SQLAlchemy
 Flask-WTF
 SQLAlchemy-Utils
+Sphinx
 passlib
