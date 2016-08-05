@@ -3,3 +3,4 @@ build/
 dist/
 nova.egg-info/
 nova/static/
+docs/_build
