@@ -79,6 +79,11 @@ def logout():
 @app.route('/')
 @login_required(admin=False)
 def index():
+    if current_user.first_time:
+        current_user.first_time = False
+        db.session.commit()
+        return render_template('index/welcome.html', user=current_user)
+
     result = db.session.query(Dataset, Access).\
         filter(Access.user == current_user).\
         filter(Access.dataset_id == Dataset.id).\

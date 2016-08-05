@@ -24,6 +24,7 @@ class User(db.Model):
     token = db.Column(db.String)
     token_time = db.Column(db.DateTime)
     gravatar = db.Column(db.String)
+    first_time = db.Column(db.Boolean, default=True)
 
     def __init__(self, name=None, fullname=None, email=None, password=None, is_admin=False):
         self.name = name
