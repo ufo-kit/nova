@@ -30,6 +30,11 @@ A generic dataset covers all kinds of data but cannot be used to deduce
 information for automatic processing. Hence, a hierarchy of types with
 pre-determined attributes is required.
 
+Types will also help to provide dataset-specific previews. For generic datasets
+only a vague file browser kind of preview is possible. For known datasets we can
+provide specific previewers, for example a WebGL-based 3D visualization for a
+reconstruction or segmented volume.
+
 
 Architecture
 ============
