@@ -109,7 +109,7 @@ def index():
 
     # XXX: we should cache this and compute outside
     num_files, total_size = fs.get_statistics(datasets)
-    return render_template('index.html', result=result, shared=shared,
+    return render_template('index/index.html', result=result, shared=shared,
                            deleted=deleted, num_files=num_files,
                            total_size=total_size)
 
