@@ -35,9 +35,22 @@ Architecture
 ============
 
 The system is based on a client-server architecture. The server manages user
-roles, authorization, authentication and remote data storage. Moreover, it
-provides a managing system view for web clients as well as an API view for
-programmatic access. This API is consumed by a local client to
+roles, authorization, authentication and remote data storage.  The system
+distinguishes between the actual dataset whose data and metadata is managed by
+the server and a local *working directory* containing a copy of the datasets' data.
+The user either declares an existing working directory to be a dataset by
+*initializing* and registering it with the server or checking out and retrieving
+the data into a working directory. The user *pushes* the working directory
+for the sake of synchronizing the remote and the local state.
+
+.. note::
+
+    From my point of view pushing is *not* the place for commit-like actions,
+    i.e.  denoting a new version or whatever but merely storing the data
+    remotely. But this point is open for discussion.
+
+The server provides a managing system view for web clients as well as an API
+view for programmatic access. This API is consumed by a local client to
 
 1. create a new dataset from a local directory,
 2. list available datasets for *cloning* and *deletion* as well as
