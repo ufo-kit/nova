@@ -182,5 +182,4 @@ if __name__ == '__main__':
 
     config = Config()
     config.override(args, global_conf);
-    print config
     args.run(config)
