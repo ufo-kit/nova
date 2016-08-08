@@ -36,6 +36,13 @@ provide specific previewers, for example a WebGL-based 3D visualization for a
 reconstruction or segmented volume.
 
 
+Programmatic derivation
+-----------------------
+
+Besides manual derivation by the user, it should be possible to let a background
+program process an input dataset on behalf of a user.
+
+
 Architecture
 ============
 
