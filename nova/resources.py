@@ -47,7 +47,7 @@ class Dataset(Resource):
         return dict(name=dataset.name)
 
     def put(self, dataset_id):
-        user = get_user()
+        user = logic.get_user(request.args['token'])
         dataset = db.session.query(models.Dataset).\
                 filter(models.Access.user == user).\
                 filter(models.Dataset.id == dataset_id).\
