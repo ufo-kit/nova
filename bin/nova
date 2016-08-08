@@ -105,7 +105,7 @@ def clone(config):
     else:
         name = config.name
 
-    url = config.url('/clone/' + config.id)
+    url = config.url('/clone/' + str(config.id))
     r = requests.get(url, params=params)
     f = io.BytesIO(r.content)
     memtar.extract_tar(f, os.path.join(os.path.abspath('.'), name))
@@ -132,7 +132,6 @@ def init(config):
     r = requests.post(config.url('/api/datasets'), params=params, data=data)
     result = r.json()
 
-    print result
     # write initial configuration
     config.id = result['id']
     config.write()
@@ -169,8 +168,8 @@ if __name__ == '__main__':
     clone_parser = cmd_parsers.add_parser('clone', help="Clone dataset")
     clone_parser.add_argument('--remote', type=str, help="URL of remote NOVA instance")
     clone_parser.add_argument('--token', type=str, help="Access token")
-    clone_parser.add_argument('--id', required=True, type=str, help="Dataset identifier")
     clone_parser.add_argument('--name', type=str, help="Alternative directory name")
+    clone_parser.add_argument('id', type=int, help="Dataset identifier")
     clone_parser.set_defaults(run=clone)
 
     close_parser = cmd_parsers.add_parser('close', help="Close dataset")
