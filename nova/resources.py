@@ -5,16 +5,12 @@ from itsdangerous import Signer, BadSignature
 from nova import db, models, logic
 
 
-def get_user():
-    uid = int(request.args['token'].split('.')[0])
-    return db.session.query(models.User).filter(models.User.id == uid).first()
-
-
 def authenticate(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         if logic.check_token(request.args['token']):
             return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -22,7 +18,7 @@ class Datasets(Resource):
     method_decorators = [authenticate]
 
     def get(self):
-        user = get_user()
+        user = logic.get_user(request.args['token'])
 
         return [dict(name=d.name, id=d.id) for d in 
                     db.session.query(models.Dataset).\
@@ -34,7 +30,7 @@ class Datasets(Resource):
         parser.add_argument('name', type=str, help="Dataset name")
         args = parser.parse_args()
 
-        user = get_user()
+        user = logic.get_user(request.args['token'])
         dataset = logic.create_dataset(args.name, user)
         return dict(id=dataset.id)
 
@@ -43,7 +39,7 @@ class Dataset(Resource):
     method_decorators = [authenticate]
 
     def get(self, dataset_id):
-        user = get_user()
+        user = logic.get_user(request.args['token'])
         dataset = db.session.query(models.Dataset).\
                 filter(models.Access.user == user).\
                 filter(models.Dataset.id == dataset_id).\

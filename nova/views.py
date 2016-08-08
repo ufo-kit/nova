@@ -158,11 +158,7 @@ def settings():
 @app.route('/user/token/generate')
 @login_required(admin=False)
 def generate_token():
-    time = datetime.datetime.utcnow()
-    signer = Signer(current_user.password.hash + time.isoformat())
-    current_user.token = signer.sign(str(current_user.id))
-    current_user.token_time = time
-    db.session.commit()
+    current_user.generate_token()
     return redirect(url_for('settings'))
 
 

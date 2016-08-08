@@ -2,6 +2,7 @@ import datetime
 import hashlib
 from nova import db
 from sqlalchemy_utils import PasswordType, force_auto_coercion
+from itsdangerous import Signer, BadSignature
 
 
 force_auto_coercion()
@@ -37,6 +38,23 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User(name={}, fullname={}>'.format(self.name, self.fullname)
+
+    def get_signer(self):
+        return Signer(self.password.hash + self.token_time.isoformat())
+
+    def generate_token(self):
+        self.token_time = datetime.datetime.utcnow()
+        self.token = self.get_signer().sign(str(self.id))
+        db.session.commit()
+
+    def is_token_valid(self, token):
+        try:
+            if str(self.id) != self.get_signer().unsign(token):
+                return False
+        except BadSignature:
+            return False
+
+        return True
 
     def is_authenticated(self):
         return True
@@ -84,8 +102,7 @@ class Access(db.Model):
     dataset = db.relationship('Dataset')
 
     def __repr__(self):
-        return '<Access(user={}, dataset={}, owner={}, writable={}>'.format(
-                self.user.name, self.dataset.name, self.owner, self.writable)
+        return '<Access(user={}, dataset={}, owner={}, writable={}>'.format(self.user.name, self.dataset.name, self.owner, self.writable)
 
 
 class Deletion(db.Model):

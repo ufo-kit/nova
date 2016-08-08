@@ -20,15 +20,16 @@ def create_dataset(name, user, parent=None):
     return dataset
 
 
+def get_user(token):
+    uid = int(token.split('.')[0])
+    return db.session.query(models.User).filter(models.User.id == uid).first()
+
+
 def check_token(token):
     uid, signature = token.split('.')
-    user = db.session.query(models.User).filter(models.User.id == int(uid)).first()
-    signer = Signer(user.password.hash + user.token_time.isoformat())
+    user = get_user(token)
 
-    try:
-        if uid != signer.unsign(token):
-            abort(401)
-    except BadSignature:
+    if not user.is_token_valid(token):
         abort(401)
 
     return user
