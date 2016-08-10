@@ -10,4 +10,5 @@ from the NOVA workgroup.
    :maxdepth: 2
 
    concepts
+   getstarted
    cli
