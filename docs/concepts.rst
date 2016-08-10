@@ -35,6 +35,7 @@ only a vague file browser kind of preview is possible. For known datasets we can
 provide specific previewers, for example a WebGL-based 3D visualization for a
 reconstruction or segmented volume.
 
+.. _programmatic-derivation:
 
 Programmatic derivation
 -----------------------
@@ -76,6 +77,10 @@ Storing user name and password for the local client is not advised, hence each
 user can generate a token that is used by the API to authenticate and authorize
 resource access. To prevent third-party abuse, tokens can be revoked at any
 time.
+
+Token-based authentication is also used for :ref:`programmatic-derivation` in
+which server-side processes use the authentication token to implement data
+processing on behalf of the user.
 
 
 Error handling
