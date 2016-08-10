@@ -55,7 +55,7 @@ class Config(object):
         parser.set('core', 'id', self.id)
 
         if not os.path.exists(self.root):
-            os.mkdir(self.root)
+            os.makedirs(self.root)
 
         with open(self.path, 'wb') as f:
             parser.write(f)
