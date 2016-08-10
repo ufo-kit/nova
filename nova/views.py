@@ -87,9 +87,9 @@ def login():
             flash('Logged in successfully')
             return redirect(url_for('index'))
         else:
-            return abort(401)
+            return render_template('user/login.html', form=form, failed=True), 401
 
-    return render_template('user/login.html', form=form)
+    return render_template('user/login.html', form=form, failed=False)
 
 
 @app.route('/logout')
