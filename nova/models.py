@@ -82,6 +82,7 @@ class Dataset(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey('datasets.id'), nullable=True)
 
     parent = db.relationship('Dataset')
+    accesses = db.relationship('Access', cascade='all, delete, delete-orphan')
 
     def to_dict(self):
         path = os.path.join(app.config['NOVA_ROOT_PATH'], self.path)
@@ -104,7 +105,7 @@ class Access(db.Model):
     seen = db.Column(db.Boolean, default=False)
 
     user = db.relationship('User')
-    dataset = db.relationship('Dataset')
+    dataset = db.relationship('Dataset', back_populates='accesses')
 
     def __repr__(self):
         return '<Access(user={}, dataset={}, owner={}, writable={}>'.format(self.user.name, self.dataset.name, self.owner, self.writable)

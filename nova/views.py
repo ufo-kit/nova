@@ -292,12 +292,10 @@ def detail(dataset_id=None, path=''):
 @app.route('/delete/<int:dataset_id>')
 @login_required(admin=False)
 def delete(dataset_id=None):
-    result = db.session.query(Dataset, Access).\
+    dataset = db.session.query(Dataset).\
         filter(Dataset.id == dataset_id).\
         filter(Access.user == current_user).\
         filter(Access.dataset_id == dataset_id).first()
-
-    dataset, access = result
 
     shared_with = db.session.query(Access).\
         filter(Access.user != current_user).\
@@ -305,14 +303,14 @@ def delete(dataset_id=None):
 
     for access in shared_with:
         db.session.add(Deletion(user=access.user, dataset_name=dataset.name))
-        db.session.delete(access)
-
-    if dataset:
-        shutil.rmtree(fs.path_of(dataset))
-        db.session.delete(dataset)
-        db.session.delete(access)
 
     db.session.commit()
+
+    if dataset:
+        path = fs.path_of(dataset)
+        db.session.delete(dataset)
+        db.session.commit()
+        result = tasks.rmtree.delay(path)
 
     return redirect(url_for('index'))
 

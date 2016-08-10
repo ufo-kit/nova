@@ -1,4 +1,5 @@
 import requests
+import shutil
 from celery import Celery
 from nova import utils
 
@@ -31,3 +32,8 @@ def copy(token, name, parent_id):
     # the way to go ...
 
     utils.copy(src['path'], dest['path'])
+
+
+@app.task
+def rmtree(path):
+    shutil.rmtree(path)
