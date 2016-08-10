@@ -28,10 +28,11 @@ class Datasets(Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, help="Dataset name")
+        parser.add_argument('parent', type=int, help="Dataset parent", default=None)
         args = parser.parse_args()
 
         user = logic.get_user(request.args['token'])
-        dataset = logic.create_dataset(args.name, user)
+        dataset = logic.create_dataset(args.name, user, parent_id=args.parent)
         return dict(id=dataset.id)
 
 
@@ -44,7 +45,7 @@ class Dataset(Resource):
                 filter(models.Access.user == user).\
                 filter(models.Dataset.id == dataset_id).\
                 first()
-        return dict(name=dataset.name)
+        return dataset.to_dict()
 
     def put(self, dataset_id):
         user = logic.get_user(request.args['token'])

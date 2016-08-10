@@ -9,3 +9,4 @@ Flask-WTF
 SQLAlchemy-Utils
 Sphinx
 passlib
+celery

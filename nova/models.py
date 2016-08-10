@@ -1,6 +1,7 @@
+import os
 import datetime
 import hashlib
-from nova import db
+from nova import app, db
 from sqlalchemy_utils import PasswordType, force_auto_coercion
 from itsdangerous import Signer, BadSignature
 
@@ -34,7 +35,7 @@ class User(db.Model):
         self.password = password
         self.is_admin = is_admin
         self.gravatar = hashlib.md5(email.lower()).hexdigest()
-        self.token = None
+        self.generate_token()
 
     def __repr__(self):
         return '<User(name={}, fullname={}>'.format(self.name, self.fullname)
@@ -81,6 +82,10 @@ class Dataset(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey('datasets.id'), nullable=True)
 
     parent = db.relationship('Dataset')
+
+    def to_dict(self):
+        path = os.path.join(app.config['NOVA_ROOT_PATH'], self.path)
+        return dict(name=self.name, path=path, closed=self.closed)
 
     def __repr__(self):
         return '<Dataset(name={}, path={}>'.format(self.name, self.path)

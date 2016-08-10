@@ -3,7 +3,7 @@ import io
 import datetime
 import shutil
 from functools import wraps
-from nova import app, db, login_manager, fs, logic, memtar
+from nova import app, db, login_manager, fs, logic, memtar, tasks
 from nova.models import User, Dataset, Access, Deletion
 from flask import (Response, render_template, request, flash, redirect,
                    abort, url_for, jsonify)
@@ -244,18 +244,12 @@ def share(dataset_id, user_id=None):
 @app.route('/process/<int:dataset_id>/<process>', methods=['GET', 'POST'])
 @login_required(admin=False)
 def process(dataset_id, process=None):
-    processors = {
-        'copy': logic.copy
-    }
-
     parent = db.session.query(Dataset).filter(Dataset.id == dataset_id).first()
 
     if not process:
         return render_template('dataset/process.html', dataset=parent)
 
-    dataset = logic.create_dataset(request.form['name'], current_user, parent=parent)
-    processors[process](dataset, parent)
-
+    result = tasks.copy.delay(current_user.token, request.form['name'], parent.id)
     return redirect(url_for('index'))
 
 
