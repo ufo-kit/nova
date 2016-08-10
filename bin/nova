@@ -8,7 +8,6 @@ import requests
 import ConfigParser
 import logging
 import xdg.BaseDirectory
-from nova import memtar
 
 
 class Config(object):
@@ -55,7 +54,6 @@ class Config(object):
         parser.set('core', 'token', self.token)
         parser.set('core', 'id', self.id)
 
-        print self.root
         if not os.path.exists(self.root):
             os.mkdir(self.root)
 
@@ -81,6 +79,8 @@ class Config(object):
 
 
 def push(config):
+    from nova import memtar
+
     params = dict(token=config.token)
     f = memtar.create_tar(os.path.abspath('.'))
     f.seek(0L)
@@ -97,6 +97,8 @@ def push(config):
 
 
 def clone(config):
+    from nova import memtar
+
     params = dict(token=config.token)
 
     if not config.name:
