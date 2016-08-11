@@ -1,14 +1,10 @@
 import requests
 import shutil
 from celery import Celery
-from nova import utils
+from nova import celery, utils
 
 
-
-app = Celery('tasks', broker='amqp://guest@localhost//')
-
-
-@app.task
+@celery.task
 def copy(token, name, parent_id):
     url = 'http://127.0.0.1:5000/api/datasets'
     params = dict(token=token)
@@ -34,6 +30,6 @@ def copy(token, name, parent_id):
     utils.copy(src['path'], dest['path'])
 
 
-@app.task
+@celery.task
 def rmtree(path):
     shutil.rmtree(path)
