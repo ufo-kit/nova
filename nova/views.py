@@ -239,10 +239,18 @@ def share(dataset_id, user_id=None):
         return render_template('dataset/share.html', users=users, dataset_id=dataset_id)
 
     user = db.session.query(User).filter(User.id == user_id).first()
-    dataset = db.session.query(Dataset).filter(Dataset.id == dataset_id).first()
-    access = Access(user=user, dataset=dataset, owner=False, writable=False)
-    db.session.add(access)
-    db.session.commit()
+    dataset, access = db.session.query(Dataset, Access).\
+        filter(Access.dataset_id == dataset_id).\
+        filter(Access.owner == True).\
+        filter(Dataset.id == dataset_id).\
+        first()
+
+    # Do not share again with the owner of the dataset
+    if access.user != user:
+        access = Access(user=user, dataset=dataset, owner=False, writable=False)
+        db.session.add(access)
+        db.session.commit()
+
     return redirect(url_for('index'))
 
 
