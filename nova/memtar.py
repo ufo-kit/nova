@@ -14,7 +14,7 @@ def create_tar(path):
             # remove one more character to remove trailing slash
             arcname = p[p.find(path)+len(path)+1:]
 
-            if not arcname.startswith('.nova'):
+            if not arcname.startswith('.nova/config'):
                 tar.add(p, arcname=arcname)
 
     tar.close()
