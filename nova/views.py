@@ -201,10 +201,13 @@ def create():
 @app.route('/close/<int:dataset_id>')
 @login_required(admin=False)
 def close(dataset_id):
-    dataset = db.session.query(Dataset).\
+    dataset, access = db.session.query(Dataset, Access).\
         filter(Dataset.id == dataset_id).\
         filter(Access.user == current_user).\
         filter(Access.dataset_id == dataset_id).first()
+
+    if not access.owner:
+        return redirect(url_for('index'))
 
     dataset.closed = True
     db.session.commit()
@@ -214,10 +217,13 @@ def close(dataset_id):
 @app.route('/open/<int:dataset_id>')
 @login_required(admin=False)
 def open(dataset_id):
-    dataset = db.session.query(Dataset).\
+    dataset, access = db.session.query(Dataset, Access).\
         filter(Dataset.id == dataset_id).\
         filter(Access.user == current_user).\
         filter(Access.dataset_id == dataset_id).first()
+
+    if not access.owner:
+        return redirect(url_for('index'))
 
     dataset.closed = False
     db.session.commit()
@@ -292,10 +298,13 @@ def detail(dataset_id=None, path=''):
 @app.route('/delete/<int:dataset_id>')
 @login_required(admin=False)
 def delete(dataset_id=None):
-    dataset = db.session.query(Dataset).\
+    dataset, access = db.session.query(Dataset, Access).\
         filter(Dataset.id == dataset_id).\
         filter(Access.user == current_user).\
         filter(Access.dataset_id == dataset_id).first()
+
+    if not access.owner:
+        return redirect(url_for('index'))
 
     shared_with = db.session.query(Access).\
         filter(Access.user != current_user).\
