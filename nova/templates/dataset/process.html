@@ -18,7 +18,7 @@
         </div>
         <div class="panel-collapse collapse in" role="tabpanel">
           <div class="panel-body">
-            <p>Duplicates the original data <em>as is</em>.</p>
+            <p>Duplicates the original data.</p>
 
             <form class="form-horizontal" method="POST" action="/process/{{ dataset.id }}/copy">
             <div class="form-group">
@@ -37,7 +37,53 @@
         </div>
       </div>
     </div>
+    <div class="panel-group" id="accordion" role="tablist">
+      <div class="panel panel-default">
+        <div class="panel-heading" role="tab">
+          <h4 class="panel-title">
+            Launch
+          </h4>
+        </div>
+        <div class="panel-collapse collapse in" role="tabpanel">
+          <div class="panel-body">
+            <p>Run commands on input data. Use <code>{input}</code> and
+            <code>{output}</code> template tags in the command line to specify
+            input and output data.</p>
+            <form class="form-horizontal" method="POST" action="/process/{{ dataset.id }}/run">
+            <div class="form-group">
+              <label for="inputName" class="col-lg-2 control-label">Name</label>
+              <div class="col-lg-10">
+                <input type="text" id="inputName" name="name" class="form-control" placeholder="{{ dataset.name }}-copy">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputName" class="col-lg-2 control-label">Command line</label>
+              <div class="col-lg-10">
+                <input type="text" id="inputName" name="command-line" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputName" class="col-lg-2 control-label">Input</label>
+              <div class="col-lg-10">
+                <input type="text" id="inputName" name="input" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputName" class="col-lg-2 control-label">Output</label>
+              <div class="col-lg-10">
+                <input type="text" id="inputName" name="output" class="form-control">
+              </div>
+            </div>
+              <div class="form-group">
+                <div class="col-lg-10 col-lg-offset-2">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-cogs"></i>&nbsp; Run</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-
 {% endblock %}

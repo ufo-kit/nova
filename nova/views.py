@@ -46,6 +46,13 @@ class CreateForm(Form):
     name = StringField('name', validators=[DataRequired()])
 
 
+class RunCommandForm(Form):
+    name = StringField('name', validators=[DataRequired()])
+    command_line = StringField('command-line', validators=[DataRequired()])
+    input = StringField('input', validators=[DataRequired()])
+    output = StringField('output', validators=[DataRequired()])
+
+
 class InvalidUsage(Exception):
     status_code = 400
 
@@ -263,7 +270,14 @@ def process(dataset_id, process=None):
     if not process:
         return render_template('dataset/process.html', dataset=parent)
 
-    result = tasks.copy.delay(current_user.token, request.form['name'], parent.id)
+    name = request.form['name']
+
+    if process == 'copy':
+        result = tasks.copy.delay(current_user.token, name, parent.id)
+
+    if process == 'run':
+        result = tasks.run_command.delay(current_user.token, name, parent.id, request.form)
+
     return redirect(url_for('index'))
 
 
