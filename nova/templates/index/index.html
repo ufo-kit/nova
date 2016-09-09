@@ -34,7 +34,7 @@
         <td><a href="/detail/{{ dataset.id }}">{{ dataset.name }}</a></td>
         <td>{{ dataset.created | naturaltime }}</td>
         <td>
-          <div class="btn-group-xs" role="group">
+          <div class="btn-group-xs mute" role="group">
             {% if dataset.closed %}
             <a href="/open/{{ dataset.id }}" type="button" class="btn btn-default" title="Open dataset"><i class="fa fa-lock"></i></a>
             {% else %}

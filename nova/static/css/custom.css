@@ -9,3 +9,11 @@ table a:not(.btn), .table a:not(.btn) {
 a:hover {
   text-decoration: underline;
 }
+
+.mute {
+  opacity: 0.1;
+}
+
+.mute:hover {
+  opacity: 1.0;
+}
