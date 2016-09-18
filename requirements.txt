@@ -6,7 +6,10 @@ Flask-Login
 Flask-Migrate
 Flask-SQLAlchemy
 Flask-WTF
+flask-restful
 SQLAlchemy-Utils
 Sphinx
 passlib
 celery
+requests
+pyxdg
