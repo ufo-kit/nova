@@ -1,17 +1,14 @@
 import os
 import io
-import datetime
-import shutil
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar, tasks
 from nova.models import User, Dataset, Access, Deletion
 from flask import (Response, render_template, request, flash, redirect,
-                   abort, url_for, jsonify)
+                   url_for, jsonify)
 from flask_login import login_user, logout_user, current_user
 from flask_wtf import Form
 from wtforms import StringField, BooleanField
 from wtforms.validators import DataRequired
-from itsdangerous import Signer
 
 
 def login_required(admin=False):
@@ -274,10 +271,10 @@ def process(dataset_id, process=None):
     name = request.form['name']
 
     if process == 'copy':
-        result = tasks.copy.delay(current_user.token, name, parent.id)
+        tasks.copy.delay(current_user.token, name, parent.id)
 
     if process == 'run':
-        result = tasks.run_command.delay(current_user.token, name, parent.id, request.form)
+        tasks.run_command.delay(current_user.token, name, parent.id, request.form)
 
     return redirect(url_for('index'))
 
@@ -346,7 +343,7 @@ def delete(dataset_id=None):
         path = fs.path_of(dataset)
         db.session.delete(dataset)
         db.session.commit()
-        result = tasks.rmtree.delay(path)
+        tasks.rmtree.delay(path)
 
     return redirect(url_for('index'))
 
