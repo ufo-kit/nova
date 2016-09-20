@@ -142,9 +142,13 @@ def init(config):
 def list_datasets(config):
     params = dict(token=config.token)
     r = requests.get(config.url('/api/datasets'), params=params)
+    data = r.json()
 
-    for d in r.json():
-        print d['id'], d['name']
+    if r.status_code != 200:
+        print data['message']
+    else:
+        for d in data:
+            print d['id'], d['name']
 
 
 if __name__ == '__main__':
