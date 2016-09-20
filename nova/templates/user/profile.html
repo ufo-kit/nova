@@ -31,4 +31,22 @@
   </div>
 </div>
 {% endif %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="page-header">
+      <h2>Datasets</h2>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12">
+    {% for access in accesses %}
+      <h3>
+        <a href="/user/{{ access.user.name }}">{{ access.user.name }}</a> /
+        <a href="/user/{{ access.user.name }}/{{ access.dataset.name }}">{{ access.dataset.name }}</a>
+      </h3>
+      <p>Dataset description here</p>
+    {% endfor %}
+  </div>
+</div>
 {% endblock %}

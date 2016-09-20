@@ -182,7 +182,9 @@ def signup():
 @login_required(admin=False)
 def profile(name):
     user = db.session.query(User).filter(User.name == name).first()
-    return render_template('user/profile.html', user=user)
+    accesses = db.session.query(Access).\
+        filter(Access.user_id == user.id).all()
+    return render_template('user/profile.html', user=user, accesses=accesses)
 
 
 @app.route('/create', methods=['GET', 'POST'])
