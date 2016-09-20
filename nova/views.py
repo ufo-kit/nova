@@ -187,6 +187,13 @@ def signup():
     return render_template('user/signup.html', form=form)
 
 
+@app.route('/user/<name>')
+@login_required(admin=False)
+def profile(name):
+    user = db.session.query(User).filter(User.name == name).first()
+    return render_template('user/profile.html', user=user)
+
+
 @app.route('/create', methods=['GET', 'POST'])
 @login_required(admin=False)
 def create():
@@ -275,14 +282,18 @@ def process(dataset_id, process=None):
     return redirect(url_for('index'))
 
 
-@app.route('/detail/<int:dataset_id>')
-@app.route('/detail/<int:dataset_id>/<path:path>')
+@app.route('/user/<name>/<dataset_name>')
+@app.route('/user/<name>/<dataset_name>/<path:path>')
 @login_required(admin=False)
-def detail(dataset_id=None, path=''):
+def detail(name, dataset_name, path=''):
+    # XXX: this looks stupid
     dataset = db.session.query(Dataset).\
-            filter(Dataset.id == dataset_id).\
-            filter(Access.user == current_user).\
-            filter(Access.dataset_id == dataset_id).first()
+            filter(Dataset.name == dataset_name).\
+            filter(Access.user == current_user).first()
+
+    dataset = db.session.query(Dataset).\
+            filter(Dataset.id == dataset.id).\
+            filter(Access.dataset_id == dataset.id).first()
 
     # FIXME: scream if no dataset found
     origin = []

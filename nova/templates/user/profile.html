@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="page-header">
+      <h2>Profile</h2>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12">
+    {{ user.name }}
+    {{ user.fullname }}
+    {{ user.email }}
+  </div>
+</div>
+{% endblock %}
