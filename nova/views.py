@@ -114,12 +114,7 @@ def index():
         db.session.commit()
         return render_template('index/welcome.html', user=current_user)
 
-    result = db.session.query(Dataset, Access).\
-        filter(Access.user == current_user).\
-        filter(Access.dataset_id == Dataset.id).\
-        all()
-
-    datasets, accesses = zip(*result) if result else ([], [])
+    accesses = db.session.query(Access).all()
 
     shared = db.session.query(Dataset, Access).\
         filter(Access.user == current_user).\
@@ -143,10 +138,9 @@ def index():
     db.session.commit()
 
     # XXX: we should cache this and compute outside
-    num_files, total_size = fs.get_statistics(datasets)
-    return render_template('index/index.html', result=result, shared=shared,
-                           deleted=deleted, num_files=num_files,
-                           total_size=total_size)
+    # num_files, total_size = fs.get_statistics(datasets)
+    return render_template('index/index.html', accesses=accesses, shared=shared,
+                           deleted=deleted, num_files=0, total_size=0)
 
 
 @app.route('/user/admin')
