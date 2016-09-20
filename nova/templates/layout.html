@@ -22,7 +22,7 @@
               fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu">
             <li>
-            <a href="/user/settings"><i class="fa fa-user"></i>&nbsp; Settings</a></li>
+            <a href="/user/{{ current_user.name }}"><i class="fa fa-user"></i>&nbsp; Profile</a></li>
             {% if current_user.is_admin %}
             <li><a href="/user/admin"><i class="fa fa-users"></i>&nbsp; Users</a></li>
             {% endif %}
