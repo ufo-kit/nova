@@ -147,17 +147,11 @@ def admin():
     return render_template('user/admin.html', users=users)
 
 
-@app.route('/user/settings')
-@login_required(admin=False)
-def settings():
-    return render_template('user/settings.html')
-
-
 @app.route('/user/token/generate')
 @login_required(admin=False)
 def generate_token():
     current_user.generate_token()
-    return redirect(url_for('settings'))
+    return redirect('user/{}'.format(current_user.name))
 
 
 @app.route('/user/token/revoke')
@@ -165,7 +159,7 @@ def generate_token():
 def revoke_token():
     current_user.token = None
     db.session.commit()
-    return redirect(url_for('settings'))
+    return redirect('user/{}'.format(current_user.name))
 
 
 @app.route('/signup', methods=['GET', 'POST'])
