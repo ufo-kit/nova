@@ -7,9 +7,14 @@ from nova import app, db, models
 from itsdangerous import Signer, BadSignature
 
 
+def dataset_path(user_name, dataset_name):
+    data = dict(root=app.config['NOVA_ROOT_PATH'], user=user_name, dataset=dataset_name)
+    return app.config['NOVA_FS_LAYOUT'].render(**data)
+
+
 def create_dataset(name, user, parent_id=None):
     root = app.config['NOVA_ROOT_PATH']
-    path = hashlib.sha256(user.name + name + str(datetime.datetime.now())).hexdigest()
+    path = dataset_path(user.name, name)
     parent = db.session.query(models.Dataset).filter(models.Dataset.id == parent_id).first()
     dataset = models.Dataset(name=name, path=path, parent=[parent] if parent else [])
     abspath = os.path.join(root, path)
