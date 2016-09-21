@@ -1,6 +1,7 @@
 import os
 import datetime
 import hashlib
+import flask_whooshalchemy
 from nova import app, db
 from sqlalchemy_utils import PasswordType, force_auto_coercion
 from itsdangerous import Signer, BadSignature
@@ -73,6 +74,7 @@ class User(db.Model):
 class Dataset(db.Model):
 
     __tablename__ = 'datasets'
+    __searchable__ = ['name']
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -123,3 +125,6 @@ class Deletion(db.Model):
 
     def __repr__(self):
         return '<Deletion(user={}, dataset={})>'.format(self.user.name, self.dataset_name)
+
+
+flask_whooshalchemy.whoosh_index(app, Dataset)

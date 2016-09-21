@@ -243,8 +243,14 @@ def search():
     # XXX: for some reason this does not validate?
     # if form.validate_on_submit():
     #     pass
+
     query = request.form['query']
-    return redirect(url_for('index'))
+    result = Dataset.query.whoosh_search(query).all()
+
+    # FIXME: this is a slow abomination, fix ASAP
+    accesses = [a for a in db.session.query(Access).all() if a.dataset in result]
+
+    return render_template('index/index.html', accesses=accesses, num_files=0, total_size=0)
 
 
 @app.route('/share/<int:dataset_id>')
