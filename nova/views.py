@@ -242,10 +242,12 @@ def search():
     #     pass
 
     query = request.form['query']
-    result = Dataset.query.whoosh_search(query).all()
+    datasets = Dataset.query.whoosh_search(query).all()
+    users = User.query.whoosh_search(query).all()
 
     # FIXME: this is a slow abomination, fix ASAP
-    accesses = [a for a in db.session.query(Access).all() if a.dataset in result]
+    accesses = [a for a in db.session.query(Access).all()
+                if a.dataset in datasets or a.user in users]
 
     return render_template('index/index.html', accesses=accesses)
 

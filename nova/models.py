@@ -13,6 +13,7 @@ force_auto_coercion()
 class User(db.Model):
 
     __tablename__ = 'users'
+    __searchable__ = ['name']
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True)
@@ -128,3 +129,4 @@ class Deletion(db.Model):
 
 
 flask_whooshalchemy.whoosh_index(app, Dataset)
+flask_whooshalchemy.whoosh_index(app, User)
