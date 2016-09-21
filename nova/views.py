@@ -1,5 +1,6 @@
 import os
 import io
+import re
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar, tasks
 from nova.models import User, Dataset, Access, Deletion
@@ -53,6 +54,10 @@ class RunCommandForm(Form):
 
 class SearchForm(Form):
     query = StringField('query', validators=[DataRequired()])
+
+
+class ImportForm(Form):
+    path_template = StringField('template', validators=[DataRequired()])
 
 
 class InvalidUsage(Exception):
@@ -199,6 +204,24 @@ def create():
         return redirect(url_for('index'))
 
     return render_template('dataset/create.html', form=form)
+
+
+@app.route('/import', methods=['POST'])
+@login_required(admin=False)
+def import_submission():
+    form = ImportForm()
+
+    # FIXME: again this is not working
+    # if form.validate_on_submit():
+    #     pass
+    template = request.form['template']
+
+    # XXX: incredible danger zone!
+    for entry in os.listdir(template):
+        path = os.path.join(template, entry)
+        logic.import_dataset(entry, current_user, path)
+
+    return redirect(url_for('index'))
 
 
 @app.route('/close/<int:dataset_id>')

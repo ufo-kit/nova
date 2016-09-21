@@ -9,6 +9,7 @@ def dataset_path(user_name, dataset_name):
 
 
 def create_dataset(name, user, description=None, parent_id=None):
+    # TODO: merge functionality with import_dataset
     root = app.config['NOVA_ROOT_PATH']
     path = dataset_path(user.name, name)
     parent = db.session.query(models.Dataset).filter(models.Dataset.id == parent_id).first()
@@ -16,6 +17,14 @@ def create_dataset(name, user, description=None, parent_id=None):
     abspath = os.path.join(root, path)
     os.makedirs(abspath)
 
+    access = models.Access(user=user, dataset=dataset, owner=True, writable=True, seen=True)
+    db.session.add_all([dataset, access])
+    db.session.commit()
+    return dataset
+
+
+def import_dataset(name, user, path, description=None):
+    dataset = models.Dataset(name=name, path=path, description=description)
     access = models.Access(user=user, dataset=dataset, owner=True, writable=True, seen=True)
     db.session.add_all([dataset, access])
     db.session.commit()
