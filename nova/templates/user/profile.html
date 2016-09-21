@@ -8,10 +8,22 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-lg-12">
-    {{ user.name }}
-    {{ user.fullname }}
-    {{ user.email }}
+  <div class="col-md-4">
+    <p><img src="https://www.gravatar.com/avatar/{{ user.gravatar }}?s=140"/ class="img-circle"><p/>
+    <p><strong>{{ user.fullname }}</strong></p>
+    <p><i class="fa fa-user" aria-hidden="true"></i> {{ user.name }}<p/>
+    <p><i class="fa fa-envelope-o" aria-hidden="true"></i> <a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+  </div>
+  <div class="col-md-8">
+    {% for access in accesses %}
+      <h3>
+        <a href="/user/{{ access.user.name }}">{{ access.user.name }}</a> /
+        <a href="/user/{{ access.user.name }}/{{ access.dataset.name }}">{{ access.dataset.name }}</a>
+      </h3>
+      {% if access.dataset.description %}
+      <p>{{ access.dataset.description }}</p>
+      {% endif %}
+    {% endfor %}
   </div>
 </div>
 {% if user == current_user %}
@@ -31,24 +43,4 @@
   </div>
 </div>
 {% endif %}
-<div class="row">
-  <div class="col-lg-12">
-    <div class="page-header">
-      <h2>Datasets</h2>
-    </div>
-  </div>
-</div>
-<div class="row">
-  <div class="col-lg-12">
-    {% for access in accesses %}
-      <h3>
-        <a href="/user/{{ access.user.name }}">{{ access.user.name }}</a> /
-        <a href="/user/{{ access.user.name }}/{{ access.dataset.name }}">{{ access.dataset.name }}</a>
-      </h3>
-      {% if access.dataset.description %}
-      <p>{{ access.dataset.description }}</p>
-      {% endif %}
-    {% endfor %}
-  </div>
-</div>
 {% endblock %}
