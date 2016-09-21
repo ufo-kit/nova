@@ -138,10 +138,7 @@ def index():
 
     db.session.commit()
 
-    # XXX: we should cache this and compute outside
-    # num_files, total_size = fs.get_statistics(datasets)
-    return render_template('index/index.html', accesses=accesses, shared=shared,
-                           deleted=deleted, num_files=0, total_size=0)
+    return render_template('index/index.html', accesses=accesses, shared=shared, deleted=deleted)
 
 
 @app.route('/user/admin')
@@ -250,7 +247,7 @@ def search():
     # FIXME: this is a slow abomination, fix ASAP
     accesses = [a for a in db.session.query(Access).all() if a.dataset in result]
 
-    return render_template('index/index.html', accesses=accesses, num_files=0, total_size=0)
+    return render_template('index/index.html', accesses=accesses)
 
 
 @app.route('/share/<int:dataset_id>')
