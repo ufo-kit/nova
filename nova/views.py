@@ -50,6 +50,10 @@ class RunCommandForm(Form):
     output = StringField('output', validators=[DataRequired()])
 
 
+class SearchForm(Form):
+    query = StringField('query', validators=[DataRequired()])
+
+
 class InvalidUsage(Exception):
     status_code = 400
 
@@ -228,6 +232,18 @@ def open(dataset_id):
 
     dataset.closed = False
     db.session.commit()
+    return redirect(url_for('index'))
+
+
+@app.route('/search', methods=['POST'])
+@login_required(admin=False)
+def search():
+    form = SearchForm()
+
+    # XXX: for some reason this does not validate?
+    # if form.validate_on_submit():
+    #     pass
+    query = request.form['query']
     return redirect(url_for('index'))
 
 
