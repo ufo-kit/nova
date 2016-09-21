@@ -79,6 +79,7 @@ class Dataset(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
+    description = db.Column(db.String)
     path = db.Column(db.String)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     closed = db.Column(db.Boolean, default=False)

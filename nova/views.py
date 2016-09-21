@@ -41,6 +41,7 @@ class SignupForm(Form):
 
 class CreateForm(Form):
     name = StringField('name', validators=[DataRequired()])
+    description = StringField('description')
 
 
 class RunCommandForm(Form):
@@ -194,7 +195,7 @@ def create():
     form = CreateForm()
 
     if form.validate_on_submit():
-        logic.create_dataset(form.name.data, current_user)
+        logic.create_dataset(form.name.data, current_user, form.description.data)
         return redirect(url_for('index'))
 
     return render_template('dataset/create.html', form=form)

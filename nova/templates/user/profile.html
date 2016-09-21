@@ -45,7 +45,9 @@
         <a href="/user/{{ access.user.name }}">{{ access.user.name }}</a> /
         <a href="/user/{{ access.user.name }}/{{ access.dataset.name }}">{{ access.dataset.name }}</a>
       </h3>
-      <p>Dataset description here</p>
+      {% if access.dataset.description %}
+      <p>{{ access.dataset.description }}</p>
+      {% endif %}
     {% endfor %}
   </div>
 </div>

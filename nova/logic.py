@@ -8,11 +8,11 @@ def dataset_path(user_name, dataset_name):
     return app.config['NOVA_FS_LAYOUT'].render(**data)
 
 
-def create_dataset(name, user, parent_id=None):
+def create_dataset(name, user, description=None, parent_id=None):
     root = app.config['NOVA_ROOT_PATH']
     path = dataset_path(user.name, name)
     parent = db.session.query(models.Dataset).filter(models.Dataset.id == parent_id).first()
-    dataset = models.Dataset(name=name, path=path, parent=[parent] if parent else [])
+    dataset = models.Dataset(name=name, path=path, description=description, parent=[parent] if parent else [])
     abspath = os.path.join(root, path)
     os.makedirs(abspath)
 
