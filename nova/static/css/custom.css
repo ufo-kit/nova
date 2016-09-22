@@ -17,3 +17,13 @@ a:hover {
 .mute:hover {
   opacity: 1.0;
 }
+
+.dataset-link {
+  margin: 0;
+  margin-bottom: 10.5px;
+}
+
+.dataset-pad {
+  margin-top: 10.5px;
+  margin-bottom: 10.5px;
+}
