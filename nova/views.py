@@ -3,7 +3,8 @@ import io
 import re
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar, tasks
-from nova.models import User, Dataset, SampleScan, Access, Deletion
+from nova.models import (User, Dataset, SampleScan, Genus, Family, Order,
+                         Access, Deletion)
 from flask import (Response, render_template, request, flash, redirect,
                    url_for, jsonify)
 from flask_login import login_user, logout_user, current_user
@@ -225,6 +226,55 @@ def import_submission():
     return redirect(url_for('index'))
 
 
+@app.route('/update', methods=['POST'])
+@login_required(admin=False)
+def update():
+    import csv
+
+    # XXX: more danger zone!
+    genuses = {x.name: x for x in db.session.query(Genus).all()}
+    families = {x.name: x for x in db.session.query(Family).all()}
+    orders = {x.name: x for x in db.session.query(Order).all()}
+    scans = {x.name: x for x in db.session.query(SampleScan).all()}
+
+    with open(request.form['csv'], 'rb') as f:
+        reader = csv.reader(f)
+
+        for name, _, genus, family, order in reader:
+            if name in scans:
+                scan = scans[name]
+
+                if genus and not scan.genus:
+                    if genus in genuses:
+                        scan.genus = genuses[genus]
+                    else:
+                        g = Genus(name=genus)
+                        db.session.add(g)
+                        genuses[genus] = g
+                        scan.genus = g
+
+                if family and not scan.family:
+                    if family in families:
+                        scan.family = families[family]
+                    else:
+                        f = Family(name=family)
+                        db.session.add(f)
+                        families[family] = f
+                        scan.family = f
+
+                if order and not scan.order:
+                    if order in orders:
+                        scan.order = orders[order]
+                    else:
+                        o = Order(name=order)
+                        db.session.add(o)
+                        families[order] = o
+                        scan.order = o
+
+    db.session.commit()
+    return redirect(url_for('index'))
+
+
 @app.route('/close/<int:dataset_id>')
 @login_required(admin=False)
 def close(dataset_id):
@@ -243,7 +293,7 @@ def close(dataset_id):
 
 @app.route('/open/<int:dataset_id>')
 @login_required(admin=False)
-def open(dataset_id):
+def open_dataset(dataset_id):
     dataset, access = db.session.query(Dataset, Access).\
         filter(Dataset.id == dataset_id).\
         filter(Access.user == current_user).\
