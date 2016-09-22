@@ -219,7 +219,7 @@ def import_submission():
     # XXX: incredible danger zone!
     for entry in os.listdir(template):
         path = os.path.join(template, entry)
-        logic.import_dataset(entry, current_user, path)
+        logic.import_sample_scan(entry, current_user, path)
 
     return redirect(url_for('index'))
 

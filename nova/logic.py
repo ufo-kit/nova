@@ -23,8 +23,8 @@ def create_dataset(name, user, description=None, parent_id=None):
     return dataset
 
 
-def import_dataset(name, user, path, description=None):
-    dataset = models.Dataset(name=name, path=path, description=description)
+def import_sample_scan(name, user, path, description=None):
+    dataset = models.SampleScan(name=name, path=path, description=description)
     access = models.Access(user=user, dataset=dataset, owner=True, writable=True, seen=True)
     db.session.add_all([dataset, access])
     db.session.commit()
