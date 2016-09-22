@@ -218,7 +218,7 @@ def import_submission():
     template = request.form['template']
 
     # XXX: incredible danger zone!
-    for entry in os.listdir(template):
+    for entry in (e for e in os.listdir(template) if os.path.isdir(os.path.join(template, e))):
         path = os.path.join(template, entry)
         app.logger.info("Importing {}".format(entry))
         logic.import_sample_scan(entry, current_user, path)
