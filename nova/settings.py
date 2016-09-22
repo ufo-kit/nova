@@ -1,0 +1,4 @@
+DEBUG = False
+NOVA_ROOT_PATH = '.'
+SQLALCHEMY_TRACK_MODIFICATIONS = True
+CELERY_BROKER_URL = 'amqp://guest@localhost//'

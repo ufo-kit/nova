@@ -1,4 +1,5 @@
 *.pyc
+*.cfg
 build/
 dist/
 nova.egg-info/
