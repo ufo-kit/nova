@@ -257,22 +257,40 @@ def open(dataset_id):
     return redirect(url_for('index'))
 
 
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['GET', 'POST'])
 @login_required(admin=False)
 def search():
-    form = SearchForm()
+    # form = SearchForm()
 
     # XXX: for some reason this does not validate?
     # if form.validate_on_submit():
     #     pass
 
-    query = request.form['query']
-    datasets = Dataset.query.whoosh_search(query).all()
-    users = User.query.whoosh_search(query).all()
+    if request.method == 'POST':
+        query = request.form['query']
+        datasets = Dataset.query.whoosh_search(query).all()
+        users = User.query.whoosh_search(query).all()
 
-    # FIXME: this is a slow abomination, fix ASAP
-    accesses = [a for a in db.session.query(Access).all()
-                if a.dataset in datasets or a.user in users]
+        # FIXME: this is a slow abomination, fix ASAP
+        accesses = [a for a in db.session.query(Access).all()
+                    if a.dataset in datasets or a.user in users]
+
+        return render_template('index/index.html', accesses=accesses)
+
+    samples = db.session.query(SampleScan)
+
+    # XXX: this is lame, please abstract somehow ...
+
+    if 'genus' in request.args:
+        samples = samples.filter(SampleScan.genus_id == request.args['genus'])
+
+    if 'family' in request.args:
+        samples = samples.filter(SampleScan.family_id == request.args['family'])
+
+    if 'order' in request.args:
+        samples = samples.filter(SampleScan.order_id == request.args['order'])
+
+    accesses = [a for a in db.session.query(Access).all() if a.dataset in samples]
 
     return render_template('index/index.html', accesses=accesses)
 

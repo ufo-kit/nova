@@ -17,7 +17,7 @@ app = Flask(__name__)
 app.secret_key = 'KU5bF1K4ZQdjHSg91bJGnAkStAeEDIAg'
 
 app.config['DEBUG'] = True
-app.config['NOVA_ROOT_PATH'] = '/home/matthias/tmp/nova'
+app.config['NOVA_ROOT_PATH'] = '/home/vogelgesang/tmp/nova'
 app.config['NOVA_FS_LAYOUT'] = jinja2.Template('{{ root }}/{{ user }}/{{ dataset }}')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.config['NOVA_ROOT_PATH'], 'nova.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
