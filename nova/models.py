@@ -1,7 +1,7 @@
 import os
 import datetime
 import hashlib
-import flask_whooshalchemy
+import flask_whooshalchemyplus
 from nova import app, db
 from sqlalchemy_utils import PasswordType, force_auto_coercion
 from itsdangerous import Signer, BadSignature
@@ -78,6 +78,8 @@ class Dataset(db.Model):
     __searchable__ = ['name']
 
     id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(50))
+
     name = db.Column(db.String)
     description = db.Column(db.String)
     path = db.Column(db.String)
@@ -88,12 +90,82 @@ class Dataset(db.Model):
     parent = db.relationship('Dataset')
     accesses = db.relationship('Access', cascade='all, delete, delete-orphan')
 
+    __mapper_args__ = {
+        'polymorphic_identity': 'dataset',
+        'polymorphic_on': type
+    }
+
     def to_dict(self):
         path = os.path.join(app.config['NOVA_ROOT_PATH'], self.path)
         return dict(name=self.name, path=path, closed=self.closed)
 
     def __repr__(self):
         return '<Dataset(name={}, path={}>'.format(self.name, self.path)
+
+
+class Taxon(db.Model):
+
+    __tablename__ = 'taxons'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+
+    def __repr__(self):
+        return '<Taxon(name={}>'.format(self.name)
+
+
+class Order(db.Model):
+
+    __tablename__ = 'orders'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+
+    def __repr__(self):
+        return '<Order(name={}>'.format(self.name)
+
+
+class Family(db.Model):
+
+    __tablename__ = 'families'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+
+    def __repr__(self):
+        return '<Family(name={}>'.format(self.name)
+
+
+class Genus(db.Model):
+
+    __tablename__ = 'genuses'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+
+    def __repr__(self):
+        return '<Genus(name={}>'.format(self.name)
+
+
+class SampleScan(Dataset):
+
+    __tablename__ = 'samplescans'
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'samplescan'
+    }
+
+    id = db.Column(db.Integer, db.ForeignKey('datasets.id'), primary_key=True)
+
+    taxon_id = db.Column(db.Integer, db.ForeignKey('taxons.id'), nullable=True)
+    genus_id = db.Column(db.Integer, db.ForeignKey('genuses.id'), nullable=True)
+    family_id = db.Column(db.Integer, db.ForeignKey('families.id'), nullable=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=True)
+
+    taxon = db.relationship('Taxon')
+    genus = db.relationship('Genus')
+    family = db.relationship('Family')
+    order = db.relationship('Order')
 
 
 class Access(db.Model):
@@ -129,5 +201,5 @@ class Deletion(db.Model):
         return '<Deletion(user={}, dataset={})>'.format(self.user.name, self.dataset_name)
 
 
-flask_whooshalchemy.whoosh_index(app, Dataset)
-flask_whooshalchemy.whoosh_index(app, User)
+flask_whooshalchemyplus.whoosh_index(app, Dataset)
+flask_whooshalchemyplus.whoosh_index(app, User)

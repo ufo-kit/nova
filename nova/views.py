@@ -3,7 +3,7 @@ import io
 import re
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar, tasks
-from nova.models import User, Dataset, Access, Deletion
+from nova.models import User, Dataset, SampleScan, Access, Deletion
 from flask import (Response, render_template, request, flash, redirect,
                    url_for, jsonify)
 from flask_login import login_user, logout_user, current_user
