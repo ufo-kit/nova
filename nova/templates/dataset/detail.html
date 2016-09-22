@@ -3,8 +3,21 @@
 <div class="row">
   <div class="col-lg-12">
     <div class="page-header">
-      <h2>Preview</h2>
+      <h2>Information</h2>
     </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% if dataset.type == "samplescan" %}
+    <p>Genus: <a href="/search?genus={{ dataset.genus.id }}">{{ dataset.genus.name}}</a></p>
+  </div>
+  <div class="col-md-4">
+    <p>Family: <a href="/search?family={{ dataset.family.id }}">{{ dataset.family.name}}</a></p>
+  </div>
+  <div class="col-md-4">
+    <p>Order: <a href="/search?order={{ dataset.order.id }}">{{ dataset.order.name}}</a></p>
+    {% endif %}
   </div>
 </div>
 {% if origin %}
