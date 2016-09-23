@@ -150,21 +150,21 @@ def index(page=1):
     return render_template('index/index.html', shared=shared, deleted=deleted, pagination=pagination)
 
 
-@app.route('/user/admin')
+@app.route('/settings')
 @login_required(admin=True)
 def admin():
     users = db.session.query(User).all()
     return render_template('user/admin.html', users=users)
 
 
-@app.route('/user/token/generate')
+@app.route('/token/generate')
 @login_required(admin=False)
 def generate_token():
     current_user.generate_token()
     return redirect('user/{}'.format(current_user.name))
 
 
-@app.route('/user/token/revoke')
+@app.route('/token/revoke')
 @login_required(admin=False)
 def revoke_token():
     current_user.token = None
