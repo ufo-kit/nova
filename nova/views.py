@@ -4,7 +4,7 @@ import re
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar, tasks
 from nova.models import (User, Dataset, SampleScan, Genus, Family, Order,
-                         Access, Deletion)
+                         Access, Notification)
 from flask import (Response, render_template, request, flash, redirect,
                    url_for, jsonify)
 from flask_login import login_user, logout_user, current_user
@@ -125,6 +125,10 @@ def index(page=1):
         return render_template('index/welcome.html', user=current_user)
 
     pagination = Access.query.paginate(page=page, per_page=16)
+    notifications = Notification.query.filter(Notification.user == current_user).all()
+
+    for notification in notifications:
+        db.session.delete(notification)
 
     shared = db.session.query(Dataset, Access).\
         filter(Access.user == current_user).\
@@ -135,19 +139,12 @@ def index(page=1):
 
     shared, shared_accesses = zip(*shared) if shared else ([], [])
 
-    deleted = db.session.query(Deletion).\
-        filter(Deletion.user == current_user).\
-        all()
-
-    for d in deleted:
-        db.session.delete(d)
-
     for access in shared_accesses:
         access.seen = True
 
     db.session.commit()
 
-    return render_template('index/index.html', shared=shared, deleted=deleted, pagination=pagination)
+    return render_template('index/index.html', notifications=notifications, pagination=pagination)
 
 
 @app.route('/settings')
@@ -449,7 +446,7 @@ def delete(dataset_id=None):
         filter(Access.dataset_id == dataset_id).all()
 
     for access in shared_with:
-        db.session.add(Deletion(user=access.user, dataset_name=dataset.name))
+        db.session.add(Notification(user=access.user, message="{} has been deleted.".format(dataset.name)))
 
     db.session.commit()
 
