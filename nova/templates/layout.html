@@ -34,9 +34,20 @@
         {% endif %}
       </div>
     </nav>
-    <div class="container">
+    <div class="container nova-main">
     {% block body %}{% endblock %}
     </div>
+
+    <footer class="nova-footer">
+      <div class="container">
+        <p>NOVA – Network for Online Visualization and Synergistic Analysis of
+        Tomographic Data</p>
+        <p>A collaboration between Technical University of Darmstadt, University
+        of Heidelberg, Karlsruhe Institute of Technology, Helmholtz Center
+        Geesthacht, University of Tübingen, University of Jena and University of
+        Greifswald.</p>
+      </div>
+    </footer>
    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
    <script src="{{ url_for('static', filename='bootswatch-dist/js/bootstrap.min.js') }}"></script>
