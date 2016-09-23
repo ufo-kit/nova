@@ -13,13 +13,13 @@
   </div>
   <div class="col-md-3">
     {% if dataset.type == "samplescan" %}
-    <p>Genus: <a href="/search?genus={{ dataset.genus.id }}">{{ dataset.genus.name}}</a></p>
+    <p>Genus: <a href="{{ url_for("search", genus=dataset.genus.id) }}">{{ dataset.genus.name}}</a></p>
   </div>
   <div class="col-md-3">
-    <p>Family: <a href="/search?family={{ dataset.family.id }}">{{ dataset.family.name}}</a></p>
+    <p>Family: <a href="{{ url_for("search", family=dataset.family.id) }}">{{ dataset.family.name}}</a></p>
   </div>
   <div class="col-md-3">
-    <p>Order: <a href="/search?order={{ dataset.order.id }}">{{ dataset.order.name}}</a></p>
+    <p>Order: <a href="{{ url_for("search", order=dataset.order.id) }}">{{ dataset.order.name}}</a></p>
     {% endif %}
   </div>
 </div>
@@ -52,9 +52,9 @@
 <div class="row">
   <div class="col-lg-12">
     <ol class="breadcrumb">
-      <li><a href="/user/{{ current_user.name }}/{{ dataset.name }}">root</a></li>
+      <li><a href="{{ url_for("detail", name=current_user.name, dataset_name=dataset.name) }}">root</a></li>
       {% for part, path in subpaths %}
-      <li><a href="/user/{{ current_user.name }}/{{ dataset.name }}/{{ path }}">{{ part }}</a></li>
+      <li><a href="{{ url_for("detail", name=current_user.name, dataset_name=dataset.name, path=path) }}">{{ part }}</a></li>
       {% endfor %}
     </ol>
   </div>
@@ -65,9 +65,9 @@
     {% for dirname in dirs %}
     <tr>
       {% if path %}
-        <td><a href="/user/{{ current_user.name }}/{{ dataset.name }}/{{ path }}/{{ dirname }}">{{ dirname }}</a></td>
+      <td><a href="{{ url_for("detail", name=current_user.name, dataset_name=dataset.name, path=path) }}/{{ dirname }}">{{ dirname }}</a></td>
       {% else %}
-        <td><a href="/user/{{ current_user.name }}/{{ dataset.name }}/{{ dirname }}">{{ dirname }}</a></td>
+        <td><a href="{{ url_for("detail", name=current_user.name, dataset_name=dataset.name) }}/{{ dirname }}">{{ dirname }}</a></td>
       {% endif %}
       <td></td>
     </tr>

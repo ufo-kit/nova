@@ -22,12 +22,12 @@
               fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu">
             <li>
-            <a href="/user/{{ current_user.name }}"><i class="fa fa-user"></i>&nbsp; Profile</a></li>
+            <a href="{{ url_for("profile", name=current_user.name) }}"><i class="fa fa-user"></i>&nbsp; Profile</a></li>
             {% if current_user.is_admin %}
-            <li><a href="/user/admin"><i class="fa fa-users"></i>&nbsp; Admin</a></li>
+            <li><a href="{{ url_for("admin") }}"><i class="fa fa-users"></i>&nbsp; Admin</a></li>
             {% endif %}
             <li role="separator" class="divider"></li>
-            <li><a href="/logout"><i class="fa fa-sign-out"></i>&nbsp; Sign out</a></li>
+            <li><a href="{{ url_for("logout") }}"><i class="fa fa-sign-out"></i>&nbsp; Sign out</a></li>
           </ul>
           </li>
         </ul>

@@ -22,7 +22,7 @@
       </div>
       <div class="col-lg-11">
         <h3 class="dataset-link">
-          <a href="/user/{{ access.user.name }}">{{ access.user.name }}</a> / <a href="/user/{{ access.user.name }}/{{ access.dataset.name }}">{{ access.dataset.name }}</a>
+          <a href="{{ url_for("profile", name=access.user.name) }}">{{ access.user.name }}</a> / <a href="{{ url_for("detail", name=access.user.name, dataset_name=access.dataset.name) }}">{{ access.dataset.name }}</a>
         </h3>
         <p>
         {% if access.dataset.description %}
@@ -60,10 +60,10 @@
 <div class="row">
   <div class="col-lg-12">
     {% if not current_user.token %}
-    <a href="/user/token/generate" type="button" class="btn btn-primary">Generate</a>
+    <a href="{{ url_for("generate_token") }}" type="button" class="btn btn-primary">Generate</a>
     {% else %}
     <p>Use <strong>{{ current_user.token }}</strong> for authentication.</p>
-    <p><a href="/user/token/revoke" type="button" class="btn btn-default">Revoke</a></p>
+    <p><a href="{{ url_for("revoke_token") }}" type="button" class="btn btn-default">Revoke</a></p>
     {% endif %}
   </div>
 </div>

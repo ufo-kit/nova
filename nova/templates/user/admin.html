@@ -48,7 +48,7 @@
 </div>
 <div class="row">
   <div class="col-lg-12">
-    <form class="form-inline" method="POST" action="/import">
+    <form class="form-inline" method="POST" action="{{ url_for("import_submission") }}">
       <div class="form-group">
         <label for="inputPathTemplate" class="control-label">Path</label>
         <input type="text" id="inputPathTemplate" name="template" class="form-control">
@@ -57,7 +57,7 @@
     </form>
   </div>
   <div class="col-lg-12">
-    <form class="form-inline" method="POST" action="/update">
+    <form class="form-inline" method="POST" action="{{ url_for("update") }}">
       <div class="form-group">
         <label for="inputPathTemplate" class="control-label">CSV</label>
         <input type="text" id="inputPathTemplate" name="csv" class="form-control">
