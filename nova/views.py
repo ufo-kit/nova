@@ -9,6 +9,7 @@ from flask import (Response, render_template, request, flash, redirect,
                    url_for, jsonify)
 from flask_login import login_user, logout_user, current_user
 from flask_wtf import Form
+from flask_sqlalchemy import Pagination
 from wtforms import StringField, BooleanField
 from wtforms.validators import DataRequired
 
@@ -115,14 +116,15 @@ def logout():
 
 
 @app.route('/')
+@app.route('/<int:page>')
 @login_required(admin=False)
-def index():
+def index(page=1):
     if current_user.first_time:
         current_user.first_time = False
         db.session.commit()
         return render_template('index/welcome.html', user=current_user)
 
-    accesses = db.session.query(Access).all()
+    pagination = Access.query.paginate(page=page, per_page=16)
 
     shared = db.session.query(Dataset, Access).\
         filter(Access.user == current_user).\
@@ -145,7 +147,7 @@ def index():
 
     db.session.commit()
 
-    return render_template('index/index.html', accesses=accesses, shared=shared, deleted=deleted)
+    return render_template('index/index.html', shared=shared, deleted=deleted, pagination=pagination)
 
 
 @app.route('/user/admin')
@@ -187,12 +189,12 @@ def signup():
 
 
 @app.route('/user/<name>')
+@app.route('/user/<name>/<int:page>')
 @login_required(admin=False)
-def profile(name):
+def profile(name, page=1):
     user = db.session.query(User).filter(User.name == name).first()
-    accesses = db.session.query(Access).\
-        filter(Access.user_id == user.id).all()
-    return render_template('user/profile.html', user=user, accesses=accesses)
+    pagination = Access.query.paginate(page=page, per_page=8)
+    return render_template('user/profile.html', user=user, pagination=pagination)
 
 
 @app.route('/create', methods=['GET', 'POST'])

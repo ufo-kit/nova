@@ -35,7 +35,7 @@
     {% endif %}
   </div>
 </div>
-{% for access in accesses %}
+{% for access in pagination.items %}
 <div class="row dataset-pad">
   <div class="col-lg-1">
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
@@ -51,7 +51,26 @@
     </p>
   </div>
 </div>
-  {% endfor %}
+{% endfor %}
+<div class="row">
+  <div class="col-lg-12">
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+        {% for page in pagination.iter_pages() %}
+          {% if page %}
+            {% if page != pagination.page %}
+            <li><a href="{{ url_for("index", page=page) }}">{{ page }}</a></li>
+            {% else %}
+            <li class="active"><a href="#">{{ page }}</a></li>
+            {% endif %}
+          {% else %}
+            <li class="disabled"><span class="ellipsis">…</span></li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </nav>
+  </div>
+</div>
 <div class="row">
   <div class="col-lg-12">
     <a href="/create" type="button" class="btn btn-primary">New dataset</a>
