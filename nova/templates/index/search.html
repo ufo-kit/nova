@@ -7,7 +7,7 @@
         {% for page in pagination.iter_pages() %}
           {% if page %}
             {% if page != pagination.page %}
-            <li><a href="{{ url_for("index", page=page) }}">{{ page }}</a></li>
+            <li><a href="{{ url_for("search", page=page, **search_terms) }}">{{ page }}</a></li>
             {% else %}
             <li class="active"><a href="#">{{ page }}</a></li>
             {% endif %}

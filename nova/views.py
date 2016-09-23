@@ -310,8 +310,9 @@ def open_dataset(dataset_id):
 
 
 @app.route('/search', methods=['GET', 'POST'])
+@app.route('/search/<int:page>', methods=['GET', 'POST'])
 @login_required(admin=False)
-def search():
+def search(page=1):
     # form = SearchForm()
 
     # XXX: for some reason this does not validate?
@@ -329,22 +330,23 @@ def search():
 
         return render_template('index/index.html', accesses=accesses)
 
-    samples = db.session.query(SampleScan)
+    samples = Access.query.join(SampleScan)
+
+    search_terms = {x: request.args[x] for x in ('genus', 'family', 'order') if x in request.args}
 
     # XXX: this is lame, please abstract somehow ...
 
-    if 'genus' in request.args:
-        samples = samples.filter(SampleScan.genus_id == request.args['genus'])
+    if 'genus' in search_terms:
+        samples = samples.filter(SampleScan.genus_id == search_terms['genus'])
 
-    if 'family' in request.args:
-        samples = samples.filter(SampleScan.family_id == request.args['family'])
+    if 'family' in search_terms:
+        samples = samples.filter(SampleScan.family_id == search_terms['family'])
 
-    if 'order' in request.args:
-        samples = samples.filter(SampleScan.order_id == request.args['order'])
+    if 'order' in search_terms:
+        samples = samples.filter(SampleScan.order_id == search_terms['order'])
 
-    accesses = [a for a in db.session.query(Access).all() if a.dataset in samples]
-
-    return render_template('index/index.html', accesses=accesses)
+    pagination = samples.paginate(page=page, per_page=16)
+    return render_template('index/search.html', pagination=pagination, search_terms=search_terms)
 
 
 @app.route('/share/<int:dataset_id>')
