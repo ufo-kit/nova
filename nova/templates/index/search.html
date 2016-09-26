@@ -1,3 +1,4 @@
+{% set title = 'Collections' %}
 {% extends "index/list.html" %}
 {% block pagination %}
 {% for access in pagination.items %}
@@ -8,9 +9,8 @@
   <div class="col-lg-11">
     <h3 class="dataset-link">
       <a href="{{ url_for("profile", name=access.user.name) }}">{{ access.user.name }}</a> /
-      <a href="{{ url_for("detail", name=access.user.name,
-        collection_name=access.dataset.collection.name,
-        dataset_name=access.dataset.name) }}">{{ access.dataset.collection.name }}</a>
+      <a href="{{ url_for("detail", name=access.user.name, collection_name=access.dataset.collection.name) }}">{{ access.dataset.collection.name }}</a> /
+      <a href="{{ url_for("detail", name=access.user.name, collection_name=access.dataset.collection.name, dataset_name=access.dataset.name) }}">{{ access.dataset.name }}</a>
     </h3>
     <p>
     {% if access.dataset.description %}
