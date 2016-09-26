@@ -267,7 +267,7 @@ def update():
                     else:
                         o = Order(name=order)
                         db.session.add(o)
-                        families[order] = o
+                        orders[order] = o
                         scan.order = o
 
     db.session.commit()
