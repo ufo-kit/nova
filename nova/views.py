@@ -3,8 +3,8 @@ import io
 import re
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar, tasks
-from nova.models import (User, Dataset, SampleScan, Genus, Family, Order,
-                         Access, Notification)
+from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
+                         Order, Access, Notification)
 from flask import (Response, render_template, request, flash, redirect,
                    url_for, jsonify)
 from flask_login import login_user, logout_user, current_user
@@ -124,7 +124,7 @@ def index(page=1):
         db.session.commit()
         return render_template('index/welcome.html', user=current_user)
 
-    pagination = Access.query.paginate(page=page, per_page=16)
+    pagination = Collection.query.paginate(page=page, per_page=16)
     notifications = Notification.query.filter(Notification.user == current_user).all()
 
     for notification in notifications:
@@ -390,18 +390,28 @@ def process(dataset_id, process=None):
     return redirect(url_for('index'))
 
 
-@app.route('/user/<name>/<dataset_name>')
-@app.route('/user/<name>/<dataset_name>/<path:path>')
+@app.route('/user/<name>/<collection_name>')
+@app.route('/user/<name>/<collection_name>/<dataset_name>')
+@app.route('/user/<name>/<collection_name>/<dataset_name>/<path:path>')
 @login_required(admin=False)
-def detail(name, dataset_name, path=''):
-    # XXX: this looks stupid
-    dataset = db.session.query(Dataset).\
-            filter(Dataset.name == dataset_name).\
-            filter(Access.user == current_user).first()
+def detail(name, collection_name, dataset_name=None, path=''):
+    dataset = None
 
-    dataset = db.session.query(Dataset).\
-            filter(Dataset.id == dataset.id).\
-            filter(Access.dataset_id == dataset.id).first()
+    if not dataset_name:
+        datasets = Dataset.query.join(Collection).\
+            filter(Collection.name == collection_name).all()
+
+        if len(datasets) > 1:
+            return render_template('collection/list.html', datasets=datasets)
+
+        dataset = datasets[0]
+
+    if not dataset:
+        dataset = Dataset.query.join(Collection).\
+            filter(Collection.name == collection_name).\
+            filter(Dataset.name == dataset_name).first()
+
+    # FIXME: check access rights
 
     # FIXME: scream if no dataset found
     origin = []

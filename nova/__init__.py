@@ -45,8 +45,8 @@ migrate = Migrate(app, db)
 celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
 
 
-from nova.models import (User, Dataset, Access, Notification, Taxon, Order, Family,
-        Genus, SampleScan)
+from nova.models import (User, Collection, Dataset, Access, Notification,
+        Taxon, Order, Family, Genus, SampleScan)
 
 class AdminModelView(ModelView):
     def is_accessible(self):
@@ -54,6 +54,7 @@ class AdminModelView(ModelView):
 
 admin = Admin(app)
 admin.add_view(AdminModelView(User, db.session))
+admin.add_view(AdminModelView(Collection, db.session))
 admin.add_view(AdminModelView(Dataset, db.session))
 admin.add_view(AdminModelView(Access, db.session))
 admin.add_view(AdminModelView(Notification, db.session))

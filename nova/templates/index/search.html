@@ -1,5 +1,25 @@
 {% extends "index/list.html" %}
 {% block pagination %}
+{% for access in pagination.items %}
+<div class="row dataset-pad">
+  <div class="col-lg-1">
+    <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
+  </div>
+  <div class="col-lg-11">
+    <h3 class="dataset-link">
+      <a href="{{ url_for("profile", name=access.user.name) }}">{{ access.user.name }}</a> /
+      <a href="{{ url_for("detail", name=access.user.name,
+        collection_name=access.dataset.collection.name,
+        dataset_name=access.dataset.name) }}">{{ access.dataset.collection.name }}</a>
+    </h3>
+    <p>
+    {% if access.dataset.description %}
+      {{ access.dataset.description }}
+    {% endif %}
+    </p>
+  </div>
+</div>
+{% endfor %}
 <div class="row">
   <div class="col-lg-12">
     <nav aria-label="Page navigation">

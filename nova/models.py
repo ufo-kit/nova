@@ -86,8 +86,10 @@ class Dataset(db.Model):
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     closed = db.Column(db.Boolean, default=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('datasets.id'), nullable=True)
+    collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
 
     parent = db.relationship('Dataset')
+    collection = db.relationship('Collection')
     accesses = db.relationship('Access', cascade='all, delete, delete-orphan')
 
     __mapper_args__ = {
@@ -185,6 +187,22 @@ class Access(db.Model):
 
     def __repr__(self):
         return '<Access(user={}, dataset={}, owner={}, writable={}>'.format(self.user.name, self.dataset.name, self.owner, self.writable)
+
+
+class Collection(db.Model):
+
+    __tablename__ = 'collections'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    name = db.Column(db.String)
+    description = db.Column(db.String)
+    user = db.relationship('User')
+    datasets = db.relationship('Dataset', cascade='all, delete, delete-orphan')
+
+    def __repr__(self):
+        return '<Collection(name={})>'.format(self.name)
 
 
 class Notification(db.Model):

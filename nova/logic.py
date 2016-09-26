@@ -24,9 +24,11 @@ def create_dataset(name, user, description=None, parent_id=None):
 
 
 def import_sample_scan(name, user, path, description=None):
-    dataset = models.SampleScan(name=name, path=path, description=description)
+    collection = models.Collection(user=user, name=name, description=description)
+    dataset = models.SampleScan(name=name, path=path, collection=collection,
+            genus=None, family=None, order=None)
     access = models.Access(user=user, dataset=dataset, owner=True, writable=True, seen=True)
-    db.session.add_all([dataset, access])
+    db.session.add_all([collection, dataset, access])
     db.session.commit()
     return dataset
 

@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="page-header">
+      <h2>Datasets</h2>
+    </div>
+  </div>
+</div>
+{% for dataset in datasets %}
+<div class="row dataset-pad">
+  <div class="col-lg-1">
+    <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
+  </div>
+  <div class="col-lg-11">
+    <h3 class="dataset-link">
+      <a href="{{ url_for("profile", name=dataset.collection.user.name) }}">{{ dataset.collection.user.name }}</a> /
+      <a href="{{ url_for("detail", name=dataset.collection.user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}">{{ dataset.name }}</a>
+    </h3>
+    <p>
+    {% if dataset.description %}
+      {{ dataset.description }}
+    {% endif %}
+    </p>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}
+
