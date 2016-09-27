@@ -190,7 +190,9 @@ def signup():
 @login_required(admin=False)
 def profile(name, page=1):
     user = db.session.query(User).filter(User.name == name).first()
-    pagination = Access.query.paginate(page=page, per_page=8)
+    pagination = Collection.query.\
+        filter(Collection.user == user).\
+        paginate(page=page, per_page=8)
     return render_template('user/profile.html', user=user, pagination=pagination)
 
 

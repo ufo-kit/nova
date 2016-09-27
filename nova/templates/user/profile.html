@@ -15,18 +15,20 @@
     <p><i class="fa fa-envelope-o" aria-hidden="true"></i> <a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
   </div>
   <div class="col-md-8">
-    {% for access in pagination.items %}
+    {% for collection in pagination.items %}
     <div class="row dataset-pad">
       <div class="col-lg-1">
         <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
       </div>
       <div class="col-lg-11">
         <h3 class="dataset-link">
-          <a href="{{ url_for("profile", name=access.user.name) }}">{{ access.user.name }}</a> / <a href="{{ url_for("detail", name=access.user.name, dataset_name=access.dataset.name) }}">{{ access.dataset.name }}</a>
+          <a href="{{ url_for("profile", name=user.name) }}">{{ user.name }}</a>
+          / <a href="{{ url_for("detail", name=user.name,
+            collection_name=collection.name) }}">{{ collection.name }}</a>
         </h3>
         <p>
-        {% if access.dataset.description %}
-          {{ access.dataset.description }}
+        {% if collection.description %}
+          {{ collection.description }}
         {% endif %}
         </p>
       </div>
@@ -38,7 +40,7 @@
         {% for page in pagination.iter_pages() %}
           {% if page %}
             {% if page != pagination.page %}
-            <li><a href="{{ url_for("profile", name=current_user.name, page=page) }}">{{ page }}</a></li>
+            <li><a href="{{ url_for("profile", name=user.name, page=page) }}">{{ page }}</a></li>
             {% else %}
             <li class="active"><a href="#">{{ page }}</a></li>
             {% endif %}
