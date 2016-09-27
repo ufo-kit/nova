@@ -1,3 +1,4 @@
+{% set page_title = 'Collection ' + collection.name %}
 {% extends "layout.html" %}
 {% block body %}
 <div class="row">
@@ -7,7 +8,7 @@
     </div>
   </div>
 </div>
-{% for dataset in datasets %}
+{% for dataset in collection.datasets %}
 <div class="row dataset-pad">
   <div class="col-lg-1">
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>

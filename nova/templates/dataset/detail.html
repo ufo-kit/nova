@@ -1,3 +1,4 @@
+{% set page_title = 'Dataset ' + dataset.name %}
 {% extends "layout.html" %}
 {% block body %}
 <div class="row">
@@ -21,6 +22,13 @@
   <div class="col-md-3">
     <p>Order: <a href="{{ url_for("search", order=dataset.order.id) }}">{{ dataset.order.name}}</a></p>
     {% endif %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12">
+    <div class="page-header">
+      <h2>Process</h2>
+    </div>
   </div>
 </div>
 {% if origin %}

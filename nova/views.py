@@ -398,15 +398,13 @@ def process(dataset_id, process=None):
 @login_required(admin=False)
 def detail(name, collection_name, dataset_name=None, path=''):
     dataset = None
+    collection = Collection.query.filter(Collection.name == collection_name).first()
 
     if not dataset_name:
-        datasets = Dataset.query.join(Collection).\
-            filter(Collection.name == collection_name).all()
+        if len(collection.datasets) > 1:
+            return render_template('collection/list.html', collection=collection)
 
-        if len(datasets) > 1:
-            return render_template('collection/list.html', datasets=datasets)
-
-        dataset = datasets[0]
+        dataset = collection.datasets[0]
 
     if not dataset:
         dataset = Dataset.query.join(Collection).\
