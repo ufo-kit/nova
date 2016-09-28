@@ -156,30 +156,32 @@ if __name__ == '__main__':
 
     cmd_parsers = parser.add_subparsers(title="Commands")
 
+    def add_remote_and_token_args(parser):
+        parser.add_argument('--remote', type=str, help="URL of remote NOVA instance")
+        parser.add_argument('--token', type=str, help="Access token")
+
     init_parser = cmd_parsers.add_parser('init', help="Initialize dataset in current directory")
     init_parser.add_argument('--name', type=str, help="Dataset name, if not given current directory name")
-    init_parser.add_argument('--remote', type=str, help="URL of remote NOVA instance")
-    init_parser.add_argument('--token', type=str,
-                             help="Access token")
     init_parser.set_defaults(run=init)
+    add_remote_and_token_args(init_parser)
 
     list_parser = cmd_parsers.add_parser('list', help="List datasets assigned to me")
-    list_parser.add_argument('--remote', type=str, help="URL of remote NOVA instance")
-    list_parser.add_argument('--token', type=str, help="Access token")
     list_parser.set_defaults(run=list_datasets)
+    add_remote_and_token_args(list_parser)
 
     push_parser = cmd_parsers.add_parser('push', help="Finalize data and push to remote")
     push_parser.set_defaults(run=push)
+    add_remote_and_token_args(push_parser)
 
     clone_parser = cmd_parsers.add_parser('clone', help="Clone dataset")
-    clone_parser.add_argument('--remote', type=str, help="URL of remote NOVA instance")
-    clone_parser.add_argument('--token', type=str, help="Access token")
     clone_parser.add_argument('--name', type=str, help="Alternative directory name")
     clone_parser.add_argument('id', type=int, help="Dataset identifier")
     clone_parser.set_defaults(run=clone)
+    add_remote_and_token_args(clone_parser)
 
     close_parser = cmd_parsers.add_parser('close', help="Close dataset")
     close_parser.set_defaults(run=close)
+    add_remote_and_token_args(close_parser)
 
     args = parser.parse_args()
 
