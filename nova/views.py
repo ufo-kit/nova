@@ -47,6 +47,11 @@ class CreateForm(Form):
     description = StringField('description')
 
 
+class CreateCollectionForm(Form):
+    name = StringField('name', validators=[DataRequired()])
+    description = StringField('description')
+
+
 class RunCommandForm(Form):
     name = StringField('name', validators=[DataRequired()])
     command_line = StringField('command-line', validators=[DataRequired()])
@@ -206,6 +211,18 @@ def create():
         return redirect(url_for('index'))
 
     return render_template('dataset/create.html', form=form)
+
+
+@app.route('/foo', methods=['GET', 'POST'])
+@login_required(admin=False)
+def create_collection():
+    form = CreateCollectionForm()
+
+    if form.validate_on_submit():
+        logic.create_collection(form.name.data, current_user, form.description.data)
+        return redirect(url_for('index'))
+
+    return render_template('collection/create.html', form=form)
 
 
 @app.route('/import', methods=['POST'])

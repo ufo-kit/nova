@@ -8,6 +8,13 @@ def dataset_path(user_name, dataset_name):
     return app.config['NOVA_FS_LAYOUT'].render(**data)
 
 
+def create_collection(name, user, description=None):
+    collection = models.Collection(name=name, user=user, description=description)
+    db.session.add(collection)
+    db.session.commit()
+    return collection
+
+
 def create_dataset(name, user, description=None, parent_id=None):
     # TODO: merge functionality with import_dataset
     root = app.config['NOVA_ROOT_PATH']
