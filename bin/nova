@@ -3,6 +3,7 @@
 import os
 import io
 import sys
+import json
 import argparse
 import requests
 import ConfigParser
@@ -118,7 +119,7 @@ def clone(config):
 
 def close(config):
     params = dict(token=config.token)
-    data = dict( id=config.id, closed=True)
+    data = dict(id=config.id, closed=True)
     r = requests.put(config.dataset_url, params=params, data=data)
 
     if r.status_code != 200:
@@ -137,6 +138,12 @@ def init(config):
     # write initial configuration
     config.id = result['id']
     config.write()
+
+
+def info(config):
+    params = dict(token=config.token)
+    r = requests.get(config.url('/api/datasets/{}'.format(config.id)), params=params)
+    print json.dumps(r.json(), indent=2)
 
 
 def list_datasets(config):
@@ -182,6 +189,11 @@ if __name__ == '__main__':
     close_parser = cmd_parsers.add_parser('close', help="Close dataset")
     close_parser.set_defaults(run=close)
     add_remote_and_token_args(close_parser)
+
+    info_parser = cmd_parsers.add_parser('info', help="Gather information about dataset")
+    info_parser.add_argument('id', type=int, help="Dataset identifier")
+    info_parser.set_defaults(run=info)
+    add_remote_and_token_args(info_parser)
 
     args = parser.parse_args()
 
