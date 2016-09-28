@@ -217,5 +217,22 @@ class Notification(db.Model):
         return '<Notification(user={}, message={})>'.format(self.user.name, self.message)
 
 
+class Process(db.Model):
+
+    __tablename__ = 'processes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(50))
+
+    source_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
+    destination_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
+
+    source = db.relationship('Dataset', foreign_keys=[source_id])
+    destination = db.relationship('Dataset', foreign_keys=[destination_id])
+
+    def __repr__(self):
+        return '<Process(src={}, dst={})>'.format(self.source.name, self.destination.name)
+
+
 flask_whooshalchemyplus.whoosh_index(app, Dataset)
 flask_whooshalchemyplus.whoosh_index(app, User)
