@@ -16,8 +16,8 @@
   <div class="col-lg-11">
     <h3 class="dataset-link">
       <a href="{{ url_for("profile", name=dataset.collection.user.name) }}">{{ dataset.collection.user.name }}</a> /
-      <a href="{{ url_for("detail", name=dataset.collection.user.name, collection_name=dataset.collection.name) }}">{{ dataset.collection.name }}</a> /
-      <a href="{{ url_for("detail", name=dataset.collection.user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}">{{ dataset.name }}</a>
+      <a href="{{ url_for("show_collection", name=dataset.collection.user.name, collection_name=dataset.collection.name) }}">{{ dataset.collection.name }}</a> /
+      <a href="{{ url_for("show_dataset", name=dataset.collection.user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}">{{ dataset.name }}</a>
     </h3>
     <p>
     {% if dataset.description %}

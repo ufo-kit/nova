@@ -60,9 +60,9 @@
 <div class="row">
   <div class="col-lg-12">
     <ol class="breadcrumb">
-      <li><a href="{{ url_for("detail", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}">root</a></li>
+      <li><a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}">root</a></li>
       {% for part, path in subpaths %}
-      <li><a href="{{ url_for("detail", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}">{{ part }}</a></li>
+      <li><a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}">{{ part }}</a></li>
       {% endfor %}
     </ol>
   </div>
@@ -73,9 +73,9 @@
     {% for dirname in dirs %}
     <tr>
       {% if path %}
-      <td><a href="{{ url_for("detail", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}/{{ dirname }}">{{ dirname }}</a></td>
+      <td><a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}/{{ dirname }}">{{ dirname }}</a></td>
       {% else %}
-        <td><a href="{{ url_for("detail", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}/{{ dirname }}">{{ dirname }}</a></td>
+        <td><a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}/{{ dirname }}">{{ dirname }}</a></td>
       {% endif %}
       <td></td>
     </tr>

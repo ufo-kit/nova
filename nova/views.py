@@ -410,23 +410,24 @@ def process(dataset_id, process=None):
 
 
 @app.route('/user/<name>/<collection_name>')
+@login_required(admin=False)
+def show_collection(name, collection_name):
+    collection = Collection.query.filter(Collection.name == collection_name).first()
+
+    if len(collection.datasets) != 1:
+        return render_template('collection/list.html', collection=collection)
+
+    dataset = collection.datasets[0]
+    return redirect(url_for('show_dataset', name=name, collection_name=collection_name, dataset_name=dataset.name))
+
+
 @app.route('/user/<name>/<collection_name>/<dataset_name>')
 @app.route('/user/<name>/<collection_name>/<dataset_name>/<path:path>')
 @login_required(admin=False)
-def detail(name, collection_name, dataset_name=None, path=''):
-    dataset = None
-    collection = Collection.query.filter(Collection.name == collection_name).first()
-
-    if not dataset_name:
-        if len(collection.datasets) > 1:
-            return render_template('collection/list.html', collection=collection)
-
-        dataset = collection.datasets[0]
-
-    if not dataset:
-        dataset = Dataset.query.join(Collection).\
-            filter(Collection.name == collection_name).\
-            filter(Dataset.name == dataset_name).first()
+def show_dataset(name, collection_name, dataset_name, path=''):
+    dataset = Dataset.query.join(Collection).\
+        filter(Collection.name == collection_name).\
+        filter(Dataset.name == dataset_name).first()
 
     # FIXME: check access rights
 
