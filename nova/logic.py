@@ -3,11 +3,6 @@ from flask import abort
 from nova import app, db, models
 
 
-def dataset_path(user_name, dataset_name):
-    data = dict(root=app.config['NOVA_ROOT_PATH'], user=user_name, dataset=dataset_name)
-    return app.config['NOVA_FS_LAYOUT'].render(**data)
-
-
 def create_collection(name, user, description=None):
     collection = models.Collection(name=name, user=user, description=description)
     db.session.add(collection)
@@ -15,11 +10,12 @@ def create_collection(name, user, description=None):
     return collection
 
 
-def create_dataset(name, user, description=None):
+def create_dataset(name, user, collection, description=None):
     # TODO: merge functionality with import_dataset
     root = app.config['NOVA_ROOT_PATH']
-    path = dataset_path(user.name, name)
-    dataset = models.Dataset(name=name, path=path, description=description)
+    path = os.path.join(root, user.name, collection.name, name)
+
+    dataset = models.Dataset(name=name, path=path, collection=collection, description=description)
     abspath = os.path.join(root, path)
     os.makedirs(abspath)
 

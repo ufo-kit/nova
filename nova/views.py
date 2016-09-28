@@ -4,7 +4,7 @@ import re
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar, tasks
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
-                         Order, Access, Notification)
+                         Order, Access, Notification, Process)
 from flask import (Response, render_template, request, flash, redirect,
                    url_for, jsonify)
 from flask_login import login_user, logout_user, current_user
@@ -389,22 +389,18 @@ def share(dataset_id, user_id=None):
     return redirect(url_for('index'))
 
 
-@app.route('/process/<int:dataset_id>')
-@app.route('/process/<int:dataset_id>/<process>', methods=['GET', 'POST'])
+@app.route('/process/<int:dataset_id>', methods=['POST'])
 @login_required(admin=False)
-def process(dataset_id, process=None):
-    parent = db.session.query(Dataset).filter(Dataset.id == dataset_id).first()
+def process(dataset_id):
+    parent = Dataset.query.filter(Dataset.id == dataset_id).first()
+    child = logic.create_dataset(request.form['name'], current_user, parent.collection)
+    db.session.add(Process(source=parent, destination=child))
 
-    if not process:
-        return render_template('dataset/process.html', dataset=parent)
+    # if process == 'copy':
+    #     tasks.copy.delay(current_user.token, name, parent.id)
 
-    name = request.form['name']
-
-    if process == 'copy':
-        tasks.copy.delay(current_user.token, name, parent.id)
-
-    if process == 'run':
-        tasks.run_command.delay(current_user.token, name, parent.id, request.form)
+    # if process == 'run':
+    #     tasks.run_command.delay(current_user.token, name, parent.id, request.form)
 
     return redirect(url_for('index'))
 
