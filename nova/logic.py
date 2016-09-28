@@ -15,12 +15,11 @@ def create_collection(name, user, description=None):
     return collection
 
 
-def create_dataset(name, user, description=None, parent_id=None):
+def create_dataset(name, user, description=None):
     # TODO: merge functionality with import_dataset
     root = app.config['NOVA_ROOT_PATH']
     path = dataset_path(user.name, name)
-    parent = db.session.query(models.Dataset).filter(models.Dataset.id == parent_id).first()
-    dataset = models.Dataset(name=name, path=path, description=description, parent=[parent] if parent else [])
+    dataset = models.Dataset(name=name, path=path, description=description)
     abspath = os.path.join(root, path)
     os.makedirs(abspath)
 

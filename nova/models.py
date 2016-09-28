@@ -85,10 +85,8 @@ class Dataset(db.Model):
     path = db.Column(db.String)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     closed = db.Column(db.Boolean, default=False)
-    parent_id = db.Column(db.Integer, db.ForeignKey('datasets.id'), nullable=True)
     collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
 
-    parent = db.relationship('Dataset')
     collection = db.relationship('Collection')
     accesses = db.relationship('Access', cascade='all, delete, delete-orphan')
 
