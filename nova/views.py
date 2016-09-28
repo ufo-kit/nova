@@ -430,16 +430,7 @@ def show_dataset(name, collection_name, dataset_name, path=''):
         filter(Dataset.name == dataset_name).first()
 
     # FIXME: check access rights
-
     # FIXME: scream if no dataset found
-    origin = []
-    parent = dataset.parent[0] if dataset.parent else None
-
-    while parent:
-        origin.append(parent)
-        parent = parent.parent[0] if parent.parent else None
-
-    origin = origin[::-1]
 
     parts = path.split('/')
     subpaths = []
@@ -452,8 +443,7 @@ def show_dataset(name, collection_name, dataset_name, path=''):
 
     dirs = fs.get_dirs(dataset, path)
     files = fs.get_files(dataset, path)
-    params = dict(dataset=dataset, path=path, subpaths=subpaths,
-                  files=files, dirs=dirs, origin=origin)
+    params = dict(dataset=dataset, path=path, subpaths=subpaths, files=files, dirs=dirs, origin=[])
 
     return render_template('dataset/detail.html', **params)
 
