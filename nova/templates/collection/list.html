@@ -4,7 +4,9 @@
 <div class="row">
   <div class="col-lg-12">
     <div class="page-header">
-      <h2>Datasets</h2>
+      <h2>Datasets of
+        <a href="{{ url_for("profile", name=collection.user.name) }}">{{ collection.user.name }}</a> /
+        <a href="{{ url_for("show_collection", name=collection.user.name, collection_name=collection.name)}}">{{ collection.name }}</a></h2>
     </div>
   </div>
 </div>
@@ -15,9 +17,7 @@
   </div>
   <div class="col-lg-11">
     <h3 class="dataset-link">
-      <a href="{{ url_for("profile", name=dataset.collection.user.name) }}">{{ dataset.collection.user.name }}</a> /
-      <a href="{{ url_for("show_collection", name=dataset.collection.user.name, collection_name=dataset.collection.name) }}">{{ dataset.collection.name }}</a> /
-      <a href="{{ url_for("show_dataset", name=dataset.collection.user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}">{{ dataset.name }}</a>
+      <a href="{{ url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=dataset.name) }}">{{ dataset.name }}</a>
     </h3>
     <p>
     {% if dataset.description %}
