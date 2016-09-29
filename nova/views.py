@@ -442,7 +442,7 @@ def show_dataset(name, collection_name, dataset_name, path=''):
             subpaths.append((part, part))
 
     dirs = fs.get_dirs(dataset, path)
-    files = fs.get_files(dataset, path)
+    files = sorted(fs.get_files(dataset, path))
     params = dict(dataset=dataset, path=path, subpaths=subpaths, files=files, dirs=dirs, origin=[])
 
     return render_template('dataset/detail.html', **params)
