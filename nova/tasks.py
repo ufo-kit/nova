@@ -42,26 +42,21 @@ def rmtree(path):
 
 
 @celery.task
-def run_command(token, name, parent_id, payload):
-    # XXX: danger zone ahead ...
-
-    cmd = os.path.join('/usr/bin', payload['command-line'])
-    output_data = payload['output']
-
+def reconstruct(token, result_id, parent_id, flats, darks, projections, outname):
     src = get_dataset_info(token, parent_id)
-    result = create_dataset(token, parent_id, name)
-    dst = get_dataset_info(token, result['id'])
+    dst = get_dataset_info(token, result_id)
 
-    # sanitize data paths, e.g. make directories relative to dataset roots
-    input_data = os.path.join(src['path'], payload['input'])
-    output_data = os.path.join(dst['path'], payload['output'])
+    cmd = ('tofu tomo'
+           ' --projections {input}/{projections}/ '
+           ' --darks {input}/{darks}/'
+           ' --flats {input}/{flats}/'
+           ' --output {output}/{outname}')
 
-    args = shlex.split(cmd.format(input=input_data, output=output_data))
+    cmd = cmd.format(input=src['path'], output=dst['path'], projections=projections,
+                     darks=darks, flats=flats, outname=outname)
+
+    args = shlex.split(cmd)
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
-    proc.wait()
-
-    # What to do with stdout, stderr, stdin?
     print stdout, stderr
-
-    # create process.json
+    proc.wait()
