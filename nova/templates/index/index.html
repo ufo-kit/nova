@@ -3,10 +3,10 @@
 {% block pagination %}
 {% for collection in pagination.items %}
 <div class="row dataset-pad">
-  <div class="col-lg-1">
+  <div class="col-sm-1">
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
   </div>
-  <div class="col-lg-11">
+  <div class="col-sm-11">
     <h3 class="dataset-link">
       <a href="{{ url_for("profile", name=collection.user.name) }}">{{ collection.user.name }}</a> /
       <a href="{{ url_for("show_collection", name=collection.user.name, collection_name=collection.name) }}">{{ collection.name }}</a>
