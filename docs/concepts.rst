@@ -44,6 +44,15 @@ Besides manual derivation by the user, it should be possible to let a background
 program process an input dataset on behalf of a user.
 
 
+Collections
+===========
+
+Collections are a number of datasets that belong together *logically*. This
+concept models typical workflows, e.g. scanning a sample yields flats, darks and
+projections, reconstructing from this data yields a volume which then can be
+segmented to yet another dataset.
+
+
 Architecture
 ============
 
