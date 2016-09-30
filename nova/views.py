@@ -435,15 +435,20 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     parts = path.split('/')
     subpaths = []
 
-    for part in parts:
-        if subpaths:
-            subpaths.append((part, os.path.join(subpaths[-1][1], part)))
-        else:
-            subpaths.append((part, part))
+    list_files = app.config['NOVA_ENABLE_FILE_LISTING']
 
-    dirs = fs.get_dirs(dataset, path)
-    files = sorted(fs.get_files(dataset, path))
-    params = dict(dataset=dataset, path=path, subpaths=subpaths, files=files, dirs=dirs, origin=[])
+    dirs = fs.get_dirs(dataset, path) if list_files else None
+    files = sorted(fs.get_files(dataset, path)) if list_files else None
+
+    if list_files:
+        for part in parts:
+            if subpaths:
+                subpaths.append((part, os.path.join(subpaths[-1][1], part)))
+            else:
+                subpaths.append((part, part))
+
+    params = dict(dataset=dataset, path=path, list_files=list_files,
+                  subpaths=subpaths, files=files, dirs=dirs, origin=[])
 
     return render_template('dataset/detail.html', **params)
 
