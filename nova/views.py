@@ -6,7 +6,7 @@ from nova import app, db, login_manager, fs, logic, memtar, tasks
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
                          Order, Access, Notification, Process)
 from flask import (Response, render_template, request, flash, redirect,
-                   url_for, jsonify)
+                   url_for, jsonify, send_from_directory)
 from flask_login import login_user, logout_user, current_user
 from flask_wtf import Form
 from flask_sqlalchemy import Pagination
@@ -428,6 +428,15 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     dataset = Dataset.query.join(Collection).\
         filter(Collection.name == collection_name).\
         filter(Dataset.name == dataset_name).first()
+
+    if path:
+        filepath = os.path.join(dataset.path, path)
+
+        if os.path.isfile(filepath):
+            filename = os.path.basename(filepath)
+            directory = os.path.dirname(filepath)
+
+            return send_from_directory(directory, filename)
 
     # FIXME: check access rights
     # FIXME: scream if no dataset found
