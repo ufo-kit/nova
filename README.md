@@ -2,7 +2,7 @@
 
 1. Install Flask and dependencies
 
-        $ pip install -r requirements
+        $ pip install -r requirements.txt
 
 2. Install the `nova` binary
 
