@@ -25,6 +25,20 @@ def create_dataset(name, user, collection, description=None):
     return dataset
 
 
+def create_volume(name, user, collection, slices):
+    root = app.config['NOVA_ROOT_PATH']
+    path = os.path.join(root, user.name, collection.name, name)
+
+    dataset = models.Volume(name=name, path=path, collection=collection, slices=slices)
+    abspath = os.path.join(root, path)
+    os.makedirs(abspath)
+
+    access = models.Access(user=user, dataset=dataset, owner=True, writable=True, seen=True)
+    db.session.add_all([dataset, access])
+    db.session.commit()
+    return dataset
+
+
 def import_sample_scan(name, user, path, description=None):
     collection = models.Collection(user=user, name=name, description=description)
     dataset = models.SampleScan(name=name, path=path, collection=collection,

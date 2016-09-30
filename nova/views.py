@@ -393,7 +393,7 @@ def share(dataset_id, user_id=None):
 @login_required(admin=False)
 def process(dataset_id):
     parent = Dataset.query.filter(Dataset.id == dataset_id).first()
-    child = logic.create_dataset(request.form['name'], current_user, parent.collection)
+    child = logic.create_volume(request.form['name'], current_user, parent.collection, request.form['outname'])
     db.session.add(Process(source=parent, destination=child))
 
     tasks.reconstruct.delay(current_user.token, child.id, parent.id,

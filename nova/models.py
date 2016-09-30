@@ -170,6 +170,19 @@ class SampleScan(Dataset):
     order = db.relationship('Order')
 
 
+class Volume(Dataset):
+
+    __tablename__ = 'volumes'
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'volume'
+    }
+
+    id = db.Column(db.Integer, db.ForeignKey('datasets.id'), primary_key=True)
+
+    slices = db.Column(db.String)
+
+
 class Access(db.Model):
 
     __tablename__ = 'accesses'
