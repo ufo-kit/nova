@@ -60,3 +60,17 @@ def reconstruct(token, result_id, parent_id, flats, darks, projections, outname)
     stdout, stderr = proc.communicate()
     print stdout, stderr
     proc.wait()
+
+    cmd = ('ufo-launch'
+           ' read path={output}/ !'
+           ' rescale width=128 height=128 !'
+           ' map-slice number=256 !'
+           ' write filename={output}/.slicemaps/sm-128-128-2048-2048.jpg')
+
+    cmd = cmd.format(output=dst['path'])
+
+    args = shlex.split(cmd)
+    proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = proc.communicate()
+    print stdout, stderr
+    proc.wait()
