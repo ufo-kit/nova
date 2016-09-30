@@ -425,6 +425,9 @@ def show_collection(name, collection_name):
 @app.route('/user/<name>/<collection_name>/<dataset_name>/<path:path>')
 @login_required(admin=False)
 def show_dataset(name, collection_name, dataset_name, path=''):
+    collection = Collection.query.\
+        filter(Collection.name == collection_name).first()
+
     dataset = Dataset.query.join(Collection).\
         filter(Collection.name == collection_name).\
         filter(Dataset.name == dataset_name).first()
@@ -456,7 +459,7 @@ def show_dataset(name, collection_name, dataset_name, path=''):
             else:
                 subpaths.append((part, part))
 
-    params = dict(dataset=dataset, path=path, list_files=list_files,
+    params = dict(collection=collection, dataset=dataset, path=path, list_files=list_files,
                   subpaths=subpaths, files=files, dirs=dirs, origin=[])
 
     return render_template('dataset/detail.html', **params)

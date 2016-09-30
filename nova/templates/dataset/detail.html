@@ -10,7 +10,12 @@
 </div>
 <div class="row">
   <div class="col-md-3">
+    {% if dataset.has_thumbnail %}
+    <img class="img-responsive" width="128" height="128" src="{{
+    url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=dataset.name, path='.thumb.jpg') }}"/>
+    {% else %}
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=128&h=128"/>
+    {% endif %}
   </div>
   <div class="col-md-3">
     {% if dataset.type == "samplescan" %}
