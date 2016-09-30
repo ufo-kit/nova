@@ -87,6 +87,8 @@ class Dataset(db.Model):
     closed = db.Column(db.Boolean, default=False)
     collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
 
+    has_thumbnail = db.Column(db.Boolean, default=False)
+
     collection = db.relationship('Collection')
     accesses = db.relationship('Access', cascade='all, delete, delete-orphan')
 
