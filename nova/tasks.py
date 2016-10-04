@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import shlex
 from celery import Celery
-from nova import celery, utils
+from nova import celery, utils, db, models
 
 URL = 'http://127.0.0.1:5000/api/datasets'
 
@@ -74,3 +74,13 @@ def reconstruct(token, result_id, parent_id, flats, darks, projections, outname)
     stdout, stderr = proc.communicate()
     print stdout, stderr
     proc.wait()
+
+    dataset = db.session.query(models.Dataset).\
+        filter(models.Dataset.id == result_id).first()
+
+    message = '{cname} / {dname} is ready.'.format(cname=dataset.collection.name, dname=dataset.name)
+
+    notification = models.Notification(message=message, user=dataset.collection.user)
+
+    db.session.add(notification)
+    db.session.commit()
