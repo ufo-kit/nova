@@ -29,6 +29,34 @@
     {% endif %}
   </div>
 </div>
+{% if children %}
+<div class="row">
+  <div class="col-lg-12">
+    <h3>Derived datasets</h3>
+  </div>
+</div>
+{% for dataset in children %}
+<div class="row dataset-pad">
+  <div class="col-lg-1">
+    {% if dataset.has_thumbnail %}
+    <img class="img-responsive" width="64" height="64" src="{{ url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=dataset.name, path='.thumb.jpg') }}"/>
+    {% else %}
+    <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
+    {% endif %}
+  </div>
+  <div class="col-lg-11">
+    <h3 class="dataset-link">
+      <a href="{{ url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=dataset.name) }}">{{ dataset.name }}</a>
+    </h3>
+    <p>
+    {% if dataset.description %}
+      {{ dataset.description }}
+    {% endif %}
+    </p>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
 {% if dataset.type == "samplescan" %}
 <div class="row">
   <div class="col-lg-12">

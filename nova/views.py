@@ -405,6 +405,7 @@ def process(dataset_id):
         request.form['outname'])
 
     db.session.add(Process(source=parent, destination=child, task_uuid=result.id))
+    db.session.commit()
 
     return redirect(url_for('index'))
 
@@ -444,6 +445,9 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     # FIXME: check access rights
     # FIXME: scream if no dataset found
 
+    children = Dataset.query.join(Process.destination).\
+        filter(Process.source_id == dataset.id).all()
+
     parts = path.split('/')
     subpaths = []
 
@@ -459,7 +463,8 @@ def show_dataset(name, collection_name, dataset_name, path=''):
             else:
                 subpaths.append((part, part))
 
-    params = dict(collection=collection, dataset=dataset, path=path, list_files=list_files,
+    params = dict(collection=collection, dataset=dataset, children=children,
+                  path=path, list_files=list_files,
                   subpaths=subpaths, files=files, dirs=dirs, origin=[])
 
     return render_template('dataset/detail.html', **params)
