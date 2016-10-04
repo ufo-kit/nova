@@ -445,8 +445,13 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     # FIXME: check access rights
     # FIXME: scream if no dataset found
 
+    parents = Dataset.query.join(Process.source).\
+        filter(Process.destination_id == dataset.id).all()
+
     children = Dataset.query.join(Process.destination).\
         filter(Process.source_id == dataset.id).all()
+
+    print parents
 
     parts = path.split('/')
     subpaths = []
@@ -463,7 +468,8 @@ def show_dataset(name, collection_name, dataset_name, path=''):
             else:
                 subpaths.append((part, part))
 
-    params = dict(collection=collection, dataset=dataset, children=children,
+    params = dict(collection=collection, dataset=dataset,
+                  parents=parents, children=children,
                   path=path, list_files=list_files,
                   subpaths=subpaths, files=files, dirs=dirs, origin=[])
 
