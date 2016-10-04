@@ -10,26 +10,12 @@ def create_collection(name, user, description=None):
     return collection
 
 
-def create_dataset(name, user, collection, description=None):
+def create_dataset(dtype, name, user, collection, **kwargs):
     # TODO: merge functionality with import_dataset
     root = app.config['NOVA_ROOT_PATH']
     path = os.path.join(root, user.name, collection.name, name)
 
-    dataset = models.Dataset(name=name, path=path, collection=collection, description=description)
-    abspath = os.path.join(root, path)
-    os.makedirs(abspath)
-
-    access = models.Access(user=user, dataset=dataset, owner=True, writable=True, seen=True)
-    db.session.add_all([dataset, access])
-    db.session.commit()
-    return dataset
-
-
-def create_volume(name, user, collection, slices):
-    root = app.config['NOVA_ROOT_PATH']
-    path = os.path.join(root, user.name, collection.name, name)
-
-    dataset = models.Volume(name=name, path=path, collection=collection, slices=slices)
+    dataset = dtype(name=name, path=path, collection=collection, **kwargs)
     abspath = os.path.join(root, path)
     os.makedirs(abspath)
 

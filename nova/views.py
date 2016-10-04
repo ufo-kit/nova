@@ -2,7 +2,7 @@ import os
 import io
 import re
 from functools import wraps
-from nova import app, db, login_manager, fs, logic, memtar, tasks
+from nova import app, db, login_manager, fs, logic, memtar, tasks, models
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
                          Order, Access, Notification, Process)
 from flask import (Response, render_template, request, flash, redirect,
@@ -201,16 +201,20 @@ def profile(name, page=1):
     return render_template('user/profile.html', user=user, pagination=pagination)
 
 
-@app.route('/create', methods=['GET', 'POST'])
+@app.route('/create/<collection_name>', methods=['GET', 'POST'])
 @login_required(admin=False)
-def create():
+def create_dataset(collection_name):
     form = CreateForm()
+    collection = Collection.query.\
+        filter(Collection.name == collection_name).\
+        filter(Collection.user == current_user).\
+        first()
 
     if form.validate_on_submit():
-        logic.create_dataset(form.name.data, current_user, form.description.data)
+        logic.create_dataset(models.SampleScan, form.name.data, current_user, collection, form.description.data)
         return redirect(url_for('index'))
 
-    return render_template('dataset/create.html', form=form)
+    return render_template('dataset/create.html', form=form, collection=collection)
 
 
 @app.route('/foo', methods=['GET', 'POST'])
@@ -393,7 +397,7 @@ def share(dataset_id, user_id=None):
 @login_required(admin=False)
 def process(dataset_id):
     parent = Dataset.query.filter(Dataset.id == dataset_id).first()
-    child = logic.create_volume(request.form['name'], current_user, parent.collection, request.form['outname'])
+    child = logic.create_dataset(models.Volume, request.form['name'], current_user, parent.collection, slices=request.form['outname'])
     db.session.add(Process(source=parent, destination=child))
 
     tasks.reconstruct.delay(current_user.token, child.id, parent.id,
