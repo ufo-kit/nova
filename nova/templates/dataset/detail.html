@@ -111,25 +111,6 @@
   </div>
 </div>
 {% endif %}
-{% if origin %}
-<div class="row">
-  <div class="col-lg-12">
-    <div class="page-header">
-      <h2>Related</h2>
-    </div>
-  </div>
-</div>
-<div class="row">
-  <div class="col-lg-12">
-    <p>
-    {% for p in origin %}
-    <a class="btn btn-link" href="/detail/{{ p.id }}">{{ p.name }}</a> <i class="fa fa-angle-right"></i>
-    {% endfor %}
-    <a class="btn btn-link active" href="#">{{ dataset.name }}</a>
-    </p>
-  </div>
-</div>
-{% endif %}
 {% if list_files %}
 <div class="row">
   <div class="col-lg-12">
