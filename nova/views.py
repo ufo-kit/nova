@@ -398,17 +398,12 @@ def share(dataset_id, user_id=None):
 def process(dataset_id):
     parent = Dataset.query.filter(Dataset.id == dataset_id).first()
     child = logic.create_dataset(models.Volume, request.form['name'], current_user, parent.collection, slices=request.form['outname'])
-    db.session.add(Process(source=parent, destination=child))
 
-    tasks.reconstruct.delay(current_user.token, child.id, parent.id,
+    result = tasks.reconstruct.delay(current_user.token, child.id, parent.id,
         request.form['flats'], request.form['darks'], request.form['projections'],
         request.form['outname'])
 
-    # if process == 'copy':
-    #     tasks.copy.delay(current_user.token, name, parent.id)
-
-    # if process == 'run':
-    #     tasks.run_command.delay(current_user.token, name, parent.id, request.form)
+    db.session.add(Process(source=parent, destination=child, task_uuid=result.id))
 
     return redirect(url_for('index'))
 

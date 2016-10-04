@@ -239,6 +239,8 @@ class Process(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50))
 
+    task_uuid = db.Column(db.String)
+
     source_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
     destination_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
 
