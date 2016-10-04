@@ -211,7 +211,8 @@ def create_dataset(collection_name):
         first()
 
     if form.validate_on_submit():
-        logic.create_dataset(models.SampleScan, form.name.data, current_user, collection, form.description.data)
+        logic.create_dataset(models.SampleScan, form.name.data, current_user,
+                collection, description=form.description.data)
         return redirect(url_for('index'))
 
     return render_template('dataset/create.html', form=form, collection=collection)
