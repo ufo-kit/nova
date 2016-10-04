@@ -1,5 +1,12 @@
 {% set page_title = 'Dataset ' + dataset.name %}
 {% extends "layout.html" %}
+{% macro dataset_link(label, path=None, ext=None) -%}
+  {% if ext %}
+  <a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}{{ ext }}">{{ label }}</a>
+  {% else %}
+  <a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}">{{ label }}</a>
+  {% endif %}
+{%- endmacro %}
 {% macro dataset_row(collection, dataset) -%}
 <div class="row dataset-pad">
   <div class="col-lg-1">
@@ -32,8 +39,7 @@
 <div class="row">
   <div class="col-md-3">
     {% if dataset.has_thumbnail %}
-    <img class="img-responsive" width="128" height="128" src="{{
-    url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=dataset.name, path='.thumb.jpg') }}"/>
+    <img class="img-responsive" width="128" height="128" src="{{ url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=dataset.name, path='.thumb.jpg') }}"/>
     {% else %}
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=128&h=128"/>
     {% endif %}
@@ -129,9 +135,9 @@
 <div class="row">
   <div class="col-lg-12">
     <ol class="breadcrumb">
-      <li><a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}">root</a></li>
+      <li>{{ dataset_link("root") }}</li>
       {% for part, path in subpaths %}
-      <li><a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}">{{ part }}</a></li>
+      <li>{{ dataset_link(part, path) }}</li>
       {% endfor %}
     </ol>
   </div>
@@ -141,11 +147,7 @@
     <table class="table table-hover">
     {% for dirname in dirs %}
     <tr>
-      {% if path %}
-      <td><a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}/{{ dirname }}">{{ dirname }}</a></td>
-      {% else %}
-        <td><a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}/{{ dirname }}">{{ dirname }}</a></td>
-      {% endif %}
+      <td>{{ dataset_link(dirname, path, dirname) }}</td>
       <td></td>
     </tr>
     {% endfor %}
