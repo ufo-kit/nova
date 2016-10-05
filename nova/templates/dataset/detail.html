@@ -7,16 +7,15 @@
   <a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}">{{ label }}</a>
   {% endif %}
 {%- endmacro %}
-{% macro dataset_row(collection, dataset) -%}
-<div class="row dataset-pad">
-  <div class="col-lg-1">
+{% macro dataset_partial(collection, dataset) -%}
+  <div class="col-xs-2">
     {% if dataset.has_thumbnail %}
     <img class="img-responsive" width="64" height="64" src="{{ url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=dataset.name, path='.thumb.jpg') }}"/>
     {% else %}
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
     {% endif %}
   </div>
-  <div class="col-lg-11">
+  <div class="col-xs-10">
     <h3 class="dataset-link">
       <a href="{{ url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=dataset.name) }}">{{ dataset.name }}</a>
     </h3>
@@ -26,6 +25,10 @@
     {% endif %}
     </p>
   </div>
+{%- endmacro %}
+{% macro dataset_row(collection, dataset) -%}
+<div class="row dataset-pad">
+  {{ dataset_partial(collection, dataset) }}
 </div>
 {%- endmacro %}
 {% block body %}
@@ -79,8 +82,16 @@
     <h3>Derived datasets</h3>
   </div>
 </div>
-{% for dataset in children %}
-  {{ dataset_row(collection, dataset) }}
+{% for group in children|group(3) %}
+<div class="row dataset-pad">
+  {% for dataset in group %}
+  <div class="col-lg-4">
+    <div class="row">
+      {{ dataset_partial(collection, dataset) }}
+    </div>
+  </div>
+  {% endfor %}
+</div>
 {% endfor %}
 {% endif %}
 {% if dataset.type == "samplescan" %}

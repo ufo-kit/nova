@@ -33,6 +33,12 @@ def naturalsize(s):
     return humanize.naturalsize(int(s))
 
 
+@app.template_filter('group')
+def group(l, n):
+    for i in range(0, len(l), n):
+        yield tuple(l[i:i+n])
+
+
 db = SQLAlchemy(app)
 
 login_manager = LoginManager(app)
