@@ -1,5 +1,4 @@
 import os
-import humanize
 import jinja2
 from flask import Flask
 from flask_login import LoginManager, current_user
@@ -21,16 +20,6 @@ app.config.from_envvar('NOVA_SETTINGS', silent=True)
 
 app.config['NOVA_FS_LAYOUT'] = jinja2.Template('{{ root }}/{{ user }}/{{ dataset }}')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.config['NOVA_ROOT_PATH'], 'nova.db')
-
-
-@app.template_filter('naturaltime')
-def naturaltime(t):
-    return humanize.naturaltime(t)
-
-
-@app.template_filter('naturalsize')
-def naturalsize(s):
-    return humanize.naturalsize(int(s))
 
 
 @app.template_filter('group')

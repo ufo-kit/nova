@@ -155,7 +155,7 @@
     {% for filename, filesize in files %}
     <tr>
       <td>{{ filename }}</td>
-      <td>{{ filesize | naturalsize }}</td>
+      <td>{{ filesize | filesizeformat }}</td>
     </tr>
     {% endfor %}
     </table>
@@ -163,4 +163,3 @@
 </div>
 {% endif %}
 {% endblock %}
-
