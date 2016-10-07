@@ -22,8 +22,10 @@ class InitDatabaseCommand(Command):
             sys.exit("Passwords not matching.")
 
         db.create_all()
-        db.session.add(User(name=name, fullname=fullname, email=email, is_admin=True, password=password))
+        admin = User(name=name, fullname=fullname, email=email, is_admin=True, password=password)
+        db.session.add(admin)
         db.session.commit()
+        admin.generate_token()
 
 
 manager = Manager(app)
