@@ -43,7 +43,7 @@
 {% else %}
       Information
 {% endif %}
-      – {{ dataset.name }}
+– <a href="{{ url_for("show_collection", name=current_user.name, collection_name=collection.name) }}">{{ collection.name }}</a> / {{ dataset.name }}
       </h2>
     </div>
   </div>
