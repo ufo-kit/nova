@@ -247,8 +247,29 @@ class Process(db.Model):
     source = db.relationship('Dataset', foreign_keys=[source_id])
     destination = db.relationship('Dataset', foreign_keys=[destination_id])
 
+    __mapper_args__ = {
+        'polymorphic_identity': 'process',
+        'polymorphic_on': type
+    }
+
     def __repr__(self):
         return '<Process(src={}, dst={})>'.format(self.source.name, self.destination.name)
+
+
+class Reconstruction(Process):
+
+    __tablename__ = 'reconstructions'
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'reconstruction'
+    }
+
+    id = db.Column(db.Integer, db.ForeignKey('processes.id'), primary_key=True)
+
+    flats = db.Column(db.String())
+    darks = db.Column(db.String())
+    projections = db.Column(db.String())
+    output = db.Column(db.String())
 
 
 flask_whooshalchemyplus.whoosh_index(app, Dataset)

@@ -53,6 +53,7 @@ admin.add_view(AdminModelView(nova.models.Dataset, db.session))
 admin.add_view(AdminModelView(nova.models.Access, db.session))
 admin.add_view(AdminModelView(nova.models.Notification, db.session))
 admin.add_view(AdminModelView(nova.models.Process, db.session))
+admin.add_view(AdminModelView(nova.models.Reconstruction, db.session))
 
 
 from nova.resources import Datasets, Dataset

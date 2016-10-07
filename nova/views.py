@@ -400,11 +400,15 @@ def process(dataset_id):
     parent = Dataset.query.filter(Dataset.id == dataset_id).first()
     child = logic.create_dataset(models.Volume, request.form['name'], current_user, parent.collection, slices=request.form['outname'])
 
-    result = tasks.reconstruct.delay(current_user.token, child.id, parent.id,
-        request.form['flats'], request.form['darks'], request.form['projections'],
-        request.form['outname'])
+    flats = request.form['flats']
+    darks = request.form['darks']
+    projections = request.form['projections']
+    output = request.form['outname']
 
-    db.session.add(Process(source=parent, destination=child, task_uuid=result.id))
+    result = tasks.reconstruct.delay(current_user.token, child.id, parent.id, flats, darks, projections, output)
+
+    db.session.add(models.Reconstruction(source=parent, destination=child, task_uuid=result.id,
+                                         flats=flats, darks=darks, projections=projections, output=output))
     db.session.commit()
 
     return redirect(url_for('index'))
