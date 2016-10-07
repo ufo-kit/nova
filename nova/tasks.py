@@ -47,10 +47,10 @@ def reconstruct(token, result_id, parent_id, flats, darks, projections, outname)
     dst = get_dataset_info(token, result_id)
 
     cmd = ('tofu tomo'
-           ' --projections {input}/{projections}/ '
-           ' --darks {input}/{darks}/'
-           ' --flats {input}/{flats}/'
-           ' --output {output}/{outname}')
+           ' --projections "{input}/{projections}/" '
+           ' --darks "{input}/{darks}/"'
+           ' --flats "{input}/{flats}/"'
+           ' --output "{output}/{outname}"')
 
     cmd = cmd.format(input=src['path'], output=dst['path'], projections=projections,
                      darks=darks, flats=flats, outname=outname)
@@ -62,10 +62,10 @@ def reconstruct(token, result_id, parent_id, flats, darks, projections, outname)
     proc.wait()
 
     cmd = ('ufo-launch'
-           ' read path={output}/ !'
+           ' read path="{output}/" !'
            ' rescale width=128 height=128 !'
            ' map-slice number=256 !'
-           ' write filename={output}/.slicemaps/sm-128-128-2048-2048.jpg')
+           ' write filename="{output}/.slicemaps/sm-128-128-2048-2048.jpg"')
 
     cmd = cmd.format(output=dst['path'])
 
