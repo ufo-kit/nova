@@ -455,8 +455,6 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     children = Dataset.query.join(Process.destination).\
         filter(Process.source_id == dataset.id).all()
 
-    print parents
-
     parts = path.split('/')
     subpaths = []
 
@@ -491,6 +489,9 @@ def delete(dataset_id=None):
     if not access.owner:
         return redirect(url_for('index'))
 
+    process = Process.query.filter(Process.destination_id == dataset_id).first()
+    db.session.delete(process)
+
     shared_with = db.session.query(Access).\
         filter(Access.user != current_user).\
         filter(Access.dataset_id == dataset_id).all()
@@ -504,7 +505,7 @@ def delete(dataset_id=None):
         path = fs.path_of(dataset)
         db.session.delete(dataset)
         db.session.commit()
-        tasks.rmtree.delay(path)
+        app.logger.info("Would remove {}, however deletion is currently disabled".format(path))
 
     return redirect(url_for('index'))
 

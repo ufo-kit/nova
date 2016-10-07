@@ -19,7 +19,7 @@
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
     {% endif %}
   </div>
-  <div class="col-lg-11">
+  <div class="col-lg-10">
     <h3 class="dataset-link">
       <a href="{{ url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=dataset.name) }}">{{ dataset.name }}</a>
     </h3>
@@ -28,6 +28,10 @@
       {{ dataset.description }}
     {% endif %}
     </p>
+  </div>
+  <div class="col-lg-1">
+    <p>
+    <a href="{{ url_for("delete", dataset_id=dataset.id) }}" class="btn btn-warning"><i class="fa fa-trash" aria-hidden="true"></i></a></p>
   </div>
 </div>
 {% endfor %}
