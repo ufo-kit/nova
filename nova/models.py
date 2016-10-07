@@ -1,7 +1,6 @@
 import os
 import datetime
 import hashlib
-import flask_whooshalchemyplus
 from nova import app, db
 from sqlalchemy_utils import PasswordType, force_auto_coercion
 from itsdangerous import Signer, BadSignature
@@ -13,7 +12,6 @@ force_auto_coercion()
 class User(db.Model):
 
     __tablename__ = 'users'
-    __searchable__ = ['name']
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True)
@@ -74,7 +72,6 @@ class User(db.Model):
 class Dataset(db.Model):
 
     __tablename__ = 'datasets'
-    __searchable__ = ['name']
 
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50))
@@ -269,7 +266,3 @@ class Reconstruction(Process):
     darks = db.Column(db.String())
     projections = db.Column(db.String())
     output = db.Column(db.String())
-
-
-flask_whooshalchemyplus.whoosh_index(app, Dataset)
-flask_whooshalchemyplus.whoosh_index(app, User)
