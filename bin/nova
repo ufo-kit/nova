@@ -18,6 +18,7 @@ class Config(object):
         self.token = None
         self.remote = None
         self.id = dataset_id
+        self.search_query = None
 
         if os.path.exists(self.path):
             parser = ConfigParser.RawConfigParser()
@@ -43,6 +44,7 @@ class Config(object):
         self.remote = get('remote') or global_conf.remote or self.remote
         self.name = get('name') or self.name
         self.id = get('id') or self.id
+        self.search_query = get('search')
 
     @property
     def path(self):
@@ -148,6 +150,10 @@ def info(config):
 
 def list_datasets(config):
     params = dict(token=config.token)
+
+    if config.search_query:
+        params['query'] = config.search_query
+
     r = requests.get(config.url('/api/datasets'), params=params)
     data = r.json()
 
@@ -173,6 +179,7 @@ if __name__ == '__main__':
     add_remote_and_token_args(init_parser)
 
     list_parser = cmd_parsers.add_parser('list', help="List datasets assigned to me")
+    list_parser.add_argument('--search', type=str, help="Search terms", default='')
     list_parser.set_defaults(run=list_datasets)
     add_remote_and_token_args(list_parser)
 

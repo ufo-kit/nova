@@ -20,6 +20,10 @@ class Datasets(Resource):
     def get(self):
         user = logic.get_user(request.args['token'])
 
+        if 'query' in request.args:
+            query = request.args['query']
+            return []
+
         return [dict(name=d.name, id=d.id) for d in 
                     db.session.query(models.Dataset).\
                     filter(models.Access.user == user).\
