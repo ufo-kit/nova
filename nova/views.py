@@ -2,7 +2,7 @@ import os
 import io
 import re
 from functools import wraps
-from nova import app, db, login_manager, fs, logic, memtar, tasks, models
+from nova import app, db, login_manager, fs, logic, memtar, tasks, models, es
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
                          Order, Access, Notification, Process)
 from flask import (Response, render_template, request, flash, redirect,
@@ -329,6 +329,19 @@ def open_dataset(dataset_id):
     db.session.commit()
     return redirect(url_for('index'))
 
+@app.route('/reindex')
+@login_required(admin=True)
+def reindex():
+    es.indices.delete(index='datasets', ignore=[400, 404])
+    es.indices.create(index='datasets')
+
+    # FIXME: make this a bulk operation
+    for dataset in Dataset.query.all():
+        body = dict(name=dataset.name, description=dataset.description,
+                    tokenized=dataset.name.replace('_', ' '))
+        es.create(index='datasets', doc_type='dataset', body=body)
+
+    return redirect(url_for('index'))
 
 @app.route('/search', methods=['GET', 'POST'])
 @app.route('/search/<int:page>', methods=['GET', 'POST'])
@@ -342,14 +355,15 @@ def search(page=1):
 
     if request.method == 'POST':
         query = request.form['query']
-        datasets = Dataset.query.whoosh_search(query).all()
-        users = User.query.whoosh_search(query).all()
 
-        # FIXME: this is a slow abomination, fix ASAP
-        accesses = [a for a in db.session.query(Access).all()
-                    if a.dataset in datasets or a.user in users]
+        # XXX: also search in description
+        body = {'query': {'match': {'tokenized': {'query': query, 'fuzziness': 'AUTO', 'operator': 'and'}}}}
+        hits = es.search(index='datasets', doc_type='dataset', body=body)
+        names = [h['_source']['name'] for h in hits['hits']['hits']]
+        datasets = Access.query.join(Dataset).filter(Dataset.name.in_(names))
+        pagination = datasets.paginate(page=page, per_page=16)
 
-        return render_template('index/index.html', accesses=accesses)
+        return render_template('index/search.html', pagination=pagination)
 
     samples = Access.query.join(SampleScan)
 

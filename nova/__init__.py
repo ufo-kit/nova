@@ -8,6 +8,7 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_restful import Api
 from celery import Celery
+from elasticsearch import Elasticsearch
 from nova.fs import Filesystem
 
 __version__ = '0.1.0'
@@ -39,6 +40,7 @@ migrate = Migrate(app, db)
 
 celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
 
+es = Elasticsearch()
 
 import nova.models
 
