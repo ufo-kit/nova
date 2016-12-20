@@ -1,8 +1,8 @@
 from functools import wraps
-from flask import request
+from flask import request, url_for
 from flask_restful import Resource, abort, reqparse
 from itsdangerous import Signer, BadSignature
-from nova import db, models, logic
+from nova import db, models, logic, es
 
 
 def authenticate(func):
@@ -60,3 +60,24 @@ class Dataset(Resource):
 
         dataset.closed = request.form.get('closed', False)
         db.session.commit()
+
+
+class Search(Resource):
+    method_decorators = [authenticate]
+
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('q')
+        query = parser.parse_args()['q']
+        body = {'query': {'match': {'tokenized': {'query': query, 'fuzziness': 'AUTO', 'operator': 'and'}}}}
+        hits = es.search(index='datasets', doc_type='dataset', body=body)
+        hits = [h['_source'] for h in hits['hits']['hits']]
+
+        return [{'name': h['name'],
+                 'description': h['description'],
+                 'url': url_for('show_dataset', name=h['owner'], collection_name=h['collection'], dataset_name=h['name']),
+                 'owner': h['owner'],
+                 'owner_url': url_for('profile', name=h['owner']),
+                 'collection': h['collection'],
+                 'collection_url': url_for('show_collection', name=h['owner'], collection_name=h['collection'])}
+                 for h in hits]

@@ -58,7 +58,7 @@ admin.add_view(AdminModelView(nova.models.Process, db.session))
 admin.add_view(AdminModelView(nova.models.Reconstruction, db.session))
 
 
-from nova.resources import Datasets, Dataset
+from nova.resources import Datasets, Dataset, Search
 
 errors = {
     'BadSignature': {
@@ -70,6 +70,7 @@ errors = {
 api = Api(app, errors=errors)
 api.add_resource(Datasets, '/api/datasets')
 api.add_resource(Dataset, '/api/datasets/<dataset_id>')
+api.add_resource(Search, '/api/search')
 
 
 import nova.views
