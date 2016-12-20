@@ -1,5 +1,11 @@
+html {
+  position: relative;
+  min-height: 100%;
+}
+
 body {
-    font-size: 17px;
+  font-size: 17px;
+  margin-bottom: 40px;
 }
 
 table a:not(.btn), .table a:not(.btn) {
@@ -33,8 +39,11 @@ a:hover {
 }
 
 .nova-footer {
-    padding-top: 40px;
-    padding-bottom: 40px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100px;
+    font-size: smaller;
     color: #99979c;
     background-color: #222222;
 }

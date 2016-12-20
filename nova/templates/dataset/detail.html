@@ -58,13 +58,13 @@
   </div>
   <div class="col-md-3">
     {% if dataset.type == "samplescan" %}
-    <p>Genus: <a href="{{ url_for("search", genus=dataset.genus.id) }}">{{ dataset.genus.name}}</a></p>
+    <p>Genus: <a href="{{ url_for("filter", genus=dataset.genus.id) }}">{{ dataset.genus.name}}</a></p>
   </div>
   <div class="col-md-3">
-    <p>Family: <a href="{{ url_for("search", family=dataset.family.id) }}">{{ dataset.family.name}}</a></p>
+    <p>Family: <a href="{{ url_for("filter", family=dataset.family.id) }}">{{ dataset.family.name}}</a></p>
   </div>
   <div class="col-md-3">
-    <p>Order: <a href="{{ url_for("search", order=dataset.order.id) }}">{{ dataset.order.name}}</a></p>
+    <p>Order: <a href="{{ url_for("filter", order=dataset.order.id) }}">{{ dataset.order.name}}</a></p>
     {% endif %}
   </div>
 </div>

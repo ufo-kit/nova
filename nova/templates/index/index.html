@@ -1,48 +1,7 @@
 {% set title = 'Collections' %}
-{% extends "base/searchbar.html" %}
-{% block pagination %}
-{% for collection in pagination.items %}
-<div class="row dataset-pad">
-  <div class="col-sm-1">
-    <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
-  </div>
-  <div class="col-sm-11">
-    <h3 class="dataset-link">
-      <a href="{{ url_for("profile", name=collection.user.name) }}">{{ collection.user.name }}</a> /
-      <a href="{{ url_for("show_collection", name=collection.user.name, collection_name=collection.name) }}">{{ collection.name }}</a>
-    </h3>
-    <p>
-    {% if collection.description %}
-      {{ collection.description }}
-    {% endif %}
-    </p>
-  </div>
-</div>
-{% endfor %}
-{% if pagination.pages > 1 %}
-<div class="row">
-  <div class="col-lg-12">
-    <nav aria-label="Page navigation">
-      <ul class="pagination">
-        {% for page in pagination.iter_pages() %}
-          {% if page %}
-            {% if page != pagination.page %}
-            <li><a href="{{ url_for("index", page=page) }}">{{ page }}</a></li>
-            {% else %}
-            <li class="active"><a href="#">{{ page }}</a></li>
-            {% endif %}
-          {% else %}
-            <li class="disabled"><span class="ellipsis">…</span></li>
-          {% endif %}
-        {% endfor %}
-      </ul>
-    </nav>
-  </div>
-</div>
-{% endif %}
+{% extends "base/search.html" %}
 <div class="row">
   <div class="col-lg-12">
     <p><a class="btn btn-primary" href="{{ url_for("create_collection") }}">New collection</a></p>
   </div>
 </div>
-{% endblock %}

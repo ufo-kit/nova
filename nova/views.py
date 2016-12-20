@@ -129,7 +129,6 @@ def index(page=1):
         db.session.commit()
         return render_template('index/welcome.html', user=current_user)
 
-    pagination = Collection.query.paginate(page=page, per_page=16)
     notifications = Notification.query.filter(Notification.user == current_user).all()
 
     for notification in notifications:
@@ -149,7 +148,7 @@ def index(page=1):
 
     db.session.commit()
 
-    return render_template('index/index.html', notifications=notifications, pagination=pagination)
+    return render_template('index/index.html', notifications=notifications)
 
 
 @app.route('/settings')
@@ -335,10 +334,14 @@ def reindex():
     es.indices.delete(index='datasets', ignore=[400, 404])
     es.indices.create(index='datasets')
 
-    # FIXME: make this a bulk operation
-    for dataset in Dataset.query.all():
-        body = dict(name=dataset.name, description=dataset.description,
-                    tokenized=dataset.name.replace('_', ' '))
+    # # FIXME: make this a bulk operation
+    for access in Access.query.filter(Access.owner == True).all():
+        dataset = access.dataset
+        name = dataset.name
+        tokenized = name.lower().replace('_', ' ')
+        body = dict(name=name, tokenized=tokenized, owner=access.user.name,
+                    description=dataset.description,
+                    collection=dataset.collection.name)
         es.create(index='datasets', doc_type='dataset', body=body)
 
     return redirect(url_for('index'))
@@ -346,7 +349,7 @@ def reindex():
 @app.route('/search', methods=['GET', 'POST'])
 @app.route('/search/<int:page>', methods=['GET', 'POST'])
 @login_required(admin=False)
-def search(page=1):
+def filter(page=1):
     # form = SearchForm()
 
     # XXX: for some reason this does not validate?
@@ -381,7 +384,7 @@ def search(page=1):
         samples = samples.filter(SampleScan.order_id == search_terms['order'])
 
     pagination = samples.paginate(page=page, per_page=16)
-    return render_template('index/search.html', pagination=pagination, search_terms=search_terms)
+    return render_template('index/filter.html', pagination=pagination, search_terms=search_terms)
 
 
 @app.route('/share/<int:dataset_id>')
