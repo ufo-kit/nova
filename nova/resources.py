@@ -69,7 +69,23 @@ class Search(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('q')
         query = parser.parse_args()['q']
-        body = {'query': {'match': {'tokenized': {'query': query, 'fuzziness': 'AUTO', 'operator': 'and'}}}}
+
+        body = {
+            'sort': [
+                { 'name': 'asc' }
+            ],
+            'size': 15,
+            'query': {
+                'match': {
+                    'tokenized': {
+                        'query': query,
+                        'fuzziness': 'AUTO',
+                        'operator': 'and'
+                    }
+                }
+            }
+        }
+
         hits = es.search(index='datasets', doc_type='dataset', body=body)
         hits = [h['_source'] for h in hits['hits']['hits']]
 
