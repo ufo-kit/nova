@@ -151,7 +151,6 @@ def info(config):
 def search(config):
     params = dict(token=config.token, q=config.query)
     r = requests.get(config.url('/api/search'), params=params)
-    print r.json()
 
     if r.status_code == 200:
         for d in r.json():
