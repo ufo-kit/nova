@@ -1,0 +1,14 @@
+# To use this configuration, pass the location to this file in the NOVA_SETTINGS
+# environment variable, i.e. run
+#   
+#   NOVA_SETTINGS=/path/to/nova.cfg python manage.py initdb
+#
+
+# This is the location where the nova.db database file and non-imported datasets
+# are stored.
+NOVA_ROOT_PATH = '.'
+
+# If True, nova will show directory and file listings for datasets. For
+# debugging purposes or when data cannot be accessed, this should be set to
+# False.
+NOVA_ENABLE_FILE_LISTING = True
