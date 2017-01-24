@@ -1,16 +1,17 @@
 ### Server
 
-1. Install Flask and dependencies
-
-        $ pip install -r requirements.txt
-
-2. Install the `nova` binary
+1. Install nova and its dependencies
 
         $ python setup.py install
 
-3. Install frontend dependencies
+2. Install frontend dependencies
 
         $ bower install
+
+3. Edit the default configuration and store the location
+
+        $ cp nova.cfg.example nova.cfg
+        $ export NOVA_SETTINGS=$(pwd)/nova.cfg
 
 4. Create database and initial admin user
 
@@ -20,7 +21,7 @@
 
         $ python manage.py runserver
 
-If you run from source make sure to upgrade the database with
+If you run from source make sure to upgrade the database with when pulling
 
     $ python manage.py db upgrade
 
