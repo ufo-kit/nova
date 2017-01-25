@@ -46,9 +46,9 @@
     </div>
   </div>
 </div>
-<script src="https://unpkg.com/vue/dist/vue.js"></script>
-<script src="https://cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
-<script src="https://unpkg.com/lodash@4.13.1/lodash.min.js"></script>
+<script src="{{ url_for('static', filename='vue/dist/vue.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vue-resource/dist/vue-resource.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lodash/dist/lodash.min.js') }}"></script>
 <script>
   var app = new Vue({
     el: '#search',
