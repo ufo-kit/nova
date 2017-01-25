@@ -45,6 +45,10 @@ celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
 
 es = Elasticsearch()
 
+if not es.ping():
+    raise RuntimeError("Cannot connect to Elastisearch, please start or "
+                       "provide correct connection details")
+
 import nova.models
 
 class AdminModelView(ModelView):
