@@ -69,3 +69,17 @@ def check_token(token):
         abort(401)
 
     return user
+
+
+
+def create_bookmark(dataset_id, user_id):
+    bookmark = models.Bookmark(dataset_id=dataset_id, user_id=user_id)
+    db.session.add(bookmark)
+    db.session.commit()
+    return bookmark
+
+def delete_bookmark(dataset_id, user_id):
+    bookmark = db.session.query(models.Bookmark).filter(models.Bookmark.dataset_id == dataset_id).filter(models.Bookmark.user_id == user_id).first()
+    db.session.delete(bookmark)
+    db.session.commit()
+    

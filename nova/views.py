@@ -4,7 +4,7 @@ import re
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar, tasks, models, es
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
-                         Order, Access, Notification, Process)
+                         Order, Access, Notification, Process, Bookmark)
 from flask import (Response, render_template, request, flash, redirect,
                    url_for, jsonify, send_from_directory)
 from flask_login import login_user, logout_user, current_user
@@ -455,6 +455,13 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     dataset = Dataset.query.join(Collection).\
         filter(Collection.name == collection_name).\
         filter(Dataset.name == dataset_name).first()
+
+    bookmarks = Bookmark.query.\
+    	filter(Bookmark.dataset_id == dataset.id).\
+    	filter(Bookmark.user_id == current_user.id)
+    bookmarked = False
+    if bookmarks.count() > 0:
+        bookmarked = True
 
     if path:
         filepath = os.path.join(dataset.path, path)

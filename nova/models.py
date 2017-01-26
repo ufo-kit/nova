@@ -63,7 +63,7 @@ class User(db.Model):
         return True
 
     def is_anonymous(self):
-        False
+        return False
 
     def get_id(self):
         return self.name
@@ -266,3 +266,25 @@ class Reconstruction(Process):
     darks = db.Column(db.String())
     projections = db.Column(db.String())
     output = db.Column(db.String())
+
+
+
+
+
+class Bookmark(db.Model):
+    __tablename__ = 'bookmarks'
+    id = db.Column(db.Integer,  primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
+
+    user = db.relationship('User', foreign_keys=[user_id])
+    dataset = db.relationship('Dataset', foreign_keys=[dataset_id])
+
+    def __init__(self, user_id=None, dataset_id=None):
+        self.user_id = user_id
+        self.dataset_id = dataset_id
+
+    def __repr__(self):
+        return '<Bookmark(user={}, dataset={})>'.format(self.user, self.dataset)
+
+

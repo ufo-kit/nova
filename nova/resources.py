@@ -3,7 +3,7 @@ from flask import request, url_for
 from flask_restful import Resource, abort, reqparse
 from itsdangerous import Signer, BadSignature
 from nova import db, models, logic, es
-
+import math
 
 def authenticate(func):
     @wraps(func)
@@ -97,3 +97,29 @@ class Search(Resource):
                  'collection': h['collection'],
                  'collection_url': url_for('show_collection', name=h['owner'], collection_name=h['collection'])}
                  for h in hits]
+
+
+
+
+
+class Bookmark(Resource):
+    method_decorators = [authenticate]
+
+    def __init__(self):
+        self.user = logic.get_user(request.args['token'])
+    def get(self, dataset_id):
+        bookmark = db.session.query(models.Bookmark).\
+            filter(models.Bookmark.user == self.user).\
+            filter(models.Bookmark.dataset_id == dataset_id)
+        data = {'exists' : False}
+        if bookmark.count() == 1:
+            data['exists'] = True
+        return data
+
+    def post(self, dataset_id):
+        bookmark = logic.create_bookmark(dataset_id, self.user.id)
+        return 'created'
+    def delete(self, dataset_id):
+        logic.delete_bookmark(dataset_id, self.user.id)
+        return 'deleted'
+
