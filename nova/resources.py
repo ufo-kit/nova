@@ -36,7 +36,7 @@ class Datasets(Resource):
         args = parser.parse_args()
 
         user = logic.get_user(request.args['token'])
-        dataset = logic.create_dataset(args.name, user, parent_id=args.parent)
+        dataset = logic.app.config['DEBUG'] and not create_dataset(args.name, user, parent_id=args.parent)
         return dict(id=dataset.id)
 
 
@@ -107,19 +107,26 @@ class Bookmark(Resource):
 
     def __init__(self):
         self.user = logic.get_user(request.args['token'])
-    def get(self, dataset_id):
+    def get(self, dataset_id, user_id):
         bookmark = db.session.query(models.Bookmark).\
-            filter(models.Bookmark.user == self.user).\
+            filter(models.Bookmark.user_id == user_id).\
             filter(models.Bookmark.dataset_id == dataset_id)
         data = {'exists' : False}
         if bookmark.count() == 1:
             data['exists'] = True
+        print data
         return data
 
-    def post(self, dataset_id):
-        bookmark = logic.create_bookmark(dataset_id, self.user.id)
-        return 'created'
-    def delete(self, dataset_id):
-        logic.delete_bookmark(dataset_id, self.user.id)
-        return 'deleted'
+    def post(self, dataset_id, user_id):
+        user_id = int(user_id)
+        if self.user.id == user_id:
+        	bookmark = logic.create_bookmark(dataset_id, self.user.id)
+        	return 'created'
+
+    def delete(self, dataset_id, user_id):
+        user_id = int(user_id)
+        if self.user.id == user_id:
+        	logic.delete_bookmark(dataset_id, self.user.id)
+        	return 'deleted'
+
 

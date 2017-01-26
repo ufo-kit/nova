@@ -456,13 +456,6 @@ def show_dataset(name, collection_name, dataset_name, path=''):
         filter(Collection.name == collection_name).\
         filter(Dataset.name == dataset_name).first()
 
-    bookmarks = Bookmark.query.\
-    	filter(Bookmark.dataset_id == dataset.id).\
-    	filter(Bookmark.user_id == current_user.id)
-    bookmarked = False
-    if bookmarks.count() > 0:
-        bookmarked = True
-
     if path:
         filepath = os.path.join(dataset.path, path)
 

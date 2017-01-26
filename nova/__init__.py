@@ -26,6 +26,7 @@ app.config['NOVA_FS_LAYOUT'] = jinja2.Template('{{ root }}/{{ user }}/{{ dataset
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.config['NOVA_ROOT_PATH'], 'nova.db')
 
 
+
 @app.template_filter('group')
 def group(l, n):
     for i in range(0, len(l), n):
@@ -78,6 +79,6 @@ api = Api(app, errors=errors)
 api.add_resource(Datasets, '/api/datasets')
 api.add_resource(Dataset, '/api/datasets/<dataset_id>')
 api.add_resource(Search, '/api/search')
-api.add_resource(Bookmark, '/api/datasets/bookmark/<dataset_id>')
+api.add_resource(Bookmark, '/api/user/<user_id>/bookmarks/<dataset_id>')
 
 import nova.views

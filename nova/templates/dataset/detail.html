@@ -57,14 +57,9 @@ var meta = new Vue({
       var params = {
         token: '{{ current_user.token }}'
       }
-      apiStr = '/api/datasets/bookmark/'+ {{dataset.id}}
+      apiStr = '/api/user/'+{{current_user.id}}+'/bookmarks/'+ {{dataset.id}}
       this.$http.get(apiStr, {params: params}).then((response) => {
         if (response.body.exists) this.bookmarked = true;
-      });
-      apiStr = '/api/datasets/rating/'+ {{dataset.id}}
-      this.$http.get(apiStr, {params: params}).then((response) => {
-        console.log(response.body);
-        if (response.body.num >0 ) this.avgrating = response.body.rating;
       });
     },
   methods: {
@@ -72,7 +67,7 @@ var meta = new Vue({
       var params = {
         token: '{{ current_user.token }}'
       }
-      apiStr = '/api/datasets/bookmark/'+ {{dataset.id}}
+      apiStr = '/api/user/'+{{current_user.id}}+'/bookmarks/'+ {{dataset.id}}
       if (this.bookmarked) {
         this.$http.delete(apiStr, {params: params}).then((response) => {
           if (response.status == 200) this.bookmarked = false;
