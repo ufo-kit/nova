@@ -23,7 +23,7 @@ if not 'NOVA_ROOT_PATH' in app.config:
     raise RuntimeError("'NOVA_ROOT_PATH' is not set in the configuration file.")
 
 app.config['NOVA_FS_LAYOUT'] = jinja2.Template('{{ root }}/{{ user }}/{{ dataset }}')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.path.join('sqlite:///', app.config['NOVA_ROOT_PATH'], 'nova.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.config['NOVA_ROOT_PATH'], 'nova.db')
 
 
 @app.template_filter('group')
