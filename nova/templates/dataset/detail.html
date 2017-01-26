@@ -61,6 +61,10 @@ var meta = new Vue({
       this.$http.get(apiStr, {params: params}).then((response) => {
         if (response.body.exists) this.bookmarked = true;
       });
+      apiStr = '/api/user/'+{{current_user.id}}+'/bookmarks'
+      this.$http.get(apiStr, {params: params}).then((response) => {
+        console.log(response);
+      });
     },
   methods: {
     bookmark: function (event) {

@@ -100,6 +100,19 @@ class Search(Resource):
 
 
 
+class Bookmarks(Resource):
+    method_decorators = [authenticate]
+    def __init__(self):
+        self.user = logic.get_user(request.args['token'])
+    def get(self, user_id):
+        user_id = int(user_id)
+        if user_id == self.user.id or self.user.is_admin():
+             return [dict(id=b.id, dataset_id=b.dataset_id) for b in
+                     db.session.query(models.Bookmark).\
+                     filter(models.Bookmark.user_id == user_id).\
+                     all()]
+        else:
+            return {'access' : False}
 
 
 class Bookmark(Resource):
@@ -114,7 +127,6 @@ class Bookmark(Resource):
         data = {'exists' : False}
         if bookmark.count() == 1:
             data['exists'] = True
-        print data
         return data
 
     def post(self, dataset_id, user_id):
