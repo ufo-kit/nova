@@ -4,7 +4,7 @@ function readCookie(a) {
 }
 
 var app = new Vue({
-  el: '#search',
+  el: '#body',
   data: {
     query: '',
     message: '',
