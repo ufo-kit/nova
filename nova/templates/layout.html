@@ -51,5 +51,12 @@
 
     <script src="{{ url_for('static', filename='jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootswatch-dist/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='system.js/dist/system.js') }}"></script>
+    <script>
+      System.config({
+        baseURL: '{{ url_for("static", filename='js') }}',
+      });
+      System.import('main.js')
+    </script>
   </body>
 </html>

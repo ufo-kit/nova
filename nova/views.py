@@ -106,7 +106,9 @@ def login():
             login_user(user)
 
             flash('Logged in successfully')
-            return redirect(url_for('index'))
+            response = app.make_response(redirect(url_for('index')))
+            response.set_cookie('token', user.token)
+            return response
         else:
             return render_template('user/login.html', form=form, failed=True), 401
 
