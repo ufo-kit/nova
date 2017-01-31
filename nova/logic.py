@@ -3,6 +3,11 @@ from flask import abort
 from nova import app, db, models
 
 
+class InvalidTokenFormat(ValueError):
+
+    pass
+
+
 def create_collection(name, user, description=None):
     collection = models.Collection(name=name, user=user, description=description)
     db.session.add(collection)
@@ -36,13 +41,29 @@ def import_sample_scan(name, user, path, description=None):
 
 
 def get_user(token):
-    uid = int(token.split('.')[0])
+    if not '.' in token:
+        raise InvalidTokenFormat("No '.' in the token")
+
+    parts = token.split('.')
+
+    if len(parts) != 2:
+        raise InvalidTokenFormat("Token cannot be separated")
+
+    try:
+        uid = int(parts[0])
+    except ValueError as e:
+        raise InvalidTokenFormat(str(e))
+
     return db.session.query(models.User).filter(models.User.id == uid).first()
 
 
 def check_token(token):
     uid, signature = token.split('.')
-    user = get_user(token)
+
+    try:
+        user = get_user(token)
+    except InvalidTokenFormat as e:
+        abort(400)
 
     if not user.is_token_valid(token):
         abort(401)
