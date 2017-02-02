@@ -48,3 +48,32 @@ a:hover {
     background-color: #222222;
 }
 
+#meta-info div.page-header>h2>div
+{
+	display:inline-block; 
+	margin-right:20px;
+}
+
+#reviews {
+	margin-bottom:50px;
+}
+
+#reviews div.page-header>h2{
+	display:inline;
+}
+
+#reviews div.page-header>div{
+	float:right;
+}
+
+.review-item>div>hr {
+    width:60%;
+    float:left;
+}
+
+.ri-time {
+	font-style: italic; 
+	color:#777; 
+	font-size:12px;
+}
+

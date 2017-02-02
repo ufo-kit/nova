@@ -1,7 +1,4 @@
 {% set page_title = 'Dataset ' + dataset.name %}
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/dataset.css') }}" />
-{% endblock %}
 {% extends "layout.html" %}
 {% macro dataset_link(label, path=None, ext=None) -%}
   {% if ext %}
