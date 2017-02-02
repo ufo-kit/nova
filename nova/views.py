@@ -153,6 +153,14 @@ def index(page=1):
     return render_template('index/index.html', notifications=notifications)
 
 
+@app.route('/bookmarks')
+def list_bookmarks():
+    bookmarks = db.session.query(Bookmark).\
+        filter(Bookmark.user == current_user).all()
+    return render_template('index/bookmarks.html', bookmarks=bookmarks)
+
+
+
 @app.route('/settings')
 @login_required(admin=True)
 def admin():

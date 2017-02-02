@@ -71,15 +71,40 @@ def check_token(token):
     return user
 
 
-
 def create_bookmark(dataset_id, user_id):
     bookmark = models.Bookmark(dataset_id=dataset_id, user_id=user_id)
     db.session.add(bookmark)
     db.session.commit()
     return bookmark
 
+
 def delete_bookmark(dataset_id, user_id):
-    bookmark = db.session.query(models.Bookmark).filter(models.Bookmark.dataset_id == dataset_id).filter(models.Bookmark.user_id == user_id).first()
-    db.session.delete(bookmark)
+    bookmark = db.session.query(models.Bookmark).\
+             filter(models.Bookmark.dataset_id == dataset_id).\
+             filter(models.Bookmark.user_id == user_id)
+    if bookmark.count == 0:
+        return False
+    else:
+        db.session.delete(bookmark.first())
+        db.session.commit()
+        return True
+
+
+def create_review(dataset_id, user_id, rating, comment):
+    review = models.Review(dataset_id=dataset_id, user_id=user_id, rating=rating, comment=comment)
+    db.session.add(review)
     db.session.commit()
+    return review
+
+
+def delete_review(dataset_id, user_id):
+    review = db.session.query(models.Review).\
+             filter(models.Review.dataset_id == dataset_id).\
+             filter(models.Review.user_id == user_id)
+    if review.count == 0:
+        return False
+    else:
+        db.session.delete(review.first())
+        db.session.commit()
+        return True
     

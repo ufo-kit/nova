@@ -66,7 +66,7 @@ admin.add_view(AdminModelView(nova.models.Process, db.session))
 admin.add_view(AdminModelView(nova.models.Reconstruction, db.session))
 
 
-from nova.resources import Datasets, Dataset, Search, Bookmarks, Bookmark
+from nova.resources import Datasets, Dataset, Search, Bookmarks, Bookmark, Review
 
 errors = {
     'BadSignature': {
@@ -81,5 +81,6 @@ api.add_resource(Dataset, '/api/datasets/<dataset_id>')
 api.add_resource(Search, '/api/search')
 api.add_resource(Bookmarks, '/api/user/<user_id>/bookmarks')
 api.add_resource(Bookmark, '/api/user/<user_id>/bookmarks/<dataset_id>')
+api.add_resource(Review, '/api/datasets/<dataset_id>/reviews')
 
 import nova.views

@@ -268,11 +268,10 @@ class Reconstruction(Process):
     output = db.Column(db.String())
 
 
-
-
-
 class Bookmark(db.Model):
+
     __tablename__ = 'bookmarks'
+
     id = db.Column(db.Integer,  primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
@@ -287,4 +286,26 @@ class Bookmark(db.Model):
     def __repr__(self):
         return '<Bookmark(user={}, dataset={})>'.format(self.user, self.dataset)
 
+
+class Review(db.Model):
+
+    __tablename__ = 'reviews'
+
+    id = db.Column(db.Integer,  primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
+    rating = db.Column(db.Integer)
+    comment = db.Column(db.String)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    user = db.relationship('User', foreign_keys=[user_id])
+    dataset = db.relationship('Dataset', foreign_keys=[dataset_id])
+
+    def __init__(self, user_id=None, dataset_id=None, rating=None, comment=''):
+        self.user_id = user_id
+        self.dataset_id = dataset_id
+        self.rating = rating
+        self.comment = comment
+
+    def __repr__(self):
+        return '<Bookmark(user={}, dataset={}, rating={}, comment={})>'.format(self.user, self.dataset, self.rating, self.comment)
 

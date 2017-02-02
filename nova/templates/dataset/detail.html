@@ -1,4 +1,7 @@
 {% set page_title = 'Dataset ' + dataset.name %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dataset.css') }}" />
+{% endblock %}
 {% extends "layout.html" %}
 {% macro dataset_link(label, path=None, ext=None) -%}
   {% if ext %}
@@ -31,71 +34,16 @@
   {{ dataset_partial(collection, dataset) }}
 </div>
 {%- endmacro %}
+
 {% block body %}
 
-
-
-<!-- Temporary bookmarks -->
-
-<div id="meta-info">
-    {% raw %}
-    <p>Bookmarked: <span v-if="bookmarked"><i v-on:click="bookmark" class="fa fa-bookmark"></i></span><span v-else><i v-on:click="bookmark" class="fa fa-bookmark-o"></i></span></p>
-    {% endraw %}
-</div>
-<script src="https://unpkg.com/vue/dist/vue.js"></script>
-<script src="https://cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
-<script>
-var meta = new Vue({
-  el: '#meta-info',
-  data: {
-    bookmarked: false,
-    avgrating: 0,
-    reviews: [],
-
-  },
-  created: function() {
-      var params = {
-        token: '{{ current_user.token }}'
-      }
-      apiStr = '/api/user/'+{{current_user.id}}+'/bookmarks/'+ {{dataset.id}}
-      this.$http.get(apiStr, {params: params}).then((response) => {
-        if (response.body.exists) this.bookmarked = true;
-      });
-      apiStr = '/api/user/'+{{current_user.id}}+'/bookmarks'
-      this.$http.get(apiStr, {params: params}).then((response) => {
-        console.log(response);
-      });
-    },
-  methods: {
-    bookmark: function (event) {
-      var params = {
-        token: '{{ current_user.token }}'
-      }
-      apiStr = '/api/user/'+{{current_user.id}}+'/bookmarks/'+ {{dataset.id}}
-      if (this.bookmarked) {
-        this.$http.delete(apiStr, {params: params}).then((response) => {
-          if (response.status == 200) this.bookmarked = false;
-        });
-      } else {
-        this.$http.post(apiStr, null, {params: params}).then((response) => {
-          if (response.status == 200) this.bookmarked = true;
-        });
-      }
-    }
-  }
-
-})
-
-
-</script>
-
-
-<!-- Temporary bookmarks end -->
-
-<div class="row">
+<div class="row" id="meta-info">
   <div class="col-lg-12">
     <div class="page-header">
       <h2>
+    {% raw %}
+    <div><span v-if="bookmarked"><i v-on:click="bookmark" class="fa fa-bookmark"></i></span><span v-else><i v-on:click="bookmark" class="fa fa-bookmark-o"></i></span></div>
+    {% endraw %}
 {% if dataset.type == "samplescan" %}
       Sample scan
 {% elif dataset.type == "volume" %}
@@ -221,4 +169,125 @@ var meta = new Vue({
   </div>
 </div>
 {% endif %}
+<div class= "row" id="reviews">
+  {% raw %}
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="page-header">
+        <h2>Reviews</h2>
+        <div>
+          <i v-for="n in base_rating" class="fa fa-star fa-2x"></i>
+          <i v-if="half_star"class="fa fa-star-half-o fa-2x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row" >
+      <div class="review-item col-lg-12" v-for="review in reviews">
+        <div class="ri-time col-lg-1"><p>{{ timeSince(review.created_at) }}</p></div>
+        <div class="col-lg-11">
+          <p>
+            <a v-bind:href="review.sender_url">{{ review.sender_name }}</a> &nbsp;
+            <i  v-for="n in review.rating " class="fa fa-star"></i>
+          </p>
+          <p>{{ review.comment }}</p>
+          <hr/>
+        </div>
+      </div>
+  </div>
+  {% endraw %}
+  <div class="row">
+    <div class="col-lg-offset-1 col-lg-1"><a>See More</a></div>
+    <div class="col-lg-2"><a>Review Now</a></div>
+  </div>
+</div>
+
+
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
+<script>
+var meta = new Vue({
+  el: '#meta-info',
+  data: {
+    bookmarked: false,
+  },
+  created: function() {
+      params = {
+        token: '{{ current_user.token }}'
+      }
+      apiStr = '/api/user/'+{{current_user.id}}+'/bookmarks/'+ {{dataset.id}}
+      this.$http.get(apiStr, {params: params}).then((response) => {
+        if (response.body.exists) this.bookmarked = true;
+      });
+    },
+  methods: {
+    bookmark: function (event) {
+      params = {
+        token: '{{ current_user.token }}'
+      }
+      apiStr = '/api/user/'+{{current_user.id}}+'/bookmarks/'+ {{dataset.id}}
+      if (this.bookmarked) {
+        this.$http.delete(apiStr, {params: params}).then((response) => {
+          if (response.status == 200) this.bookmarked = false;
+        });
+      } else {
+        this.$http.post(apiStr, null, {params: params}).then((response) => {
+          if (response.status == 200) this.bookmarked = true;
+        });
+      }
+    }
+  }
+})
+
+var reviews = new Vue({
+  el: '#reviews',
+  data: {
+    avg_rating: 0,
+    base_rating: 0,
+    half_star: false,
+    reviews: [],
+    count:0
+  },
+  created: function() {
+    params = {
+      token: '{{ current_user.token }}'
+    }
+    apiStr = '/api/datasets/'+{{dataset.id}}+'/reviews'
+    this.$http.get(apiStr, {params: params}).then((response) => {
+      console.log(response);
+      this.count = response.body.count;
+      this.avg_rating = response.body.avg_rating;
+      this.base_rating = Math.floor(this.avg_rating);
+      if (this.avg_rating - this.base_rating >= .5) this.half_star = true;
+      if (response.body.count > 0) this.reviews = response.body.data;
+    });
+  },
+  methods: {
+    timeSince: function(date) {
+      date = new Date(date);
+      current = new Date();
+      delta = current.getTimezoneOffset(); //delta = 0;
+      seconds = Math.floor((new Date() - date) / 1000) + delta*60;
+      console.log (new Date()+ " " + date);
+      console.log (seconds);
+
+      interval = Math.floor(seconds / 86400);
+      if (interval >= 1) {
+        return date.toLocaleString();
+      }
+      interval = Math.floor(seconds / 3600);
+      if (interval >= 1) {
+        return interval + " h ago";
+      }
+      interval = Math.floor(seconds / 60);
+      if (interval >= 1) {
+        return interval + " m ago";
+      }
+      return Math.floor(seconds) + " s ago";
+    }
+  }
+})
+
+</script>
+
 {% endblock %}
