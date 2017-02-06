@@ -115,17 +115,16 @@ class Bookmarks(Resource):
             datasets = []
             for b in bookmarks:
                 datasets.append(b.dataset)
-            print datasets
-            return [{'name': h.name,
-                     'description': h.description,
-                     'url': url_for('show_dataset', name=h.collection.user.name, collection_name=h.collection.name, dataset_name=h.name),
-                     'owner': h.collection.user.name,
-                     'owner_url': url_for('profile', name=h.collection.user.name),
-                     'collection': h.collection.name,
-                     'collection_url': url_for('show_collection', name=h.collection.user.name, collection_name=h.collection.name)}
-                     for h in datasets]
-        else:
-            return {'access' : False}, 403
+            return [{'name': d.name,
+                     'description': d.description,
+                     'url': url_for('show_dataset', name=d.collection.user.name, collection_name=d.collection.name, dataset_name=d.name),
+                     'owner': d.collection.user.name,
+                     'owner_url': url_for('profile', name=d.collection.user.name),
+                     'collection': d.collection.name,
+                     'collection_url': url_for('show_collection', name=d.collection.user.name, collection_name=d.collection.name)}
+                     for d in datasets]
+
+        return {'access' : False}, 403
 
 
 class Bookmark(Resource):
@@ -148,6 +147,7 @@ class Bookmark(Resource):
         if self.user.id == user_id:
         	bookmark = logic.create_bookmark(dataset_id, self.user.id)
         	return 'Object Created'
+        return 'Access Forbidden', 403
 
     def delete(self, dataset_id, user_id):
         user_id = int(user_id)
@@ -155,10 +155,8 @@ class Bookmark(Resource):
             is_deleted = logic.delete_bookmark(dataset_id, self.user.id)
             if is_deleted:
                 return 'Object Deleted', 200
-            else:
-                return 'Object Not Found', 404
-     	else:
-            return 'Access Forbidden', 403
+            return 'Object Not Found', 404
+        return 'Access Forbidden', 403
 
 
 class Review(Resource):
@@ -173,15 +171,13 @@ class Review(Resource):
         review_count = review.count()
         avg_rating = 0
         review_data = []
-        if review_count > 0:
-            for r in review:
-                avg_rating += r.rating
-                review_data.append(dict(sender_name=r.user.fullname,
+        for r in review:
+            avg_rating += r.rating
+            review_data.append(dict(sender_name=r.user.fullname,
             	                sender_url=url_for('profile', name=r.user.name),
                                 rating=r.rating, comment=r.comment, created_at=str(r.created_at)))
+        if review_count>0:
             avg_rating /= float(review_count)
-        else:
-            review_data = 'No reviews yet'
         data = {'count': review_count, 'avg_rating': avg_rating, 'data': review_data}
         return data
 
@@ -190,6 +186,7 @@ class Review(Resource):
         if self.user.id == user_id:
         	review = logic.create_review(dataset_id, self.user.id, rating, comment)
         	return 'Object Created'
+        return 'Access Forbidden', 403
 
     def delete(self, dataset_id, user_id):
         user_id = int(user_id)
@@ -197,9 +194,7 @@ class Review(Resource):
             is_deleted = logic.delete_review(dataset_id, self.user.id)
             if is_deleted:
                 return 'Object Deleted', 200
-            else:
-                return 'Object Not Found', 404
-     	else:
-            return 'Access Forbidden', 403
+            return 'Object Not Found', 404
+        return 'Access Forbidden', 403
 
 
