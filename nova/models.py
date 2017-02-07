@@ -195,7 +195,8 @@ class Access(db.Model):
     dataset = db.relationship('Dataset', back_populates='accesses')
 
     def __repr__(self):
-        return '<Access(user={}, dataset={}, owner={}, writable={}>'.format(self.user.name, self.dataset.name, self.owner, self.writable)
+        return '<Access(user={}, dataset={}, owner={}, writable={}>'.\
+            format(self.user.name, self.dataset.name, self.owner, self.writable)
 
 
 class Collection(db.Model):
@@ -230,7 +231,8 @@ class Notification(db.Model):
         self.message = message
 
     def __repr__(self):
-        return '<Notification(user={}, message={})>'.format(self.user.name, self.message)
+        return '<Notification(user={}, message={})>'.\
+            format(self.user.name, self.message)
 
     def to_dict(self):
         return {'message': self.message, 'id': self.id, 'type': self.type}
@@ -257,7 +259,8 @@ class Process(db.Model):
     }
 
     def __repr__(self):
-        return '<Process(src={}, dst={})>'.format(self.source.name, self.destination.name)
+        return '<Process(src={}, dst={})>'.\
+            format(self.source.name, self.destination.name)
 
 
 class Reconstruction(Process):
@@ -315,5 +318,29 @@ class Review(db.Model):
         self.comment = comment
 
     def __repr__(self):
-        return '<Bookmark(user={}, dataset={}, rating={}, comment={})>'.format(self.user, self.dataset, self.rating, self.comment)
+        return '<Bookmark(user={}, dataset={}, rating={}, comment={})>'.\
+            format(self.user, self.dataset, self.rating, self.comment)
+
+
+
+class Connection(db.Model):
+
+    __tablename__ = 'connections'
+
+    id = db.Column(db.Integer,  primary_key=True)
+    from_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    to_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    degree = db.Column(db.Integer)
+
+    from_user = db.relationship('User', foreign_keys=[from_id])
+    to_user = db.relationship('User', foreign_keys=[to_id])
+
+    def __init__(self, from_id=None, to_id=None):
+        self.from_id = from_id
+        self.to_id = to_id
+        self.degree = 1
+
+    def __repr__(self):
+        return '<Connection(from={}, to={}, degree={})>'.\
+            format(self.from_user, self.to_user, self.degree)
 

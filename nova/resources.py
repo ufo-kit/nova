@@ -198,15 +198,11 @@ class Review(Resource):
     def get(self, dataset_id, user_id):
         user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
-
         if user.id != user_id:
             abort(401)
-
         review = logic.get_review(dataset_id, user_id)
-
-        if review:
-            return review
-
+        if review['exists']:
+                return review
         abort(404)
 
     def put(self, dataset_id, user_id):
@@ -320,3 +316,42 @@ class Notification(Resource):
             db.session.commit()
 
         return 200
+
+
+class Connection(Resource):
+    method_decorators = [authenticate]
+
+    def __init__(self):
+        self.user = logic.get_user(request.headers['Auth-Token'])
+
+    def get(self, from_id, to_id):
+        connection = logic.get_connection(from_id, to_id)
+        if connection['exists']:
+            return connection
+        return 'Object Not Found', 404
+
+    def put(self, from_id, to_id, option):
+        connection = logic.get_connection(from_id, to_id)
+        change = int(option)
+        if connection['exists']:
+            logic.update_connection(from_id, to_id, change)
+            return 'Object Modified', 200
+        if increase>=0:
+            connection = logic.create_connection(from_id, to_id)
+            if connection:
+                return 'Object Created', 201
+        return 'Failed', 500
+
+
+class Connections(Resource):
+    method_decorators = [authenticate]
+
+    def __init__(self):
+        self.user = logic.get_user(request.headers['Auth-Token'])
+
+    def get(self, query_id):
+        connections = db.session.query(models.Connection).\
+                    filter(or_(models.Connection.from_id == query_id, models.Connection.to_id == query_id))
+        return [{'id': c.id, 'from_user': c.from_id, 'to_user':c.to_id, 'degree':c.degree}
+                 for c in connections]
+

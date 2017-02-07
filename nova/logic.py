@@ -24,7 +24,8 @@ def create_dataset(dtype, name, user, collection, **kwargs):
     abspath = os.path.join(root, path)
     os.makedirs(abspath)
 
-    access = models.Access(user=user, dataset=dataset, owner=True, writable=True, seen=True)
+    access = models.Access(user=user, dataset=dataset, owner=True,
+                           writable=True, seen=True)
     db.session.add_all([dataset, access])
     db.session.commit()
     return dataset
@@ -34,7 +35,8 @@ def import_sample_scan(name, user, path, description=None):
     collection = models.Collection(user=user, name=name, description=description)
     dataset = models.SampleScan(name=name, path=path, collection=collection,
             genus=None, family=None, order=None)
-    access = models.Access(user=user, dataset=dataset, owner=True, writable=True, seen=True)
+    access = models.Access(user=user, dataset=dataset, owner=True,
+                           writable=True, seen=True)
     db.session.add_all([collection, dataset, access])
     db.session.commit()
     return dataset
@@ -97,11 +99,14 @@ def get_review(dataset_id, user_id):
         existing = existing.first()
         return {'exists': True,
                'data':{'comment': existing.comment, 'rating': existing.rating,
-                    'dataset_id': existing.dataset_id, 'user_id': existing.user_id}}
+                    'dataset_id': existing.dataset_id,
+                    'user_id': existing.user_id}}
     return {'exists': False}
 
+
 def create_review(dataset_id, user_id, rating, comment):
-    review = models.Review(dataset_id=dataset_id, user_id=user_id, rating=rating, comment=comment)
+    review = models.Review(dataset_id=dataset_id, user_id=user_id,
+                           rating=rating, comment=comment)
     db.session.add(review)
     db.session.commit()
     return review
@@ -116,6 +121,7 @@ def update_review(dataset_id, user_id, rating, comment):
     db.session.commit()
     return review
 
+
 def delete_review(dataset_id, user_id):
     review = db.session.query(models.Review).\
              filter(models.Review.dataset_id == dataset_id).\
@@ -126,4 +132,50 @@ def delete_review(dataset_id, user_id):
         db.session.delete(review.first())
         db.session.commit()
         return True
-    
+
+
+def get_connection(from_id, to_id):
+    connection = db.session.query(models.Connection).\
+                   filter(models.Connection.from_id == from_id).\
+                   filter(models.Connection.to_id == to_id)
+    if connection.count()>0:
+        connection = connection.first()
+        return {'exists': True,
+                'data': {'id':connection.id, 'degree':connection.degree,
+                        'from':connection.from_id, 'to': connection.to_id}}
+    return {'exists': False}
+
+def create_connection(from_id, to_id):
+    connection = models.Connection(from_id=from_id, to_id=to_id)
+    db.session.add(connection)
+    db.session.commit()
+    return connection
+
+
+def update_connection(from_id, to_id, change):
+    connection = db.session.query(models.Connection).\
+                   filter(models.Connection.from_id == from_id).\
+                   filter(models.Connection.to_id == to_id).first()
+    connection.degree += change
+    db.session.commit()
+    return connection
+
+def increase_connection(from_id, to_id):
+    connection = db.session.query(models.Connection).\
+                   filter(models.Connection.from_id == from_id).\
+                   filter(models.Connection.to_id == to_id)
+    if connection.count()>0:
+        connection = connection.first()
+        connection.degree +=1
+    else:
+        connection = models.Connection(from_id=from_id, to_id=to_id)
+
+def decrease_connection(from_id, to_id):
+    connection = db.session.query(models.Connection).\
+                   filter(models.Connection.from_id == from_id).\
+                   filter(models.Connection.to_id == to_id)
+    if connection.count()>0:
+        connection = connection.first()
+        connection.degree -=1
+    else:
+        connection = models.Connection(from_id=from_id, to_id=to_id)
