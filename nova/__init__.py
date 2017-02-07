@@ -79,7 +79,7 @@ api = Api(app, errors=errors)
 api.add_resource(Datasets, '/api/datasets')
 api.add_resource(Dataset, '/api/datasets/<dataset_id>')
 api.add_resource(Search, '/api/search')
-api.add_resource(Bookmarks, '/api/user/<user_id>/bookmarks')
+api.add_resource(Bookmarks, '/api/user/<username>/bookmarks')
 api.add_resource(Bookmark, '/api/user/<user_id>/bookmarks/<dataset_id>')
 api.add_resource(Review, '/api/datasets/<dataset_id>/reviews')
 

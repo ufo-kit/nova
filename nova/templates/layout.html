@@ -23,7 +23,7 @@
             <img src="https://www.gravatar.com/avatar/{{ current_user.gravatar }}?s=24"/>&nbsp; {{ current_user.name }} &nbsp;<i class="fa fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu">
             <li><a href="{{ url_for("profile", name=current_user.name) }}"><i class="fa fa-user"></i>&nbsp; Profile</a></li>
-            <li><a href="{{ url_for("list_bookmarks") }}"><i class="fa fa-bookmark"></i>&nbsp; Bookmarks</a></li>
+            <li><a href="{{ url_for("list_bookmarks", name=current_user.name) }}"><i class="fa fa-bookmark"></i>&nbsp; Bookmarks</a></li>
             {% if current_user.is_admin %}
             <li><a href="{{ url_for("admin") }}"><i class="fa fa-users"></i>&nbsp; Admin</a></li>
             {% endif %}

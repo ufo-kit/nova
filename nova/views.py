@@ -153,14 +153,6 @@ def index(page=1):
     return render_template('index/index.html', notifications=notifications)
 
 
-@app.route('/bookmarks')
-def list_bookmarks():
-    bookmarks = db.session.query(Bookmark).\
-        filter(Bookmark.user == current_user).all()
-    return render_template('index/bookmarks.html', bookmarks=bookmarks)
-
-
-
 @app.route('/settings')
 @login_required(admin=True)
 def admin():
@@ -208,6 +200,13 @@ def profile(name, page=1):
         filter(Collection.user == user).\
         paginate(page=page, per_page=8)
     return render_template('user/profile.html', user=user, pagination=pagination)
+
+
+@app.route('/user/<name>/bookmarks')
+def list_bookmarks(name):
+    user = db.session.query(User).filter(User.name == name).first()
+    return render_template('user/bookmarks.html', username=name, usercheck='Me' if user == current_user else user.fullname, user_url=user.name)
+
 
 
 @app.route('/create/<collection_name>', methods=['GET', 'POST'])

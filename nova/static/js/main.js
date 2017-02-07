@@ -46,9 +46,9 @@ var app = new Vue({
         this.dataset_reviews = response.body.data;
     });
 
-    api_str = '/api/user/' + user_id + '/bookmarks';
-    this.$http.get(api_str, {headers: headers}).then((response) => {
-      this.bookmarked_datasets = response.body
+    api_str = '/api/user/'+username+'/bookmarks'
+      this.$http.get(api_str, {params: params}).then((response) => {
+        this.bookmarked_datasets = response.body
     });
   },
   methods: {

@@ -50,20 +50,25 @@ a:hover {
 
 #meta-info div.page-header>h2>div
 {
-	display:inline-block; 
-	margin-right:20px;
+    display:inline-block; 
+    margin-right:20px;
+}
+
+#meta-info i.fa-bookmark
+{
+    cursor:pointer;
 }
 
 #reviews {
-	margin-bottom:50px;
+    margin-bottom:50px;
 }
 
 #reviews div.page-header>h2{
-	display:inline;
+    display:inline;
 }
 
 #reviews div.page-header>div{
-	float:right;
+    float:right;
 }
 
 .review-item>div>hr {
@@ -72,8 +77,12 @@ a:hover {
 }
 
 .ri-time {
-	font-style: italic; 
-	color:#777; 
-	font-size:12px;
+    font-style: italic; 
+    color:#777; 
+    font-size:12px;
+}
+
+.ri-sender {
+    margin-right:10px;
 }
 

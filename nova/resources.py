@@ -110,25 +110,21 @@ class Bookmarks(Resource):
     def __init__(self):
         self.user = logic.get_user(request.headers['Auth-Token'])
 
-    def get(self, user_id):
-        user_id = int(user_id)
-        if user_id == self.user.id or self.user.is_admin():
-            bookmarks = db.session.query(models.Bookmark).\
-                      filter(models.Bookmark.user_id == user_id).\
-                      all()
-            datasets = []
-            for b in bookmarks:
-                datasets.append(b.dataset)
-            return [{'name': d.name,
-                     'description': d.description,
-                     'url': url_for('show_dataset', name=d.collection.user.name, collection_name=d.collection.name, dataset_name=d.name),
-                     'owner': d.collection.user.name,
-                     'owner_url': url_for('profile', name=d.collection.user.name),
-                     'collection': d.collection.name,
-                     'collection_url': url_for('show_collection', name=d.collection.user.name, collection_name=d.collection.name)}
-                     for d in datasets]
-
-        return {'access' : False}, 403
+    def get(self, username):
+        bookmarks = db.session.query(models.Bookmark).join(models.Bookmark.user).\
+                  filter(models.User.name == username).\
+                  all()
+        datasets = []
+        for b in bookmarks:
+            datasets.append(b.dataset)
+        return [{'name': d.name,
+                'description': d.description,
+                'url': url_for('show_dataset', name=d.collection.user.name, collection_name=d.collection.name, dataset_name=d.name),
+                'owner': d.collection.user.name,
+                'owner_url': url_for('profile', name=d.collection.user.name),
+                'collection': d.collection.name,
+                'collection_url': url_for('show_collection', name=d.collection.user.name, collection_name=d.collection.name)}
+                for d in datasets]
 
 
 class Bookmark(Resource):
