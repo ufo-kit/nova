@@ -111,6 +111,8 @@ class Bookmarks(Resource):
         self.user = logic.get_user(request.headers['Auth-Token'])
 
     def get(self, username):
+        if username == '':
+            return 'Malformed Syntax', 400
         bookmarks = db.session.query(models.Bookmark).join(models.Bookmark.user).\
                   filter(models.User.name == username).\
                   all()
@@ -134,6 +136,8 @@ class Bookmark(Resource):
         self.user = logic.get_user(request.headers['Auth-Token'])
 
     def get(self, dataset_id, user_id):
+        if int(dataset_id) == 0 or int(user_id) == 0:
+            return 'Malformed Syntax', 400
         bookmark = db.session.query(models.Bookmark).\
                  filter(models.Bookmark.user_id == user_id).\
                  filter(models.Bookmark.dataset_id == dataset_id)
@@ -166,6 +170,8 @@ class Review(Resource):
         self.user = logic.get_user(request.headers['Auth-Token'])
 
     def get(self, dataset_id):
+        if int(dataset_id) == 0:
+            return 'Malformed Syntax', 400
         review = db.session.query(models.Review).\
                  filter(models.Review.dataset_id == dataset_id)
         review_count = review.count()
