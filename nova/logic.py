@@ -59,7 +59,6 @@ def get_user(token):
 
 def check_token(token):
     uid, signature = token.split('.')
-
     try:
         user = get_user(token)
     except InvalidTokenFormat as e:
@@ -90,12 +89,32 @@ def delete_bookmark(dataset_id, user_id):
         return True
 
 
+def get_review(dataset_id, user_id):
+    existing = db.session.query(models.Review).\
+             filter(models.Review.user_id == user_id).\
+             filter(models.Review.dataset_id == dataset_id)
+    if existing.count()>0:
+        existing = existing.first()
+        return {'exists': True,
+               'data':{'comment': existing.comment, 'rating': existing.rating,
+                    'dataset_id': existing.dataset_id, 'user_id': existing.user_id}}
+    return {'exists': False}
+
 def create_review(dataset_id, user_id, rating, comment):
     review = models.Review(dataset_id=dataset_id, user_id=user_id, rating=rating, comment=comment)
     db.session.add(review)
     db.session.commit()
     return review
 
+
+def update_review(dataset_id, user_id, rating, comment):
+    review = db.session.query(models.Review).\
+             filter(models.Review.user_id == user_id).\
+             filter(models.Review.dataset_id == dataset_id).first()
+    review.comment = comment
+    review.rating = rating
+    db.session.commit()
+    return review
 
 def delete_review(dataset_id, user_id):
     review = db.session.query(models.Review).\

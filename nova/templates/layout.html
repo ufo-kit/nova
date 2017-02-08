@@ -10,6 +10,19 @@
     <title>{% if page_title %}{{ page_title }}{% else %}NOVA{% endif %}</title>
   </head>
   <body>
+    <script type="text/x-template" id="modal-template">
+      <transition name="modal">
+        <div class="modal-mask" v-show="show">
+          <div class="modal-wrapper">
+            <div class="modal-container">
+              <div class="modal-title"><slot name="modal-title"></slot></div>
+              <div class="modal-body"><slot name="modal-body"></slot></div>
+              <div class="modal-options"><slot name="modal-options"></slot></div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </script>
     <div id="body">
     <nav class="navbar navbar-default">
       <div class="container">
@@ -21,20 +34,20 @@
           <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
             <img src="https://www.gravatar.com/avatar/{{ current_user.gravatar }}?s=24"/>&nbsp; {{ current_user.name }} &nbsp;<i class="fa fa-caret-down" aria-hidden="true"></i></a>
-          <ul class="dropdown-menu">
-            <li><a href="{{ url_for("profile", name=current_user.name) }}"><i class="fa fa-user"></i>&nbsp; Profile</a></li>
-            <li><a href="{{ url_for("list_bookmarks", name=current_user.name) }}"><i class="fa fa-bookmark"></i>&nbsp; Bookmarks</a></li>
+          <ul class="dropdown-menu" id="main-menu">
+            <li><a href="{{ url_for("profile", name=current_user.name) }}"><i class="fa fa-user"></i>Profile</a></li>
+            <li><a href="{{ url_for("list_bookmarks", name=current_user.name) }}"><i class="fa fa-bookmark"></i>Bookmarks</a></li>
             {% if current_user.is_admin %}
-            <li><a href="{{ url_for("admin") }}"><i class="fa fa-users"></i>&nbsp; Admin</a></li>
+            <li><a href="{{ url_for("admin") }}"><i class="fa fa-users"></i>Admin</a></li>
             {% endif %}
             <li role="separator" class="divider"></li>
-            <li><a href="{{ url_for("logout") }}"><i class="fa fa-sign-out"></i>&nbsp; Sign out</a></li>
+            <li><a href="{{ url_for("logout") }}"><i class="fa fa-sign-out"></i>Sign out</a></li>
           </ul>
           </li>
         </ul>
         {% endif %}
         <form class="navbar-form navbar-right">
-          <div class="input-group">
+          <div class="input-group" id="main-search">
             <input v-model="query" type="search" class="form-control" name="query" autocomplete="off" placeholder="Search …">
             <span class="input-group-btn">
               <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
@@ -57,7 +70,6 @@
         Greifswald.</p>
       </div>
     </footer>
-
     <script src="{{ url_for('static', filename='jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootswatch-dist/js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='system.js/dist/system.js') }}"></script>

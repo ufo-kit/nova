@@ -149,9 +149,9 @@ class Bookmark(Resource):
     def post(self, dataset_id, user_id):
         user_id = int(user_id)
         if self.user.id == user_id:
-        	bookmark = logic.create_bookmark(dataset_id, self.user.id)
-        	return 'Object Created'
-        return 'Access Forbidden', 403
+            bookmark = logic.create_bookmark(dataset_id, self.user.id)
+            return 'Object Created'
+        return 'Unauthorized Access', 401
 
     def delete(self, dataset_id, user_id):
         user_id = int(user_id)
@@ -160,10 +160,54 @@ class Bookmark(Resource):
             if is_deleted:
                 return 'Object Deleted', 200
             return 'Object Not Found', 404
-        return 'Access Forbidden', 403
+        return 'Unauthorized Access', 401
 
 
 class Review(Resource):
+    method_decorators = [authenticate]
+
+    def __init__(self):
+        self.user = logic.get_user(request.headers['Auth-Token'])
+
+    def get(self, dataset_id, user_id):
+        user_id = int(user_id)
+        if self.user.id == user_id:
+            review = logic.get_review(dataset_id, user_id)
+            if review:
+                return review
+            return 'Object not found', 404
+        return 'Unauthorized Access', 401
+
+    def put(self, dataset_id, user_id):
+        user_id = int(user_id)
+        jsonObj = request.get_json()
+        comment = jsonObj['comment']
+        rating = jsonObj['rating']
+        if self.user.id == user_id:
+            review = logic.get_review(dataset_id, user_id)
+            if review['exists']:
+                thisreview = logic.update_review(dataset_id, user_id, rating, comment)
+                if thisreview:
+                    return 'Object Updated', 200
+                return 'Failed to Update Object', 500
+            else:
+                thisreview = logic.create_review(dataset_id, user_id, rating, comment)
+                if thisreview:
+                    return 'Object Created', 201
+                return 'Failed to Create Object', 500
+        return 'Unauthorized Access', 401
+
+    def delete(self, dataset_id, user_id):
+        user_id = int(user_id)
+        if self.user.id == user_id or self.user.is_admin():
+            is_deleted = logic.delete_review(dataset_id, user_id)
+            if is_deleted:
+                return 'Object Deleted', 200
+            return 'Object Not Found', 404
+        return 'Unauthorized Access', 401
+
+
+class Reviews(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
@@ -177,30 +221,19 @@ class Review(Resource):
         review_count = review.count()
         avg_rating = 0
         review_data = []
+        i_reviewed = False;
         for r in review:
             avg_rating += r.rating
+            current_i_review = False
+            if (r.user == self.user):
+                i_reviewed = True
+                current_i_review = True
             review_data.append(dict(sender_name=r.user.fullname,
-            	                sender_url=url_for('profile', name=r.user.name),
-                                rating=r.rating, comment=r.comment, created_at=str(r.created_at)))
+                                sender_url=url_for('profile', name=r.user.name),
+                                rating=r.rating, comment=r.comment,
+                                dataset_id = dataset_id, user_id = r.user.id,
+                                created_at=str(r.created_at), editable=current_i_review, id=r.id))
         if review_count>0:
             avg_rating /= float(review_count)
-        data = {'count': review_count, 'avg_rating': avg_rating, 'data': review_data}
+        data = {'count': review_count, 'avg_rating': avg_rating, 'data': review_data, 'self_reviewed': i_reviewed}
         return data
-
-    def post(self, dataset_id, user_id, rating, comment):
-        user_id = int(user_id)
-        if self.user.id == user_id:
-        	review = logic.create_review(dataset_id, self.user.id, rating, comment)
-        	return 'Object Created'
-        return 'Access Forbidden', 403
-
-    def delete(self, dataset_id, user_id):
-        user_id = int(user_id)
-        if self.user.id == user_id or self.user.is_admin():
-            is_deleted = logic.delete_review(dataset_id, self.user.id)
-            if is_deleted:
-                return 'Object Deleted', 200
-            return 'Object Not Found', 404
-        return 'Access Forbidden', 403
-
-

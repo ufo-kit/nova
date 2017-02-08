@@ -16,6 +16,9 @@ a:hover {
   text-decoration: underline;
 }
 
+a.cursor-pointer {
+  cursor: pointer;
+}
 .mute {
   opacity: 0.1;
 }
@@ -48,15 +51,25 @@ a:hover {
     background-color: #222222;
 }
 
-#meta-info div.page-header>h2>div
-{
-    display:inline-block; 
+#main-menu li a i {
+    width: 20px;
+    margin-right: 6px;
+    text-align: center;
+}
+
+#main-search input {
+    padding: 3px 18px;
+}
+
+
+#meta-info div.page-header>h2>div {
+    display: inline-block; 
     margin-right:20px;
 }
 
 #meta-info i.fa-bookmark
 {
-    cursor:pointer;
+    cursor: pointer;
 }
 
 #reviews {
@@ -64,16 +77,41 @@ a:hover {
 }
 
 #reviews div.page-header>h2{
-    display:inline;
+    display: inline;
 }
 
 #reviews div.page-header>div{
-    float:right;
+    float: right;
 }
 
 .review-item>div>hr {
-    width:60%;
-    float:left;
+    width: 60%;
+    float: left;
+}
+
+#review-update-input{
+    position: relative;
+    width: 100%;
+    height: 42px;
+    border: 1px solid #cccccc;
+    border-radius: 0;
+    background-color: rgba(0,0,0,0);
+    overflow: visible;
+}
+
+#review-update-input>textarea 
+{
+    position: absolute;
+    background-color: rgba(0,0,0,0);
+    width: 88%;
+    min-height: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 0;
+    font-size: 15px;
+    color: #333333;
+    padding: 10px 18px;
+    resize: none;
 }
 
 .ri-time {
@@ -82,7 +120,160 @@ a:hover {
     font-size:12px;
 }
 
+
 .ri-sender {
     margin-right:10px;
 }
 
+.ri-options>a{
+    margin-right:20px;
+    font-size: 12px;
+}
+
+.ri-options>a.update-button{
+    float: right;
+    margin-right:0px;
+    margin-top: 5px;
+    margin-left: 20px;
+}
+
+#review-input {
+    margin-top:10px;
+    display: table;
+    height: 43px;
+}
+
+#review-input>div:first-of-type {
+    display: table-cell;
+    position: relative;
+    width: 90%;
+    height: 43.4px;
+    border: 1px solid #cccccc;
+    border-radius: 0;
+    overflow: hidden;
+}
+
+#review-input>div:first-of-type>textarea {
+    width: 88%;
+    height: 42px;
+    min-height: 42px;
+    border: none;
+    border-radius: 0;
+    font-size: 15px;
+    color: #333333;
+    padding: 10px 18px;
+    resize: none; 
+    position: absolute;
+}
+
+#review-input>div:nth-of-type(2) {
+    display: table-cell;
+    width:10%;
+    height:44px;
+    text-align: right;
+    vertical-align: top;
+}
+
+#review-input>div:nth-of-type(2)>button {
+    width: 80%;
+    height: 100%;
+}
+#rating-stars {
+    position: absolute;
+    right: 10px;
+    margin-top: 5px;
+    float: right;
+    margin-bottom:0px;
+    font-size:22px;
+    color: #bbbbbb;
+}
+
+#rating-stars.rated {
+    color: #333333;
+}
+
+#rating-stars i {
+    padding:1px;
+    cursor: pointer;
+}
+
+#review-input p.alert {
+    color: #f00;
+    font-size: 14px;
+    position: absolute;
+    right:120px;
+    line-height:14px;
+    text-align: right;
+    vertical-align: center;
+}
+
+
+#review-input button[type='submit'] {
+    width: 80px;
+}
+
+.modal-wrapper {
+  position: fixed;
+  z-index: 9998;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .8);
+  transition: opacity .3s ease;
+}
+
+.modal-container {
+  width: 480px;
+  margin: auto;
+  margin-top:10%;
+  padding: 20px 30px;
+  background-color: none;
+  color: #fff;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.modal-header h3 {
+  margin-top: 0;
+  color: #42b983;
+}
+
+.modal-body {
+  margin: 20px 0;
+}
+
+.modal-button {
+  float: left;
+  margin-right:20px;
+}
+
+.modal-button>button {
+  border: none;
+  background: none;
+}
+
+.modal-button>button>i {
+  margin-right: 5px;
+}
+
+.modal-button-delete>button {
+  color: #f00;
+}
+
+.modal-button-delete>i {
+  color: #f00;
+}
+
+.modal-enter {
+  opacity: 0;
+}
+
+.modal-leave-active {
+  opacity: 0;
+}
+
+.modal-enter .modal-container,
+.modal-leave-active .modal-container {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
