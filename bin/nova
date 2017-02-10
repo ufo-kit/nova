@@ -71,6 +71,19 @@ class Config(object):
         return '{}{}'.format(self.remote, u)
 
     @property
+    def headers(self):
+        return {'Auth-Token': self.token}
+
+    def get(self, relative_url, **kwargs):
+        return requests.get(self.url(relative_url), headers=self.headers, **kwargs)
+
+    def post(self, relative_url, **kwargs):
+        return requests.post(self.url(relative_url), headers=self.headers, **kwargs)
+
+    def post(self, relative_url, **kwargs):
+        return requests.put(self.url(relative_url), headers=self.headers, **kwargs)
+
+    @property
     def dataset_url(self):
         if not self.id:
             logging.error("No identifier specified.")
@@ -84,11 +97,9 @@ class Config(object):
 def push(config):
     from nova import memtar
 
-    headers = {'Auth-Token': config.token}
     f = memtar.create_tar(os.path.abspath('.'))
     f.seek(0L)
-    url = config.remote + '/upload/' + config.id
-    r = requests.post(url, headers=headers, data=f)
+    r = config.post('/upload/', data=f)
 
     if r.status_code == 200:
         return
@@ -102,16 +113,13 @@ def push(config):
 def clone(config):
     from nova import memtar
 
-    headers = {'Auth-Token': config.token}
-
     if not config.name:
-        r = requests.get(config.dataset_url, params=params)
+        r = config.get(config.dataset_url)
         name = r.json()['name']
     else:
         name = config.name
 
-    url = config.url('/clone/' + str(config.id))
-    r = requests.get(url, headers=headers)
+    r = config.get('/clone/' + str(config.id))
     f = io.BytesIO(r.content)
     memtar.extract_tar(f, os.path.join(os.path.abspath('.'), name))
 
@@ -121,8 +129,7 @@ def clone(config):
 
 def close(config):
     data = dict(id=config.id, closed=True)
-    headers = {'Auth-Token': config.token}
-    r = requests.put(config.dataset_url, data=data, headers=headers)
+    r = config.put(config.dataset_url, data=data)
 
     if r.status_code != 200:
         logging.error(r.reason)
@@ -133,8 +140,7 @@ def init(config):
 
     # create dataset on remote
     data = dict(name=name)
-    headers = {'Auth-Token': config.token}
-    r = requests.post(config.url('/api/datasets'), data=data, headers=headers)
+    r = config.post('/api/datasets', data=data)
     result = r.json()
 
     # write initial configuration
@@ -143,15 +149,13 @@ def init(config):
 
 
 def info(config):
-    headers = {'Auth-Token': config.token}
-    r = requests.get(config.url('/api/datasets/{}'.format(config.id)), headers=headers)
+    r = config.get('/api/datasets/{}'.format(config.id))
     print json.dumps(r.json(), indent=2)
 
 
 def search(config):
-    headers = {'Auth-Token': config.token}
     params = {'q': config.query}
-    r = requests.get(config.url('/api/search'), params=params, headers=headers)
+    r = config.get('/api/search', params=params)
 
     if r.status_code == 200:
         for d in r.json():
@@ -159,8 +163,7 @@ def search(config):
 
 
 def list_datasets(config):
-    headers = {'Auth-Token': config.token}
-    r = requests.get(config.url('/api/datasets'), headers=headers)
+    r = config.get('/api/datasets')
     data = r.json()
 
     if r.status_code != 200:
