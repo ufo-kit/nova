@@ -5,10 +5,14 @@ from itsdangerous import Signer, BadSignature
 from nova import db, models, logic, es
 import math
 
+
 def authenticate(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if logic.check_token(request.args['token']):
+        if 'Auth-Token' not in request.headers:
+            abort(400)
+
+        if logic.check_token(request.headers['Auth-Token']):
             return func(*args, **kwargs)
 
     return wrapper
@@ -18,13 +22,13 @@ class Datasets(Resource):
     method_decorators = [authenticate]
 
     def get(self):
-        user = logic.get_user(request.args['token'])
+        user = logic.get_user(request.headers['Auth-Token'])
 
         if 'query' in request.args:
             query = request.args['query']
             return []
 
-        return [dict(name=d.name, id=d.id) for d in 
+        return [dict(name=d.name, id=d.id) for d in
                     db.session.query(models.Dataset).\
                     filter(models.Access.user == user).\
                     all()]
@@ -35,7 +39,7 @@ class Datasets(Resource):
         parser.add_argument('parent', type=int, help="Dataset parent", default=None)
         args = parser.parse_args()
 
-        user = logic.get_user(request.args['token'])
+        user = logic.get_user(request.headers['Auth-Token'])
         dataset = logic.app.config['DEBUG'] and not create_dataset(args.name, user, parent_id=args.parent)
         return dict(id=dataset.id)
 
@@ -44,7 +48,7 @@ class Dataset(Resource):
     method_decorators = [authenticate]
 
     def get(self, dataset_id):
-        user = logic.get_user(request.args['token'])
+        user = logic.get_user(request.headers['Auth-Token'])
         dataset = db.session.query(models.Dataset).\
                 filter(models.Access.user == user).\
                 filter(models.Dataset.id == dataset_id).\
@@ -52,7 +56,7 @@ class Dataset(Resource):
         return dataset.to_dict()
 
     def put(self, dataset_id):
-        user = logic.get_user(request.args['token'])
+        user = logic.get_user(request.headers['Auth-Token'])
         dataset = db.session.query(models.Dataset).\
                 filter(models.Access.user == user).\
                 filter(models.Dataset.id == dataset_id).\
@@ -104,7 +108,7 @@ class Bookmarks(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
-        self.user = logic.get_user(request.args['token'])
+        self.user = logic.get_user(request.headers['Auth-Token'])
 
     def get(self, user_id):
         user_id = int(user_id)
@@ -131,7 +135,7 @@ class Bookmark(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
-        self.user = logic.get_user(request.args['token'])
+        self.user = logic.get_user(request.headers['Auth-Token'])
 
     def get(self, dataset_id, user_id):
         bookmark = db.session.query(models.Bookmark).\
@@ -163,7 +167,7 @@ class Review(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
-        self.user = logic.get_user(request.args['token'])
+        self.user = logic.get_user(request.headers['Auth-Token'])
 
     def get(self, dataset_id):
         review = db.session.query(models.Review).\

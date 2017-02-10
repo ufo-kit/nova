@@ -84,11 +84,11 @@ class Config(object):
 def push(config):
     from nova import memtar
 
-    params = dict(token=config.token)
+    headers = {'Auth-Token': config.token}
     f = memtar.create_tar(os.path.abspath('.'))
     f.seek(0L)
     url = config.remote + '/upload/' + config.id
-    r = requests.post(url, params=params, data=f)
+    r = requests.post(url, headers=headers, data=f)
 
     if r.status_code == 200:
         return
@@ -102,7 +102,7 @@ def push(config):
 def clone(config):
     from nova import memtar
 
-    params = dict(token=config.token)
+    headers = {'Auth-Token': config.token}
 
     if not config.name:
         r = requests.get(config.dataset_url, params=params)
@@ -111,7 +111,7 @@ def clone(config):
         name = config.name
 
     url = config.url('/clone/' + str(config.id))
-    r = requests.get(url, params=params)
+    r = requests.get(url, headers=headers)
     f = io.BytesIO(r.content)
     memtar.extract_tar(f, os.path.join(os.path.abspath('.'), name))
 
@@ -120,9 +120,9 @@ def clone(config):
 
 
 def close(config):
-    params = dict(token=config.token)
     data = dict(id=config.id, closed=True)
-    r = requests.put(config.dataset_url, params=params, data=data)
+    headers = {'Auth-Token': config.token}
+    r = requests.put(config.dataset_url, data=data, headers=headers)
 
     if r.status_code != 200:
         logging.error(r.reason)
@@ -133,8 +133,8 @@ def init(config):
 
     # create dataset on remote
     data = dict(name=name)
-    params = dict(token=config.token)
-    r = requests.post(config.url('/api/datasets'), params=params, data=data)
+    headers = {'Auth-Token': config.token}
+    r = requests.post(config.url('/api/datasets'), data=data, headers=headers)
     result = r.json()
 
     # write initial configuration
@@ -143,14 +143,15 @@ def init(config):
 
 
 def info(config):
-    params = dict(token=config.token)
-    r = requests.get(config.url('/api/datasets/{}'.format(config.id)), params=params)
+    headers = {'Auth-Token': config.token}
+    r = requests.get(config.url('/api/datasets/{}'.format(config.id)), headers=headers)
     print json.dumps(r.json(), indent=2)
 
 
 def search(config):
-    params = dict(token=config.token, q=config.query)
-    r = requests.get(config.url('/api/search'), params=params)
+    headers = {'Auth-Token': config.token}
+    params = {'q': config.query}
+    r = requests.get(config.url('/api/search'), params=params, headers=headers)
 
     if r.status_code == 200:
         for d in r.json():
@@ -158,9 +159,8 @@ def search(config):
 
 
 def list_datasets(config):
-    params = dict(token=config.token)
-
-    r = requests.get(config.url('/api/datasets'), params=params)
+    headers = {'Auth-Token': config.token}
+    r = requests.get(config.url('/api/datasets'), headers=headers)
     data = r.json()
 
     if r.status_code != 200:

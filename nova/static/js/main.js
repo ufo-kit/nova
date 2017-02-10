@@ -24,18 +24,19 @@ var app = new Vue({
     }
   },
   created: function() {
-    var params = {
-      token: this.token
-    }
     var user_id = this.token.split('.')[0];
-    var api_str = '/api/user/'+user_id+'/bookmarks/'+dataset_id;
-    this.$http.get(api_str, {params: params}).then((response) => {
+    var api_str = '/api/user/' + user_id + '/bookmarks/' + dataset_id;
+    var headers = {
+      'Auth-Token': this.token,
+    }
+
+    this.$http.get(api_str, {headers: headers}).then((response) => {
       if (response.body.exists) this.dataset_bookmarked = true;
     });
     
-    
-    api_str = '/api/datasets/'+dataset_id+'/reviews'
-    this.$http.get(api_str, {params: params}).then((response) => {
+    api_str = '/api/datasets/' + dataset_id + '/reviews';
+
+    this.$http.get(api_str, {headers: headers}).then((response) => {
       this.dataset_review_count = response.body.count;
       this.dataset_avg_rating = response.body.avg_rating;
       this.dataset_base_rating = Math.floor(this.dataset_avg_rating);
@@ -43,9 +44,9 @@ var app = new Vue({
       if (response.body.count > 0) this.dataset_reviews = response.body.data;
     });
 
-    api_str = '/api/user/'+user_id+'/bookmarks'
-      this.$http.get(api_str, {params: params}).then((response) => {
-        this.bookmarked_datasets = response.body
+    api_str = '/api/user/' + user_id + '/bookmarks';
+    this.$http.get(api_str, {headers: headers}).then((response) => {
+      this.bookmarked_datasets = response.body
     });
   },
   methods: {
@@ -53,10 +54,13 @@ var app = new Vue({
       function (query) {
         var params = {
           q: query,
-          token: this.token,
         }
 
-        this.$http.get('/api/search', {params: params}).then((response) => {
+        var headers = {
+            'Auth-Token': this.token,
+        }
+
+        this.$http.get('/api/search', {headers: headers}).then((response) => {
           return response.json();
         }).then((items) => {
           this.search_items = items
@@ -65,17 +69,20 @@ var app = new Vue({
       250
     ),
     bookmark: function (event) {
-      var params = {
-        token: this.token
+      var headers = {
+        'Auth-Token': this.token,
       }
+
       var user_id = this.token.split('.')[0];
-      var api_str = '/api/user/'+user_id+'/bookmarks/'+dataset_id;
+      var api_str = '/api/user/' + user_id + '/bookmarks/' + dataset_id;
+
       if (this.dataset_bookmarked) {
-        this.$http.delete(api_str, {params: params}).then((response) => {
+        this.$http.delete(api_str, {headers: headers}).then((response) => {
           if (response.status == 200) this.dataset_bookmarked = false
         });
-      } else {
-        this.$http.post(api_str, null, {params: params}).then((response) => {
+      } 
+      else {
+        this.$http.post(api_str, null, {headers: headers}).then((response) => {
           if (response.status == 200) this.dataset_bookmarked = true
         });
       }
