@@ -33,15 +33,17 @@ var app = new Vue({
     this.$http.get(api_str, {headers: headers}).then((response) => {
       if (response.body.exists) this.dataset_bookmarked = true;
     });
-    
+
     api_str = '/api/datasets/' + dataset_id + '/reviews';
 
     this.$http.get(api_str, {headers: headers}).then((response) => {
       this.dataset_review_count = response.body.count;
       this.dataset_avg_rating = response.body.avg_rating;
       this.dataset_base_rating = Math.floor(this.dataset_avg_rating);
-      if (this.dataset_avg_rating - this.dataset_base_rating >= .5) this.dataset_half_star = true;
-      if (response.body.count > 0) this.dataset_reviews = response.body.data;
+      this.dataset_half_star = (this.dataset_avg_rating - this.dataset_base_rating) >= .5;
+
+      if (response.body.count > 0)
+        this.dataset_reviews = response.body.data;
     });
 
     api_str = '/api/user/' + user_id + '/bookmarks';
@@ -78,12 +80,12 @@ var app = new Vue({
 
       if (this.dataset_bookmarked) {
         this.$http.delete(api_str, {headers: headers}).then((response) => {
-          if (response.status == 200) this.dataset_bookmarked = false
+          this.dataset_bookmarked = response.status != 200;
         });
-      } 
+      }
       else {
         this.$http.post(api_str, null, {headers: headers}).then((response) => {
-          if (response.status == 200) this.dataset_bookmarked = true
+          this.dataset_bookmarked = response.status == 200;
         });
       }
     },
