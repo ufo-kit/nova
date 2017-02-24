@@ -80,7 +80,7 @@ class Config(object):
     def post(self, relative_url, **kwargs):
         return requests.post(self.url(relative_url), headers=self.headers, **kwargs)
 
-    def post(self, relative_url, **kwargs):
+    def put(self, relative_url, **kwargs):
         return requests.put(self.url(relative_url), headers=self.headers, **kwargs)
 
     @property
