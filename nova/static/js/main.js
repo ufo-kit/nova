@@ -62,7 +62,7 @@ var app = new Vue({
             'Auth-Token': this.token,
         }
 
-        this.$http.get('/api/search', {headers: headers}).then((response) => {
+        this.$http.get('/api/search', {params: params, headers: headers}).then((response) => {
           return response.json();
         }).then((items) => {
           this.search_items = items
