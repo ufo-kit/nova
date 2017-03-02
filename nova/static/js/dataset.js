@@ -1,41 +1,14 @@
-function readCookie(a) {
-    var b = document.cookie.match('(^|;)\\s*' + a + '\\s*=\\s*([^;]+)');
-    return b ? b.pop() : '';
-}
 
 Vue.component('confirmdeletion', {
   template: '#modal-template',
   props: ['show']
 })
 
-
-var app = new Vue({
-  el: '#body',
+var meta = new Vue ({
+  el:'#meta-info',
   data: {
     token: readCookie('token'),
-    query: '',
-    message: '',
-    search_items: [],
-    bookmarked_datasets: [],
     dataset_bookmarked: false,
-    dataset_avg_rating: 0,
-    dataset_base_rating: 0,
-    dataset_half_star: false,
-    dataset_reviews: [],
-    dataset_review_count: 0,
-    show_review_input: true,
-    isRated: false,
-    rating_notified: false,
-    review_text: '',
-    n: 0,
-    review_being_updated: false,
-    review_under_updation: '',
-    show_modal_delete_review: false,
-   },
-  watch: {
-    query: function (data) {
-      this.searchQuery (data)
-    }
   },
   created: function() {
     var user_id = this.token.split('.')[0]
@@ -47,31 +20,8 @@ var app = new Vue({
     this.$http.get(api_str, {headers: headers}).then((response) => {
       if (response.body.exists) this.dataset_bookmarked = true
     })
-    this.loadReviews(headers)
-    api_str = '/api/user/'+username+'/bookmarks'
-      this.$http.get(api_str, {headers: headers}).then((response) => {
-        this.bookmarked_datasets = response.body
-    })
   },
   methods: {
-    searchQuery: _.debounce(
-      function (query) {
-        var params = {
-          q: query
-        }
-
-        var headers = {
-            'Auth-Token': this.token
-        }
-
-        this.$http.get('/api/search', {params: params, headers: headers}).then((response) => {
-          return response.json();
-        }).then((items) => {
-          this.search_items = items
-        })
-      },
-      250
-    ),
     bookmark: function (event) {
       var headers = {
         'Auth-Token': this.token
@@ -90,7 +40,36 @@ var app = new Vue({
           this.dataset_bookmarked = response.status == 200
         })
       }
-    },
+    }
+  }
+})
+
+
+var reviews = new Vue ({
+  el:'#reviews',
+  data: {
+    token: readCookie('token'),
+    dataset_avg_rating: 0,
+    dataset_base_rating: 0,
+    dataset_half_star: false,
+    dataset_reviews: [],
+    dataset_review_count: 0,
+    show_review_input: true,
+    isRated: false,
+    rating_notified: false,
+    review_text: '',
+    n: 0,
+    review_being_updated: false,
+    review_under_updation: '',
+    show_modal_delete_review: false
+  },
+  created: function() {
+    var headers = {
+      'Auth-Token': this.token
+    }
+    this.loadReviews(headers)
+  },
+  methods: {
     loadReviews: function (headers) {
       api_str = '/api/datasets/'+dataset_id+'/reviews'
       this.$http.get(api_str, {headers: headers}).then((response) => {
@@ -150,7 +129,7 @@ var app = new Vue({
       this.n = 0
       this.isRated = false
       var headers = {
-        'Auth-Token': this.token
+        'Auth-Token': readCookie('token')
       }
       var api_str = '/api/datasets/'+this.review_under_updation.dataset_id+'/reviews/'+this.review_under_updation.user_id
       this.$http.delete(api_str, {headers: headers}).then((response) => {
@@ -158,6 +137,10 @@ var app = new Vue({
         this.show_modal_delete_review = false
       })
       this.loadReviews(headers)
+    }, 
+    dismissModal: function ()
+    {
+      this.show_modal_delete_review = false
     },
     timeSince: function(date) {
       date = new Date(date)
@@ -177,10 +160,6 @@ var app = new Vue({
         return interval + " m ago"
       }
       return Math.floor(seconds) + " s ago"
-    }, 
-    dismissModal: function ()
-    {
-      this.show_modal_delete_review = false
     }
   }
 })

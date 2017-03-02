@@ -23,6 +23,26 @@
         </div>
       </transition>
     </script>
+    <script type="text/x-template" id="search-results-template">
+      <transition name="search-results">
+        <div class="search-results-mask" v-show="show">
+          <div class="search-results-wrapper">
+            <div class="search-results-container container">
+              <div class="search-results"><slot name="search-results"></slot></div>
+              <div class="see-more-results"><a @click="showFullResults()" class="cursor-pointer">See More ...</a></div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/vue.resource/1.0.3/vue-resource.min.js"></script>
+    <script src="{{ url_for('static', filename='lodash/dist/lodash.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootswatch-dist/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='system.js/dist/system.js') }}"></script>
+    <script>System.config({baseURL: '{{ url_for("static", filename='js') }}'});</script>
+    <script src="{{ url_for('static', filename='js/init.js') }}"></script>
     <div id="body">
     <nav class="navbar navbar-default">
       <div class="container">
@@ -46,20 +66,33 @@
           </li>
         </ul>
         {% endif %}
-        <form class="navbar-form navbar-right">
-          <div class="input-group" id="main-search">
-            <input v-model="query" type="search" class="form-control" name="query" autocomplete="off" placeholder="Search …">
-            <span class="input-group-btn">
-              <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
-            </span>
-          </div>
-        </form>
+        <div class="col-lg-6 col-lg-offset-1" id="main-search">
+          <i class="fa fa-search"></i>
+          <input v-model="search_query" type="search" class="form-control" name="searchquery" autocomplete="off" placeholder="Search …"></input>
+          <searchresults :show.sync="show_results" :search_results.sync="search_results">
+            <div slot="search-results">
+              <div class="row dataset-pad" v-for="item in search_results">
+                <div class="col-sm-1">
+                  <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
+                </div>
+                <div class="col-sm-11">
+                  <h3 class="dataset-link">
+                    {% raw %}
+                    <a v-bind:href="item.owner_url">{{ item.owner }}</a> /
+                    <a v-bind:href="item.collection_url">{{ item.collection }}</a> /
+                    <a v-bind:href="item.url">{{ item.name }}</a>
+                    {% endraw %}
+                  </h3>
+                </div>
+              </div>
+            </div>
+          </searchresults>
+        </div>
       </div>
     </nav>
     <div class="container nova-main">
     {% block body %}{% endblock %}
     </div>
-
     <footer class="nova-footer">
       <div class="container">
         <p>NOVA – Network for Online Visualization and Synergistic Analysis of
@@ -70,15 +103,7 @@
         Greifswald.</p>
       </div>
     </footer>
-    <script src="{{ url_for('static', filename='jquery/dist/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootswatch-dist/js/bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='system.js/dist/system.js') }}"></script>
-    <script>
-      System.config({
-        baseURL: '{{ url_for("static", filename='js') }}',
-      });
-      System.import('main.js')
-    </script>
+    <script>System.import('search.js')</script>
     </div>
   </body>
 </html>

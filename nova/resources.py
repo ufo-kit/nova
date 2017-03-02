@@ -78,7 +78,7 @@ class Search(Resource):
             'sort': [
                 { 'name': 'asc' }
             ],
-            'size': 15,
+            'size': 10,
             'query': {
                 'match': {
                     'tokenized': {

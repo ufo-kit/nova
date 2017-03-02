@@ -373,7 +373,7 @@ def filter(page=1):
         hits = es.search(index='datasets', doc_type='dataset', body=body)
         names = [h['_source']['name'] for h in hits['hits']['hits']]
         datasets = Access.query.join(Dataset).filter(Dataset.name.in_(names))
-        pagination = datasets.paginate(page=page, per_page=16)
+        pagination = datasets.paginate(page=page, per_page=8)
 
         return render_template('index/search.html', pagination=pagination)
 
@@ -392,7 +392,7 @@ def filter(page=1):
     if 'order' in search_terms:
         samples = samples.filter(SampleScan.order_id == search_terms['order'])
 
-    pagination = samples.paginate(page=page, per_page=16)
+    pagination = samples.paginate(page=page, per_page=8)
     return render_template('index/filter.html', pagination=pagination, search_terms=search_terms)
 
 
