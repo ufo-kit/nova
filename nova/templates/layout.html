@@ -29,7 +29,7 @@
           <div class="search-results-wrapper">
             <div class="search-results-container container">
               <div class="search-results"><slot name="search-results"></slot></div>
-              <div class="see-more-results"><a @click="showFullResults()" class="cursor-pointer">See More ...</a></div>
+              <div class="see-more-results"><slot name="show-full-results"></slot></div>
             </div>
           </div>
         </div>
@@ -86,6 +86,7 @@
                 </div>
               </div>
             </div>
+            <a slot="show-full-results" @click="showFullResults()" class="cursor-pointer">See More ...</a>
           </searchresults>
         </div>
       </div>

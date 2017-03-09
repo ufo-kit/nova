@@ -1,6 +1,6 @@
 Vue.component('searchresults', {
   template: '#search-results-template',
-  props: ['show', 'search_results'],
+  props: ['show', 'search_query'],
   methods: {
     showFullResults: function() {
       this.$parent.$options.methods.showFullResults()
@@ -20,7 +20,7 @@ var mainsearch = new Vue ({
     search_query: function (data) {
       if (data == '')
         this.hideResults()
-      else
+      else 
         this.searchQuery(data)
     }
   },
@@ -49,8 +49,8 @@ var mainsearch = new Vue ({
     hideResults: function() {
       this.show_results = false
     },
-    showFullResults: function() {
-      window.location = "search?q="+this.search_query
+    showFullResults: function(query) {
+      window.location = "/search?q="+this.search_query
     }
   }
 })
