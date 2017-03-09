@@ -355,28 +355,30 @@ def reindex():
 
     return redirect(url_for('index'))
 
-@app.route('/search', methods=['GET', 'POST'])
-@app.route('/search/<int:page>', methods=['GET', 'POST'])
+@app.route('/search', methods=['GET'])
 @login_required(admin=False)
-def filter(page=1):
+def complete_search():
     # form = SearchForm()
-
     # XXX: for some reason this does not validate?
     # if form.validate_on_submit():
     #     pass
+    query = request.args['q']
+    page = 1
+    if 'page' in request.args:
+        page = int(request.args['page'])
+    # XXX: also search in description
 
-    if request.method == 'POST':
-        query = request.form['query']
+    body = {'query': {'match': {'tokenized': {'query': query, 'fuzziness': 'AUTO', 'operator': 'and'}}}}
+    hits = es.search(index='datasets', doc_type='dataset', body=body)
+    names = [h['_source']['name'] for h in hits['hits']['hits']]
+    datasets = Access.query.join(Dataset).filter(Dataset.name.in_(names))
+    pagination = datasets.paginate(page=page, per_page=8)
 
-        # XXX: also search in description
-        body = {'query': {'match': {'tokenized': {'query': query, 'fuzziness': 'AUTO', 'operator': 'and'}}}}
-        hits = es.search(index='datasets', doc_type='dataset', body=body)
-        names = [h['_source']['name'] for h in hits['hits']['hits']]
-        datasets = Access.query.join(Dataset).filter(Dataset.name.in_(names))
-        pagination = datasets.paginate(page=page, per_page=8)
+    return render_template('base/search.html', pagination=pagination, query=query)
 
-        return render_template('index/search.html', pagination=pagination)
-
+@app.route('/filter', methods = ['GET'])
+@app.route('/filter/<int:page>', methods=['GET'])
+def filter(page=1):
     samples = Access.query.join(SampleScan)
 
     search_terms = {x: request.args[x] for x in ('genus', 'family', 'order') if x in request.args}

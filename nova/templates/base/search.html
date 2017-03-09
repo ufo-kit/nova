@@ -13,29 +13,51 @@
 <div class="row">
   <div class="col-lg-12">
     <div class="page-header">
-      <h2>{{ title }}</h2>
+      <h2>Datasets</h2>
     </div>
   </div>
 </div>
 <div id="search-results">
-  <div class="row dataset-pad" v-for="item in {{search_results}}">
+  {% for access in pagination.items %}
+  <div class="row dataset-pad">
     <div class="col-sm-1">
       <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
     </div>
     <div class="col-sm-11">
       <h3 class="dataset-link">
-        {% raw %}
-        <a v-bind:href="item.owner_url">{{ item.owner }}</a> /
-        <a v-bind:href="item.collection_url">{{ item.collection }}</a> /
-        <a v-bind:href="item.url">{{ item.name }}</a>
-        {% endraw %}
+        <a href="{{ url_for("profile", name=access.user.name) }}">{{ access.user.name }}</a> /
+        <a href="{{ url_for("show_collection", name=access.user.name, collection_name=access.dataset.collection.name) }}">{{ access.dataset.collection.name }}</a> /
+        <a href="{{ url_for("show_dataset", name=access.user.name, collection_name=access.dataset.collection.name, dataset_name=access.dataset.name) }}">{{ access.dataset.name }}</a>
       </h3>
-      <p></p>
+      <p>
+       {% if access.dataset.description %}
+       {{ access.dataset.description }}
+       {% endif %}
+      </p>
     </div>
   </div>
+  {% endfor %}
+  {% if pagination.pages > 1 %}
+  <div class="row">
+    <div class="col-lg-12">
+      <nav aria-label="Page navigation">
+        <ul class="pagination">
+          {% for page in pagination.iter_pages() %}
+            {% if page %}
+              {% if page != pagination.page %}
+              <li><a href="{{ url_for("complete_search", page=page, q=query) }}">{{ page }}</a></li>
+              {% else %}
+              <li class="active"><a href="#">{{ page }}</a></li>
+              {% endif %}
+            {% else %}
+              <li class="disabled"><span class="ellipsis">…</span></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+{% endif %}
 </div>
-<script src="{{ url_for('static', filename='vue/dist/vue.min.js') }}"></script>
-<script src="{{ url_for('static', filename='vue-resource/dist/vue-resource.min.js') }}"></script>
-<script src="{{ url_for('static', filename='lodash/dist/lodash.min.js') }}"></script>
 <script>dataset_id = 0;  var username = '';</script>
 {% endblock %}
