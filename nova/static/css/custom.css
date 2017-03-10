@@ -16,9 +16,6 @@ a:hover {
   text-decoration: underline;
 }
 
-a.cursor-pointer {
-  cursor: pointer;
-}
 .mute {
   opacity: 0.1;
 }
