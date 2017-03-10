@@ -56,12 +56,4 @@ var mainsearch = new Vue ({
       this.search_query = ''
     },
   },
-  computed: {
-    searchIcon: function () {
-      return {
-        'fa-search': !this.show_results,
-        'fa-times': this.show_results,
-      }
-    }
-  },
 })

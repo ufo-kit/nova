@@ -69,7 +69,9 @@
         <div class="col-lg-6 col-lg-offset-1" id="main-search">
           <div class="input-group">
             <input v-model="search_query" type="search" class="form-control" name="searchquery" autocomplete="off" placeholder="Search"></input>
-            <span class="input-group-addon" @click="clearQuery()"><i class="fa" v-bind:class="searchIcon"></i></span>
+            <span class="input-group-addon" v-bind:class="{ clickable: show_results }" @click="clearQuery()">
+              <i class="fa" v-bind:class="{ 'fa-search': !show_results, 'fa-times': show_results }"></i>
+            </span>
           </div>
           <searchresults :show.sync="show_results" :search_results.sync="search_results">
             <div slot="search-results">
