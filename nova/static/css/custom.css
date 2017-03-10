@@ -48,6 +48,10 @@ a:hover {
   background-color: #222222;
 }
 
+.clickable {
+  cursor: pointer;
+}
+
 #main-menu li a i {
   width: 20px;
   margin-right: 6px;
@@ -82,11 +86,6 @@ a:hover {
 #meta-info div.page-header>h2>div {
     display: inline-block; 
     margin-right:20px;
-}
-
-#meta-info i.fa-bookmark
-{
-    cursor: pointer;
 }
 
 #reviews {

@@ -8,7 +8,7 @@ var meta = new Vue ({
   el:'#meta-info',
   data: {
     token: readCookie('token'),
-    dataset_bookmarked: false,
+    bookmarked: false,
   },
   created: function() {
     var user_id = this.token.split('.')[0]
@@ -18,7 +18,7 @@ var meta = new Vue ({
     }
 
     this.$http.get(api_str, {headers: headers}).then((response) => {
-      if (response.body.exists) this.dataset_bookmarked = true
+      this.bookmarked = response.body.exists
     })
   },
   methods: {
@@ -30,14 +30,14 @@ var meta = new Vue ({
       var user_id = this.token.split('.')[0]
       var api_str = '/api/user/' + user_id + '/bookmarks/' + dataset_id
 
-      if (this.dataset_bookmarked) {
+      if (this.bookmarked) {
         this.$http.delete(api_str, {headers: headers}).then((response) => {
-          this.dataset_bookmarked = response.status != 200
+          this.bookmarked = response.status != 200
         })
       }
       else {
         this.$http.post(api_str, null, {headers: headers}).then((response) => {
-          this.dataset_bookmarked = response.status == 200
+          this.bookmarked = response.status == 200
         })
       }
     }

@@ -39,7 +39,10 @@
     <div class="page-header">
       <h2>
     {% raw %}
-    <div><span v-if="dataset_bookmarked"><i v-on:click="bookmark" class="fa fa-bookmark"></i></span><span v-else><i v-on:click="bookmark" class="fa fa-bookmark-o"></i></span></div>
+      <div class="clickable">
+        <i v-bind:class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }"
+           v-on:click="bookmark"></i>
+      </div>
     {% endraw %}
 {% if dataset.type == "samplescan" %}
       Sample scan
