@@ -198,10 +198,18 @@
           </div>
           <div v-else><p>{{ review.comment }}</p></div>
           <div v-if="review.editable" class="ri-options">
-            <a v-if="! review_being_updated" v-on:click="beginUpdatingReview(review)" class="cursor-pointer"><i class="fa fa-pencil"></i> Edit</a>
-            <a v-if="review_being_updated" v-on:click="endUpdatingReview" class="cursor-pointer update-button"><i class="fa fa-times"></i> Cancel</a>
-            <a v-if="! review_being_updated" class="cursor-pointer" v-on:click="beginDeletingReview(review)"><i class="fa fa-trash"></i> Delete</a>
-            <a v-if="review_being_updated" v-on:click="sendUpdatedReview" class="cursor-pointer update-button"><i class="fa fa-arrow-right "></i> Update</a>
+            <a v-if="! review_being_updated" v-on:click="beginUpdatingReview(review)" class="clickable">
+              <i class="fa fa-pencil"></i> Edit
+            </a>
+            <a v-if="review_being_updated" v-on:click="endUpdatingReview" class="clickable">
+              <i class="fa fa-times"></i> Cancel
+            </a>
+            <a v-if="review_being_updated" v-on:click="sendUpdatedReview" class="clickable">
+              <i class="fa fa-arrow-right"></i> Update
+            </a>
+            <a v-if="! review_being_updated" v-on:click="beginDeletingReview(review)" class="clickable">
+              <i class="fa fa-trash"></i> Delete
+            </a>
           </div>
           <hr/>
         </div>

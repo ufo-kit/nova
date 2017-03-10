@@ -145,13 +145,6 @@ a:hover {
     font-size: 12px;
 }
 
-.ri-options>a.update-button{
-    float: right;
-    margin-right:0px;
-    margin-top: 5px;
-    margin-left: 20px;
-}
-
 #review-input {
     margin-top:10px;
     display: table;
