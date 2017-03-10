@@ -71,7 +71,7 @@
             <input v-model="search_query" type="search" class="form-control" name="searchquery" autocomplete="off" placeholder="Search"></input>
             <span class="input-group-addon" @click="clearQuery()"><i class="fa" v-bind:class="searchIcon"></i></span>
           </div>
-          <searchresults :show.sync="show_results" :search_results.sync="search_results">
+          <searchresults :show.sync="haveSearchResults" :search_results.sync="search_results">
             <div slot="search-results">
               <div class="row dataset-pad" v-for="item in search_results">
                 <div class="col-sm-1">

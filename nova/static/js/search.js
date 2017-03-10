@@ -14,13 +14,12 @@ var mainsearch = new Vue ({
     token: readCookie('token'),
     search_query: '',
     search_results: [],
-    show_results: false
   },
   watch: {
     search_query: function (data) {
       if (data == '')
-        this.hideResults()
-      else 
+        this.search_results = []
+      else
         this.searchQuery(data)
     }
   },
@@ -37,30 +36,28 @@ var mainsearch = new Vue ({
           return response.json();
         }).then((items) => {
           this.search_results = items
-          if (items.length >0) this.showResults()
-          else this.hideResults()
         })
       },
       250
     ),
-    showResults: function() {
-      this.show_results = true
-    },
-    hideResults: function() {
-      this.show_results = false
-    },
     showFullResults: function(query) {
-      window.location = "/search?q="+this.search_query
+      window.location = "/search?q=" + this.search_query
     },
     clearQuery: function () {
       this.search_query = ''
+      this.search_results = []
+    },
+    haveSearchResults: function () {
+      return this.search_results.length > 0
     },
   },
   computed: {
     searchIcon: function () {
+      var results = this.haveSearchResults()
+
       return {
-        'fa-search': !this.show_results,
-        'fa-times': this.show_results,
+        'fa-search': !results,
+        'fa-times': results,
       }
     }
   },
