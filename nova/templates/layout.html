@@ -67,8 +67,10 @@
         </ul>
         {% endif %}
         <div class="col-lg-6 col-lg-offset-1" id="main-search">
-          <i class="fa fa-search"></i>
-          <input v-model="search_query" type="search" class="form-control" name="searchquery" autocomplete="off" placeholder="Search …"></input>
+          <div class="input-group">
+            <input v-model="search_query" type="search" class="form-control" name="searchquery" autocomplete="off" placeholder="Search"></input>
+            <span class="input-group-addon"><i class="fa fa-search"></i></span>
+          </div>
           <searchresults :show.sync="show_results" :search_results.sync="search_results">
             <div slot="search-results">
               <div class="row dataset-pad" v-for="item in search_results">

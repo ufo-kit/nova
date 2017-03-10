@@ -61,24 +61,20 @@ a.cursor-pointer {
   margin-top: 6px;
 }
 
-#main-search i.fa-search {
+#main-search span.input-group-addon {
   color: #fff;
-  float: left;
-  margin: 12px 0px;
-  position: absolute;
+  background-color: #373737;
+  border: none;
 }
 
 #main-search input {
-  display: inline-block;
-  padding: 3px 18px;
-  padding-left: 30px;
   color: #fff;
-  background-color: rgba(0,0,0,0);
+  background-color: #373737;
   border: none;
 }
 
 #main-search input::placeholder {
-  color: #fff;
+  color: #ccc;
 }
 
 #main-search input:focus {
