@@ -65,6 +65,7 @@ a.cursor-pointer {
   color: #fff;
   background-color: #373737;
   border: none;
+  cursor: pointer;
 }
 
 #main-search input {

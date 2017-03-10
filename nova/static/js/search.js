@@ -51,8 +51,17 @@ var mainsearch = new Vue ({
     },
     showFullResults: function(query) {
       window.location = "/search?q="+this.search_query
+    },
+    clearQuery: function () {
+      this.search_query = ''
+    },
+  },
+  computed: {
+    searchIcon: function () {
+      return {
+        'fa-search': !this.show_results,
+        'fa-times': this.show_results,
+      }
     }
-  }
+  },
 })
-
-
