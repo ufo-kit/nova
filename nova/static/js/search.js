@@ -57,3 +57,34 @@ var mainsearch = new Vue ({
     },
   },
 })
+
+var notification = new Vue ({
+  el: '#main-notification',
+  data: {
+    token: readCookie('token'),
+    notifications: []
+  },
+  created: function() {
+    this.loadNotifications()
+
+    setInterval(function() {
+      this.loadNotifications()
+    }.bind(this), 30000);
+  },
+  methods: {
+    loadNotifications: function() {
+      var headers = { 'Auth-Token': this.token }
+
+      this.$http.get('/api/notifications', {headers: headers}).then((response) => {
+        this.notifications = response.body.notifications
+      })
+    },
+    dismiss: function(notification_id) {
+      var headers = { 'Auth-Token': this.token }
+
+      this.$http.delete('/api/notification/' + notification_id, {headers: headers}).then((response) => {
+        this.loadNotifications()
+      })
+    }
+  }
+})

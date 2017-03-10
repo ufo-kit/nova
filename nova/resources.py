@@ -225,7 +225,7 @@ class Reviews(Resource):
         for r in review:
             avg_rating += r.rating
             current_i_review = False
-            if (r.user == self.user):
+            if r.user == self.user:
                 i_reviewed = True
                 current_i_review = True
             review_data.append(dict(sender_name=r.user.name,
@@ -233,7 +233,38 @@ class Reviews(Resource):
                                 rating=r.rating, comment=r.comment,
                                 dataset_id = dataset_id, user_id = r.user.id,
                                 created_at=str(r.created_at), editable=current_i_review, id=r.id))
-        if review_count>0:
+
+        if review_count > 0:
             avg_rating /= float(review_count)
-        data = {'count': review_count, 'avg_rating': avg_rating, 'data': review_data, 'self_reviewed': i_reviewed}
-        return data
+
+        return {'count': review_count, 'avg_rating': avg_rating, 'data': review_data, 'self_reviewed': i_reviewed}
+
+
+class Notifications(Resource):
+    method_decorators = [authenticate]
+
+    def get(self):
+        user = logic.get_user(request.headers['Auth-Token'])
+        notifications = db.session.query(models.Notification).\
+            filter(models.Notification.user_id == user.id).\
+            all()
+
+        return {'notifications': [{'message': n.message, 'id': n.id} for n in notifications]}
+
+
+class Notification(Resource):
+    method_decorators = [authenticate]
+
+    def delete(self, notification_id):
+        print notification_id
+        user = logic.get_user(request.headers['Auth-Token'])
+        notification = db.session.query(models.Notification).\
+            filter(models.Notification.id == notification_id).\
+            filter(models.Notification.user_id == user.id).\
+            first()
+
+        if notification:
+            db.session.delete(notification)
+            db.session.commit()
+
+        return 'Notification deleted', 200

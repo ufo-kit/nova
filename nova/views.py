@@ -131,11 +131,6 @@ def index(page=1):
         db.session.commit()
         return render_template('index/welcome.html', user=current_user)
 
-    notifications = Notification.query.filter(Notification.user == current_user).all()
-
-    for notification in notifications:
-        db.session.delete(notification)
-
     shared = db.session.query(Dataset, Access).\
         filter(Access.user == current_user).\
         filter(Access.dataset_id == Dataset.id).\
@@ -150,7 +145,7 @@ def index(page=1):
 
     db.session.commit()
 
-    return render_template('index/index.html', notifications=notifications)
+    return render_template('index/index.html')
 
 
 @app.route('/settings')
