@@ -228,7 +228,7 @@ class Reviews(Resource):
             if (r.user == self.user):
                 i_reviewed = True
                 current_i_review = True
-            review_data.append(dict(sender_name=r.user.fullname,
+            review_data.append(dict(sender_name=r.user.name,
                                 sender_url=url_for('profile', name=r.user.name),
                                 rating=r.rating, comment=r.comment,
                                 dataset_id = dataset_id, user_id = r.user.id,

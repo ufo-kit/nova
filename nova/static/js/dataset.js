@@ -49,13 +49,13 @@ var reviews = new Vue ({
   el:'#reviews',
   data: {
     token: readCookie('token'),
-    dataset_avg_rating: 0,
-    dataset_base_rating: 0,
-    dataset_half_star: false,
-    dataset_reviews: [],
-    dataset_review_count: 0,
+    average_rating: 0,
+    base_rating: 0,
+    half_star: false,
+    reviews: [],
+    review_count: 0,
     show_review_input: true,
-    isRated: false,
+    is_rated: false,
     rating_notified: false,
     review_text: '',
     n: 0,
@@ -73,20 +73,20 @@ var reviews = new Vue ({
     loadReviews: function (headers) {
       api_str = '/api/datasets/'+dataset_id+'/reviews'
       this.$http.get(api_str, {headers: headers}).then((response) => {
-        this.dataset_review_count = parseInt(response.body.count)
-        this.dataset_avg_rating = response.body.avg_rating
-        this.dataset_base_rating = Math.floor(this.dataset_avg_rating)
-        if (this.dataset_avg_rating - this.dataset_base_rating >= .5) this.dataset_half_star = true
-        else this.dataset_half_star = false
+        this.review_count = parseInt(response.body.count)
+        this.average_rating = response.body.avg_rating
+        this.base_rating = Math.floor(this.average_rating)
+        this.half_star = this.average_rating - this.base_rating >= .5
+
         if (response.body.count > 0) { 
-          this.dataset_reviews = response.body.data
+          this.reviews = response.body.data
           this.show_review_input = ! response.body.self_reviewed
         }
       })
     },
     rate: function(n) { 
       this.n = n
-      this.isRated = true
+      this.is_rated = true
       this.rating_notified = false
     },
     putReview: function(comment, rating) {
@@ -94,8 +94,8 @@ var reviews = new Vue ({
         'Auth-Token': this.token
       }
       var jsonBody = {
-        'comment':comment,
-        'rating':rating
+        'comment': comment,
+        'rating': rating
       }
       var user_id = this.token.split('.')[0]
       var api_str = '/api/datasets/'+dataset_id+'/reviews/'+user_id
@@ -117,7 +117,8 @@ var reviews = new Vue ({
       this.putReview(this.review_text, this.n)
     },
     sendNewReview: function() {
-      if (this.isRated && this.n>0) this.putReview(this.review_text, this.n)
+      if (this.is_rated && this.n > 0)
+        this.putReview(this.review_text, this.n)
       else this.rating_notified = true
     },
     beginDeletingReview: function(review) {
@@ -127,19 +128,17 @@ var reviews = new Vue ({
     deleteReview: function() {
       this.review_text = ''
       this.n = 0
-      this.isRated = false
+      this.is_rated = false
       var headers = {
-        'Auth-Token': readCookie('token')
+        'Auth-Token': this.token
       }
       var api_str = '/api/datasets/'+this.review_under_updation.dataset_id+'/reviews/'+this.review_under_updation.user_id
       this.$http.delete(api_str, {headers: headers}).then((response) => {
-        if (response.status == 200)
-        this.show_modal_delete_review = false
+        this.show_modal_delete_review = response.status != 200
       })
       this.loadReviews(headers)
     }, 
-    dismissModal: function ()
-    {
+    dismissModal: function () {
       this.show_modal_delete_review = false
     },
     timeSince: function(date) {

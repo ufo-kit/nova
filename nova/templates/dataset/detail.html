@@ -175,15 +175,15 @@
     <div class="page-header">
       <h2>Reviews</h2>
       <div>
-        <i v-for="n in dataset_base_rating" class="fa fa-star fa-2x"></i>
-        <i v-if="dataset_half_star" class="fa fa-star-half-o fa-2x"></i>
-        <span v-if="!dataset_half_star"><i v-for="n in 5-dataset_base_rating" class="fa fa-star-o fa-2x"></i></span>
-        <span v-if="dataset_half_star"><i v-for="n in 4-dataset_base_rating" class="fa fa-star-o fa-2x"></i></span>
+        <i v-for="n in base_rating" class="fa fa-star fa-2x"></i>
+        <i v-if="half_star" class="fa fa-star-half-o fa-2x"></i>
+        <span v-if="!half_star"><i v-for="n in 5-base_rating" class="fa fa-star-o fa-2x"></i></span>
+        <span v-if="half_star"><i v-for="n in 4-base_rating" class="fa fa-star-o fa-2x"></i></span>
       </div>
     </div>
   </div>
   <div class="col-lg-12" >
-      <div class="review-item col-lg-12" v-for="review in dataset_reviews">
+      <div class="review-item col-lg-12" v-for="review in reviews">
         <div class="ri-time col-lg-1"><p>{{ timeSince(review.created_at) }}</p></div>
         <div class="col-lg-11">
           <p>
@@ -192,7 +192,7 @@
           </p>
           <div id="review-update-input" v-if="review_being_updated && review.editable">
             <textarea v-model="review_text" id="review-update-input-textarea" v-on:keyup.enter="sendUpdatedReview"></textarea>
-            <p id="rating-stars"  v-bind:class="{ rated: isRated }">
+            <p id="rating-stars"  v-bind:class="{ rated: is_rated }">
               <i v-for="i in n" v-on:click="rate(i)" class="fa fa-star"></i><i v-for="i in 5-n" v-on:click="rate(n+i)" class="fa fa-star-o"></i>
             </p>
           </div>
@@ -218,12 +218,12 @@
   {% endraw %}
   <div class="row">
     <div class="col-lg-12">
-      <div v-if="dataset_review_count>3" class="col-lg-offset-11 col-lg-1"><a class="cursor-pointer">See More</a></div>
+      <div v-if="review_count > 3" class="col-lg-offset-11 col-lg-1"><a class="cursor-pointer">See More</a></div>
       <div v-if="show_review_input" class="col-lg-12" id="review-input">
         <div>
           <textarea v-model="review_text" placeholder="Write a review ..." v-on:keydown.enter.prevent="sendNewReview"></textarea>
           <p class="alert" v-show="rating_notified">Not rated yet</p>
-          <p id="rating-stars"  v-bind:class="{ rated: isRated}">
+          <p id="rating-stars"  v-bind:class="{ rated: is_rated }">
             <i v-for="i in n" v-on:click="rate(i)" class="fa fa-star"></i><i v-for="i in 5-n" v-on:click="rate(n+i)" class="fa fa-star-o"></i>
           </p>
         </div>
