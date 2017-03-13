@@ -209,8 +209,7 @@ a:hover {
 }
 
 #rating-stars i {
-    padding:1px;
-    cursor: pointer;
+    padding: 1px;
 }
 
 #review-input p.alert {

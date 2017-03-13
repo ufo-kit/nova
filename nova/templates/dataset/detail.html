@@ -192,8 +192,9 @@
           </p>
           <div id="review-update-input" v-if="review_being_updated && review.editable">
             <textarea v-model="review_text" id="review-update-input-textarea" v-on:keyup.enter="sendUpdatedReview"></textarea>
-            <p id="rating-stars"  v-bind:class="{ rated: is_rated }">
-              <i v-for="i in n" v-on:click="rate(i)" class="fa fa-star"></i><i v-for="i in 5-n" v-on:click="rate(n+i)" class="fa fa-star-o"></i>
+            <p id="rating-stars" v-bind:class="{ rated: is_rated }">
+              <i v-for="i in n" v-on:click="rate(i)" class="clickable fa fa-star"></i>
+              <i v-for="i in 5-n" v-on:click="rate(n+i)" class="clickable fa fa-star-o"></i>
             </p>
           </div>
           <div v-else><p>{{ review.comment }}</p></div>
@@ -223,8 +224,9 @@
         <div>
           <textarea v-model="review_text" placeholder="Write a review ..." v-on:keydown.enter.prevent="sendNewReview"></textarea>
           <p class="alert" v-show="rating_notified">Not rated yet</p>
-          <p id="rating-stars"  v-bind:class="{ rated: is_rated }">
-            <i v-for="i in n" v-on:click="rate(i)" class="fa fa-star"></i><i v-for="i in 5-n" v-on:click="rate(n+i)" class="fa fa-star-o"></i>
+          <p id="rating-stars" v-bind:class="{ rated: is_rated }">
+            <i v-for="i in n" v-on:click="rate(i)" class="clickable fa fa-star"></i>
+            <i v-for="i in 5-n" v-on:click="rate(n+i)" class="clickable fa fa-star-o"></i>
           </p>
         </div>
         <div>
