@@ -49,6 +49,33 @@
         <div class="navbar-header">
           <a class="navbar-brand" href="/"><img src="{{ url_for('static', filename='img/nova-logo.svg') }}" height="100%"></a>
         </div>
+        <div class="col-lg-6 col-lg-offset-1" id="main-search">
+          <div class="input-group">
+            <input v-model="search_query" v-on:keydown.enter.prevent="showFullResults()" v-on:keydown.esc.prevent="clearQuery()" type="search" class="form-control" name="searchquery" autocomplete="off" placeholder="Search"></input>
+            <span class="input-group-addon" v-bind:class="{ clickable: show_results }" @click="clearQuery()">
+              <i class="fa" v-bind:class="{ 'fa-search': !show_results, 'fa-times': show_results }"></i>
+            </span>
+          </div>
+          <searchresults :show.sync="show_results" :search_results.sync="search_results">
+            <div slot="search-results">
+              <div class="row dataset-pad" v-for="item in search_results">
+                <div class="col-sm-1">
+                  <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
+                </div>
+                <div class="col-sm-11">
+                  <h3 class="dataset-link">
+                    {% raw %}
+                    <a v-bind:href="item.owner_url">{{ item.owner }}</a> /
+                    <a v-bind:href="item.collection_url">{{ item.collection }}</a> /
+                    <a v-bind:href="item.url">{{ item.name }}</a>
+                    {% endraw %}
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <a slot="show-full-results" @click="showFullResults()" class="cursor-pointer">See More ...</a>
+          </searchresults>
+        </div>
         {% if current_user.is_authenticated %}
         <ul class="nav navbar-nav navbar-right">
           <li class="dropdown" id="main-notification">
@@ -81,33 +108,6 @@
           </li>
         </ul>
         {% endif %}
-        <div class="col-lg-6 col-lg-offset-1" id="main-search">
-          <div class="input-group">
-            <input v-model="search_query" type="search" class="form-control" name="searchquery" autocomplete="off" placeholder="Search"></input>
-            <span class="input-group-addon" v-bind:class="{ clickable: show_results }" @click="clearQuery()">
-              <i class="fa" v-bind:class="{ 'fa-search': !show_results, 'fa-times': show_results }"></i>
-            </span>
-          </div>
-          <searchresults :show.sync="show_results" :search_results.sync="search_results">
-            <div slot="search-results">
-              <div class="row dataset-pad" v-for="item in search_results">
-                <div class="col-sm-1">
-                  <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
-                </div>
-                <div class="col-sm-11">
-                  <h3 class="dataset-link">
-                    {% raw %}
-                    <a v-bind:href="item.owner_url">{{ item.owner }}</a> /
-                    <a v-bind:href="item.collection_url">{{ item.collection }}</a> /
-                    <a v-bind:href="item.url">{{ item.name }}</a>
-                    {% endraw %}
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <a slot="show-full-results" @click="showFullResults()" class="cursor-pointer">See More ...</a>
-          </searchresults>
-        </div>
       </div>
     </nav>
     <div class="container nova-main">
