@@ -221,11 +221,13 @@ class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
     user = db.relationship('User')
 
     def __repr__(self):
         return '<Notification(user={}, message={})>'.format(self.user.name, self.message)
+
+    def to_dict(self):
+        return {'message': self.message, 'id': self.id}
 
 
 class Process(db.Model):

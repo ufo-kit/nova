@@ -249,14 +249,13 @@ class Notifications(Resource):
             filter(models.Notification.user_id == user.id).\
             all()
 
-        return {'notifications': [{'message': n.message, 'id': n.id} for n in notifications]}
+        return {'notifications': [n.to_dict() for n in notifications]}
 
 
 class Notification(Resource):
     method_decorators = [authenticate]
 
     def delete(self, notification_id):
-        print notification_id
         user = logic.get_user(request.headers['Auth-Token'])
         notification = db.session.query(models.Notification).\
             filter(models.Notification.id == notification_id).\
