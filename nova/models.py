@@ -222,12 +222,16 @@ class Notification(db.Model):
     message = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User')
+    type = db.Column(db.String)
+
+    def __init__(self, type='message'):
+        self.type = type
 
     def __repr__(self):
         return '<Notification(user={}, message={})>'.format(self.user.name, self.message)
 
     def to_dict(self):
-        return {'message': self.message, 'id': self.id}
+        return {'message': self.message, 'id': self.id, 'type': self.type}
 
 
 class Process(db.Model):

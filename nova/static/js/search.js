@@ -55,7 +55,7 @@ var mainsearch = new Vue ({
     clearQuery: function () {
       this.search_query = ''
     },
-  },
+  }
 })
 
 var notification = new Vue ({
@@ -85,6 +85,15 @@ var notification = new Vue ({
       this.$http.delete('/api/notification/' + notification_id, {headers: headers}).then((response) => {
         this.loadNotifications()
       })
+    }
+  },
+  computed: {
+    notificationClass: function (n) {
+      console.log(n);
+      return {
+        'fa-info': n.type == 'message',
+        'fa-question': n.type != 'message',
+      }
     }
   }
 })
