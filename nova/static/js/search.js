@@ -20,7 +20,7 @@ var mainsearch = new Vue ({
     search_query: function (data) {
       if (data == '')
         this.hideResults()
-      else 
+      else
         this.searchQuery(data)
     }
   },
@@ -58,6 +58,36 @@ var mainsearch = new Vue ({
   }
 })
 
+
+Vue.component('notification-item', {
+  props: ['notification'],
+  template: `
+    <li>
+      <div class="row">
+        <div class="col-md-1"><span><i class="fa" v-bind:class="notificationClass"></i></span></div>
+        <div class="col-md-9">{{ notification.message }}</div>
+        <div class="col-md-1"><span class="clickable" @click="dismiss(notification.id)"><i class="fa fa-remove"></i></span></div>
+      </div>
+    </li>`,
+  data: function () {
+    return { }
+  },
+  methods: {
+    dismiss: function (notification_id) {
+      console.log(notification_id)
+      this.$emit('dismiss', notification_id)
+    }
+  },
+  computed: {
+    notificationClass: function () {
+      return {
+        'fa-envelope-open-o': this.notification.type == 'message',
+        'fa-question': this.notification.type != 'message',
+      }
+    }
+  }
+})
+
 var notification = new Vue ({
   el: '#main-notification',
   data: {
@@ -72,28 +102,31 @@ var notification = new Vue ({
     }.bind(this), 30000);
   },
   methods: {
-    loadNotifications: function() {
+    loadNotifications: function () {
       var headers = { 'Auth-Token': this.token }
 
       this.$http.get('/api/notifications', {headers: headers}).then((response) => {
         this.notifications = response.body.notifications
       })
     },
-    dismiss: function(notification_id) {
+    dismissNotification: function (notification_id) {
       var headers = { 'Auth-Token': this.token }
 
       this.$http.delete('/api/notification/' + notification_id, {headers: headers}).then((response) => {
         this.loadNotifications()
       })
-    }
-  },
-  computed: {
-    notificationClass: function (n) {
-      console.log(n);
-      return {
-        'fa-info': n.type == 'message',
-        'fa-question': n.type != 'message',
+    },
+    dismissAllNotifications: function () {
+      var headers = { 'Auth-Token': this.token }
+      var ids = []
+
+      for (var i = 0; i < this.notifications.length; i++) {
+        ids.push(this.notifications[i].id)
       }
+
+      this.$http.patch('/api/notifications', {ids: ids}, {headers: headers}).then((response) => {
+        this.loadNotifications()
+      })
     }
   }
 })

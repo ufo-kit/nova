@@ -84,14 +84,12 @@
               {% raw %}<span v-if="notifications.length > 0" class="badge">{{ notifications.length }}</span>{% endraw %}
             </a>
             <ul v-if="notifications.length > 0" class="dropdown-menu">
-              <li class="notification-entry" v-for="notification in notifications">
-                <div class="row">
-                  <div class="col-md-1"><span><i class="fa" v-bind:class="notificationClass"></i></span></div>
-                  <div class="col-md-9">{% raw %}{{ notification.message }}{% endraw %}</div>
-                  <div class="col-md-1"><span class="clickable" @click="dismiss(notification.id)"><i class="fa fa-remove"></i></span></div>
-                </div>
+              <li class="notification-entry" is="notification-item" v-for="notification in notifications"
+                  v-on:dismiss="dismissNotification" :notification="notification">
                 <hr>
               </li>
+              <li role="separator" class="divider"></li>
+              <li><button class="btn btn-primary btn-sm" v-on:click="dismissAllNotifications">Clear all</button></li>
             </ul>
           </li>
           <li class="dropdown">

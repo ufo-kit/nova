@@ -251,6 +251,20 @@ class Notifications(Resource):
 
         return {'notifications': [n.to_dict() for n in notifications]}
 
+    def patch(self):
+        payload = request.get_json()
+
+        if 'ids' not in payload:
+            raise ValueError
+
+        ids = payload['ids']
+        db.session.query(models.Notification).\
+            filter(models.Notification.id.in_(payload['ids'])).\
+            delete(synchronize_session=False)
+        db.session.commit()
+
+        return 'Notifications deleted', 200
+
 
 class Notification(Resource):
     method_decorators = [authenticate]
