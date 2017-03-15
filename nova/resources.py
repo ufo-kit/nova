@@ -130,31 +130,33 @@ class Bookmark(Resource):
     def get(self, dataset_id, user_id):
         if int(dataset_id) == 0 or int(user_id) == 0:
             return abort(400)
+
         bookmark = db.session.query(models.Bookmark).\
                  filter(models.Bookmark.user_id == user_id).\
                  filter(models.Bookmark.dataset_id == dataset_id)
-        data = {'exists' : False}
-        if bookmark.count() == 1:
-            data['exists'] = True
-        return data
+        return {'exists' : bookmark.count() == 1}
 
     def post(self, dataset_id, user_id):
         user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
-        if user.id == user_id:
-            bookmark = logic.create_bookmark(dataset_id, user_id)
-            return 201
-        abort(401)
+
+        if user.id != user_id:
+            abort(401)
+
+        logic.create_bookmark(dataset_id, user_id)
+        return 201
 
     def delete(self, dataset_id, user_id):
         user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
-        if user.id == user_id:
-            is_deleted = logic.delete_bookmark(dataset_id, user_id)
-            if is_deleted:
-                return 200
+
+        if user.id != user_id:
+            abort(401)
+
+        if not logic.delete_bookmark(dataset_id, user_id):
             abort(404)
-        abort(401)
+
+        return 200
 
 
 class Review(Resource):
@@ -164,45 +166,50 @@ class Review(Resource):
         user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
 
-        if user.id == user_id:
-            review = logic.get_review(dataset_id, user_id)
-            if review:
-                return review
+        if user.id != user_id:
+            abort(401)
 
-            abort(404)
+        review = logic.get_review(dataset_id, user_id)
 
-        abort(401)
+        if review:
+            return review
+
+        abort(404)
 
     def put(self, dataset_id, user_id):
         user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
-        jsonObj = request.get_json()
-        comment = jsonObj['comment']
-        rating = jsonObj['rating']
-        if user.id == user_id:
-            review = logic.get_review(dataset_id, user_id)
-            if review['exists']:
-                if logic.update_review(dataset_id, user_id, rating, comment):
-                    return 200
+        data = request.get_json()
+        comment = data['comment']
+        rating = data['rating']
 
-                abort(500, 'Failed to update object')
-            else:
-                if logic.create_review(dataset_id, user_id, rating, comment):
-                    return 201
-                abort(500, 'Failed to create object')
+        if user.id != user_id:
+            abort(401)
 
-        abort(401)
+        review = logic.get_review(dataset_id, user_id)
+
+        if review['exists']:
+            if logic.update_review(dataset_id, user_id, rating, comment):
+                return 200
+
+            abort(500, 'Failed to update object')
+        else:
+            if logic.create_review(dataset_id, user_id, rating, comment):
+                return 201
+            abort(500, 'Failed to create object')
+
 
     def delete(self, dataset_id, user_id):
         user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
-        if user.id == user_id:
-            is_deleted = logic.delete_review(dataset_id, user_id)
-            if is_deleted:
-                return 'Object Deleted', 200
-            return 'Object Not Found', 404
-        return 'Unauthorized Access', 401
 
+        if user.id != user_id:
+            abort(401)
+
+        if not logic.delete_review(dataset_id, user_id):
+            abort(404)
+
+        return 200
 
 class Reviews(Resource):
     method_decorators = [authenticate]
