@@ -220,28 +220,30 @@ class Reviews(Resource):
         if int(dataset_id) == 0:
             abort(400, 'Malformed syntax')
 
-        review = db.session.query(models.Review).\
+        reviews = db.session.query(models.Review).\
                  filter(models.Review.dataset_id == dataset_id)
-        review_count = review.count()
-        avg_rating = 0
-        review_data = []
+        number = reviews.count()
+        total = 0
+        data = []
         i_reviewed = False;
-        for r in review:
-            avg_rating += r.rating
+
+        for review in reviews:
+            total += review.rating
             current_i_review = False
-            if r.user == user:
+
+            if review.user == user:
                 i_reviewed = True
                 current_i_review = True
-            review_data.append(dict(sender_name=r.user.name,
-                                sender_url=url_for('profile', name=r.user.name),
-                                rating=r.rating, comment=r.comment,
-                                dataset_id = dataset_id, user_id = r.user.id,
-                                created_at=str(r.created_at), editable=current_i_review, id=r.id))
 
-        if review_count > 0:
-            avg_rating /= float(review_count)
+            data.append(dict(sender_name=review.user.name,
+                             sender_url=url_for('profile', name=review.user.name),
+                             rating=review.rating, comment=review.comment,
+                             dataset_id=dataset_id, user_id=review.user.id,
+                             created_at=str(review.created_at),
+                             editable=current_i_review, id=review.id))
 
-        return {'count': review_count, 'avg_rating': avg_rating, 'data': review_data, 'self_reviewed': i_reviewed}
+        average = total / float(number) if number > 0 else 0
+        return {'count': number, 'avg_rating': average, 'data': data, 'self_reviewed': i_reviewed}
 
 
 class Notifications(Resource):
