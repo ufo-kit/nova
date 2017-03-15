@@ -107,12 +107,7 @@ class Search(Resource):
 class Bookmarks(Resource):
     method_decorators = [authenticate]
 
-    def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
-
     def get(self, username):
-        if username == '':
-            return 'Malformed Syntax', 400
         bookmarks = db.session.query(models.Bookmark).join(models.Bookmark.user).\
                   filter(models.User.name == username).\
                   all()
@@ -132,9 +127,6 @@ class Bookmarks(Resource):
 class Bookmark(Resource):
     method_decorators = [authenticate]
 
-    def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
-
     def get(self, dataset_id, user_id):
         if int(dataset_id) == 0 or int(user_id) == 0:
             return 'Malformed Syntax', 400
@@ -147,16 +139,18 @@ class Bookmark(Resource):
         return data
 
     def post(self, dataset_id, user_id):
+        user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
-        if self.user.id == user_id:
-            bookmark = logic.create_bookmark(dataset_id, self.user.id)
+        if user.id == user_id:
+            bookmark = logic.create_bookmark(dataset_id, user_id)
             return 'Object Created'
         return 'Unauthorized Access', 401
 
     def delete(self, dataset_id, user_id):
+        user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
-        if self.user.id == user_id:
-            is_deleted = logic.delete_bookmark(dataset_id, self.user.id)
+        if user.id == user_id:
+            is_deleted = logic.delete_bookmark(dataset_id, user_id)
             if is_deleted:
                 return 'Object Deleted', 200
             return 'Object Not Found', 404
@@ -166,12 +160,11 @@ class Bookmark(Resource):
 class Review(Resource):
     method_decorators = [authenticate]
 
-    def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
-
     def get(self, dataset_id, user_id):
+        user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
-        if self.user.id == user_id:
+
+        if user.id == user_id:
             review = logic.get_review(dataset_id, user_id)
             if review:
                 return review
@@ -179,11 +172,12 @@ class Review(Resource):
         return 'Unauthorized Access', 401
 
     def put(self, dataset_id, user_id):
+        user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
         jsonObj = request.get_json()
         comment = jsonObj['comment']
         rating = jsonObj['rating']
-        if self.user.id == user_id:
+        if user.id == user_id:
             review = logic.get_review(dataset_id, user_id)
             if review['exists']:
                 thisreview = logic.update_review(dataset_id, user_id, rating, comment)
@@ -198,8 +192,9 @@ class Review(Resource):
         return 'Unauthorized Access', 401
 
     def delete(self, dataset_id, user_id):
+        user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
-        if self.user.id == user_id or self.user.is_admin():
+        if user.id == user_id:
             is_deleted = logic.delete_review(dataset_id, user_id)
             if is_deleted:
                 return 'Object Deleted', 200
@@ -210,10 +205,9 @@ class Review(Resource):
 class Reviews(Resource):
     method_decorators = [authenticate]
 
-    def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
-
     def get(self, dataset_id):
+        user = logic.get_user(request.headers['Auth-Token'])
+
         if int(dataset_id) == 0:
             return 'Malformed Syntax', 400
         review = db.session.query(models.Review).\
@@ -225,7 +219,7 @@ class Reviews(Resource):
         for r in review:
             avg_rating += r.rating
             current_i_review = False
-            if r.user == self.user:
+            if r.user == user:
                 i_reviewed = True
                 current_i_review = True
             review_data.append(dict(sender_name=r.user.name,
