@@ -129,7 +129,7 @@ class Bookmark(Resource):
 
     def get(self, dataset_id, user_id):
         if int(dataset_id) == 0 or int(user_id) == 0:
-            return 'Malformed Syntax', 400
+            return abort(400)
         bookmark = db.session.query(models.Bookmark).\
                  filter(models.Bookmark.user_id == user_id).\
                  filter(models.Bookmark.dataset_id == dataset_id)
@@ -143,8 +143,8 @@ class Bookmark(Resource):
         user_id = int(user_id)
         if user.id == user_id:
             bookmark = logic.create_bookmark(dataset_id, user_id)
-            return 'Object Created'
-        return 'Unauthorized Access', 401
+            return 201
+        abort(401)
 
     def delete(self, dataset_id, user_id):
         user = logic.get_user(request.headers['Auth-Token'])
@@ -152,9 +152,9 @@ class Bookmark(Resource):
         if user.id == user_id:
             is_deleted = logic.delete_bookmark(dataset_id, user_id)
             if is_deleted:
-                return 'Object Deleted', 200
-            return 'Object Not Found', 404
-        return 'Unauthorized Access', 401
+                return 200
+            abort(404)
+        abort(401)
 
 
 class Review(Resource):
@@ -168,8 +168,10 @@ class Review(Resource):
             review = logic.get_review(dataset_id, user_id)
             if review:
                 return review
-            return 'Object not found', 404
-        return 'Unauthorized Access', 401
+
+            abort(404)
+
+        abort(401)
 
     def put(self, dataset_id, user_id):
         user = logic.get_user(request.headers['Auth-Token'])
@@ -180,16 +182,16 @@ class Review(Resource):
         if user.id == user_id:
             review = logic.get_review(dataset_id, user_id)
             if review['exists']:
-                thisreview = logic.update_review(dataset_id, user_id, rating, comment)
-                if thisreview:
-                    return 'Object Updated', 200
-                return 'Failed to Update Object', 500
+                if logic.update_review(dataset_id, user_id, rating, comment):
+                    return 200
+
+                abort(500, 'Failed to update object')
             else:
-                thisreview = logic.create_review(dataset_id, user_id, rating, comment)
-                if thisreview:
-                    return 'Object Created', 201
-                return 'Failed to Create Object', 500
-        return 'Unauthorized Access', 401
+                if logic.create_review(dataset_id, user_id, rating, comment):
+                    return 201
+                abort(500, 'Failed to create object')
+
+        abort(401)
 
     def delete(self, dataset_id, user_id):
         user = logic.get_user(request.headers['Auth-Token'])
@@ -209,7 +211,8 @@ class Reviews(Resource):
         user = logic.get_user(request.headers['Auth-Token'])
 
         if int(dataset_id) == 0:
-            return 'Malformed Syntax', 400
+            abort(400, 'Malformed syntax')
+
         review = db.session.query(models.Review).\
                  filter(models.Review.dataset_id == dataset_id)
         review_count = review.count()
@@ -249,7 +252,7 @@ class Notifications(Resource):
         payload = request.get_json()
 
         if 'ids' not in payload:
-            raise ValueError
+            abort(400, message="ids not specified")
 
         ids = payload['ids']
         db.session.query(models.Notification).\
@@ -257,7 +260,7 @@ class Notifications(Resource):
             delete(synchronize_session=False)
         db.session.commit()
 
-        return 'Notifications deleted', 200
+        return 200
 
 
 class Notification(Resource):
@@ -274,4 +277,4 @@ class Notification(Resource):
             db.session.delete(notification)
             db.session.commit()
 
-        return 'Notification deleted', 200
+        return 200

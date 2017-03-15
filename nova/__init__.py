@@ -73,7 +73,7 @@ errors = {
     'BadSignature': {
         'message': "Token signature could not be verified",
         'status': 409,
-    },
+    }
 }
 
 api = Api(app, errors=errors)
