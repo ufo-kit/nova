@@ -35,6 +35,7 @@ class User(db.Model):
         self.password = password
         self.is_admin = is_admin
         self.gravatar = hashlib.md5(email.lower()).hexdigest()
+        self.generate_token()
 
     def __repr__(self):
         return '<User(name={}, fullname={}>'.format(self.name, self.fullname)
