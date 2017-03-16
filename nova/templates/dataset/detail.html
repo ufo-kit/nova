@@ -57,22 +57,25 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-md-3">
+  <div class="col-md-2">
     {% if dataset.has_thumbnail %}
     <img class="img-responsive" width="128" height="128" src="{{ url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=dataset.name, path='.thumb.jpg') }}"/>
     {% else %}
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=128&h=128"/>
     {% endif %}
   </div>
-  <div class="col-md-3">
+  <div class="col-md-6">
+    {% if dataset.description %}
+      <p>{{ dataset.description }}</p>
+    {% endif %}
+  </div>
+  <div class="col-md-4">
     {% if dataset.type == "samplescan" %}
-    <p>Genus: <a href="{{ url_for("filter", genus=dataset.genus.id) }}">{{ dataset.genus.name}}</a></p>
-  </div>
-  <div class="col-md-3">
-    <p>Family: <a href="{{ url_for("filter", family=dataset.family.id) }}">{{ dataset.family.name}}</a></p>
-  </div>
-  <div class="col-md-3">
-    <p>Order: <a href="{{ url_for("filter", order=dataset.order.id) }}">{{ dataset.order.name}}</a></p>
+    <p>
+      <a href="{{ url_for("filter", genus=dataset.genus.id) }}">{{ dataset.genus.name}}</a> /
+      <a href="{{ url_for("filter", family=dataset.family.id) }}">{{ dataset.family.name}}</a> /
+      <a href="{{ url_for("filter", order=dataset.order.id) }}">{{ dataset.order.name}}</a>
+    </p>
     {% endif %}
   </div>
 </div>
