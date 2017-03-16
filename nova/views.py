@@ -201,7 +201,7 @@ def profile(name, page=1):
 @app.route('/user/<name>/bookmarks')
 def list_bookmarks(name):
     user = db.session.query(User).filter(User.name == name).first()
-    return render_template('user/bookmarks.html', username=name, usercheck='Me' if user == current_user else user.fullname, user_url=user.name)
+    return render_template('user/bookmarks.html', user=user)
 
 
 

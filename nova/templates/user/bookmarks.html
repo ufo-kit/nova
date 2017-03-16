@@ -2,29 +2,29 @@
 {% block body %}
 <div class="row">
   <div class="col-lg-12">
-    <div class="page-header"><h2><a href="{{ url_for('profile', name=username) }}">{{ usercheck }}</a> / Bookmarks</h2></div>
-  </div>
-</div>
-<div>
-  <div class="row" id="bookmarks">
-    <div class="row dataset-pad" v-for="item in bookmarked_datasets">
-      <div class="col-sm-1">
-        <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
-      </div>
-      <div class="col-sm-11">
-        <h3 class="dataset-link">
-          {% raw %}
-          <a v-bind:href="item.owner_url">{{ item.owner }}</a> /
-          <a v-bind:href="item.collection_url">{{ item.collection }}</a> /
-          <a v-bind:href="item.url">{{ item.name }}</a>
-          {% endraw %}
-        </h3>
-        <p></p>
-      </div>
+    <div class="page-header">
+      <h2><a href="{{ url_for('profile', name=user.name) }}">{{ user.name }}</a> / bookmarks</h2>
     </div>
   </div>
 </div>
-<script>var username='{{ username }}'</script>
+<div id="bookmarks">
+  <div class="row dataset-pad" v-for="item in bookmarked_datasets">
+    <div class="col-sm-1">
+      <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
+    </div>
+    <div class="col-sm-11">
+      <h3 class="dataset-link">
+        {% raw %}
+        <a v-bind:href="item.owner_url">{{ item.owner }}</a> /
+        <a v-bind:href="item.collection_url">{{ item.collection }}</a> /
+        <a v-bind:href="item.url">{{ item.name }}</a>
+        {% endraw %}
+      </h3>
+      <p></p>
+    </div>
+  </div>
+</div>
+<script>var username='{{ user.name }}'</script>
 <script>
   System.config({
     baseURL: '{{ url_for("static", filename='js') }}',
