@@ -181,6 +181,7 @@ def signup():
                     is_admin=form.is_admin.data)
         db.session.add(user)
         db.session.commit()
+        user.generate_token()
         return redirect(url_for('admin'))
 
     return render_template('user/signup.html', form=form)
