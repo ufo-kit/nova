@@ -4,18 +4,31 @@
 <div class="row">
   <div class="col-lg-12">
     <div class="page-header">
-      <h2>Profile</h2>
+      <h2>{{ user.fullname }}</h2>
     </div>
   </div>
 </div>
 <div class="row">
-  <div class="col-md-4">
+  <div class="col-md-2">
     <p><img src="https://www.gravatar.com/avatar/{{ user.gravatar }}?s=140"/ class="img-circle"><p/>
-    <p><strong>{{ user.fullname }}</strong></p>
-    <p><i class="fa fa-user" aria-hidden="true"></i> {{ user.name }}<p/>
-    <p><i class="fa fa-envelope-o" aria-hidden="true"></i> <a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
   </div>
-  <div class="col-md-8">
+  <div class="col-md-10">
+    <div class="row">
+      <div class="col-lg-12"><span class="label-icon"><i class="fa fa-user" aria-hidden="true"></i></span>{{ user.name }}</div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12"><span class="label-icon"><i class="fa
+      fa-envelope-o" aria-hidden="true"></i></span><a href="mailto:{{ user.email }}">{{ user.email }}</a></div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-8">
+    <div class="row">
+      <div class="col-lg-12">
+        <h3>Collections</h3>
+      </div>
+    </div>
     {% for collection in pagination.items %}
     <div class="row dataset-pad">
       <div class="col-lg-1">
@@ -35,7 +48,7 @@
     </div>
     {% endfor %}
   {% if pagination.pages > 1 %}
-  <div class="col-lg-12">
+  <div class="col-lg-8">
     <nav aria-label="Page navigation">
       <ul class="pagination">
         {% for page in pagination.iter_pages() %}
@@ -54,22 +67,24 @@
   </div>
   {% endif %}
   </div>
-</div>
-{% if user == current_user %}
-<div class="row">
-  <div class="col-lg-12">
-    <h3>Token</h3>
+  {% if user == current_user %}
+  <div class="col-lg-4">
+    <div class="row">
+      <div class="col-lg-12">
+        <h3>Token</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        {% if not current_user.token %}
+        <a href="{{ url_for("generate_token") }}" type="button" class="btn btn-primary">Generate</a>
+        {% else %}
+        <p>Use <strong>{{ current_user.token }}</strong> for authentication.</p>
+        <p><a href="{{ url_for("revoke_token") }}" type="button" class="btn btn-default">Revoke</a></p>
+        {% endif %}
+      </div>
+    </div>
   </div>
+  {% endif %}
 </div>
-<div class="row">
-  <div class="col-lg-12">
-    {% if not current_user.token %}
-    <a href="{{ url_for("generate_token") }}" type="button" class="btn btn-primary">Generate</a>
-    {% else %}
-    <p>Use <strong>{{ current_user.token }}</strong> for authentication.</p>
-    <p><a href="{{ url_for("revoke_token") }}" type="button" class="btn btn-default">Revoke</a></p>
-    {% endif %}
-  </div>
-</div>
-{% endif %}
 {% endblock %}

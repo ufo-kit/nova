@@ -52,6 +52,10 @@ a:hover {
   cursor: pointer;
 }
 
+.label-icon {
+  padding-right: 10px;
+}
+
 .notification-entry {
   padding: 10px 10px 0px 12px;
 }
