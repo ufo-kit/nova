@@ -15,25 +15,18 @@
 <div class="row">
   <div class="col-lg-12">
     <div class="page-header">
-      <h3>1. Generate access token</h3>
-    </div>
-    <p>To authenticate with the server, you can use the access token on your {{ url_for("profile", name=current_user.name) }} profile page. If you feel that the token is abused by a third party, you can revoke it and generate a new one.</p>
-  </div>
-</div>
-<div class="row">
-  <div class="col-lg-12">
-    <div class="page-header">
-      <h3>2. Initialize a dataset</h3>
+      <h3>1. Initialize a dataset</h3>
     </div>
     <p>On the working machine, change to the folder of your dataset and type
     <pre><code>nova init --token youraccesstoken --remote http://localhost:5000</code></pre>
-    replacing <code>youraccesstoken</code> with the token generated in the first step.</p>
+    replacing <code>youraccesstoken</code> with the token found on your profile
+    page.</p>
   </div>
 </div>
 <div class="row">
   <div class="col-lg-12">
     <div class="page-header">
-      <h3>3. Working with your dataset</h3>
+      <h3>2. Working with your dataset</h3>
     </div>
     <p>You can now work with your data as usual. To synchronize the data
     with the remote machine go to the folder and
@@ -43,7 +36,7 @@
 <div class="row">
   <div class="col-lg-12">
     <div class="page-header">
-      <h3>4. Closing a dataset</h3>
+      <h3>3. Closing a dataset</h3>
     </div>
     <p>To prevent further modifications and allow new datasets be derived from
     it, you have to <emph>close</emph> it first. You can do that either from
