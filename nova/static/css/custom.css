@@ -56,18 +56,16 @@ a:hover {
   padding-right: 10px;
 }
 
+.label-padding {
+  padding-left: 10px;
+}
+
 .notification-entry {
   padding: 10px 10px 0px 12px;
 }
 
 #main-notification ul {
   min-width: 320px;
-}
-
-#main-menu li a i {
-  width: 20px;
-  margin-right: 6px;
-  text-align: center;
 }
 
 #main-search {
