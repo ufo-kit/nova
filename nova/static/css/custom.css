@@ -105,6 +105,10 @@ a:hover {
     margin-right:20px;
 }
 
+.review-pad {
+  padding: 10px 0;
+}
+
 #reviews {
     margin-bottom:50px;
 }
@@ -115,26 +119,6 @@ a:hover {
 
 #reviews div.page-header>div{
     float: right;
-}
-
-.review-item>div>hr {
-    width: 60%;
-    float: left;
-}
-
-.ri-time {
-    font-style: italic; 
-    color:#777; 
-    font-size:12px;
-}
-
-.ri-sender {
-    margin-right:10px;
-}
-
-.ri-options>a{
-    margin-right:20px;
-    font-size: 12px;
 }
 
 #review-input {

@@ -196,24 +196,24 @@ var reviews = new Vue ({
     dismissModal: function () {
       this.show_modal_delete_review = false
     },
-    timeSince: function(date) {
+    when: function(date) {
       date = new Date(date)
       current = new Date()
       delta = current.getTimezoneOffset()
       seconds = Math.floor((new Date() - date) / 1000) + delta*60
       interval = Math.floor(seconds / 86400)
       if (interval >= 1) {
-        return date.toLocaleString()
+        return "on " + date.toLocaleDateString()
       }
       interval = Math.floor(seconds / 3600)
       if (interval >= 1) {
-        return interval + " h ago"
+        return interval + "h ago"
       }
       interval = Math.floor(seconds / 60)
       if (interval >= 1) {
-        return interval + " m ago"
+        return interval + "m ago"
       }
-      return Math.floor(seconds) + " s ago"
+      return Math.floor(seconds) + "s ago"
     }
   }
 })

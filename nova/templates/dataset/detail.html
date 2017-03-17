@@ -182,75 +182,68 @@
   </div>
 </div>
 {% endif %}
-<div class= "row" id="reviews">
-  {% raw %}
-  <div class="col-lg-12">
-    <div class="page-header">
-      <h2>Reviews</h2>
-      <div>
-        <i v-for="n in base_rating" class="fa fa-star fa-2x"></i>
-        <i v-if="half_star" class="fa fa-star-half-o fa-2x"></i>
-        <span v-if="!half_star"><i v-for="n in 5-base_rating" class="fa fa-star-o fa-2x"></i></span>
-        <span v-if="half_star"><i v-for="n in 4-base_rating" class="fa fa-star-o fa-2x"></i></span>
+{% raw %}
+<div id="reviews">
+  <div class= "row">
+    <div class="col-lg-12">
+      <div class="page-header">
+        <h2>Reviews</h2>
+        <div>
+          <i v-for="n in base_rating" class="fa fa-star fa-2x"></i>
+          <i v-if="half_star" class="fa fa-star-half-o fa-2x"></i>
+          <span v-if="!half_star"><i v-for="n in 5-base_rating" class="fa fa-star-o fa-2x"></i></span>
+          <span v-if="half_star"><i v-for="n in 4-base_rating" class="fa fa-star-o fa-2x"></i></span>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-lg-12" >
-      <div class="review-item col-lg-12" v-for="review in reviews">
-        <div class="ri-time col-lg-1"><p>{{ timeSince(review.created_at) }}</p></div>
-        <div class="col-lg-11">
-          <div class="row">
-            <div class="col-lg-12">
-              <p>
-                <a class="ri-sender" v-bind:href="review.sender_url">{{ review.sender_name }}</a>
-                <i v-if="! review_being_updated || ! review.editable" v-for="n in review.rating" class="fa fa-star"></i>
-              </p>
-            </div>
+  <div class="row review-item" v-for="review in reviews">
+    <div class="col-lg-12">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="pull-left">
+            <a v-bind:href="review.sender_url">{{ review.sender_name }}</a> <span class="text-muted">{{ when(review.created_at) }}</span>
           </div>
-          <div class="row" v-if="review_being_updated && review.editable">
-            <div class="col-lg-10" id="review-update-input">
-              <textarea class="nova-textarea" v-model="review_text" v-on:keyup.enter="sendUpdatedReview"></textarea>
-            </div>
-            <div class="col-lg-2">
-              <p id="rating-stars" v-bind:class="{ rated: is_rated }">
-                <i v-for="i in n" v-on:click="rate(i)" class="clickable fa fa-star"></i><i v-for="i in 5-n" v-on:click="rate(n+i)" class="clickable fa fa-star-o"></i>
-              </p>
-            </div>
+          <div class="pull-right">
+            <i v-if="! review_being_updated || ! review.editable" v-for="n in review.rating" class="fa fa-star"></i>
           </div>
-          <div class="row" v-else>
-            <div class="col-lg-12">
-              <p>{{ review.comment }}</p>
-            </div>
-          </div>
-          <div class="row" v-if="review.editable">
-            <div class="col-lg-12">
-              <div class="btn-group" role="group">
-                <button v-if="! review_being_updated"
-                        v-on:click="beginUpdatingReview(review)"
-                        class="btn btn-default btn-xs"
-                        type="button">Edit
-                </button>
-                <button v-if="! review_being_updated"
-                        v-on:click="beginDeletingReview(review)"
-                        class="btn btn-default btn-xs"
-                        type="button">Delete
-                </button>
-                <button v-if="review_being_updated"
-                        v-on:click="sendUpdatedReview"
-                        class="btn btn-default btn-xs"
-                        type="button">Save
-                </button>
-                <button v-if="review_being_updated"
-                        v-on:click="endUpdatingReview"
-                        class="btn btn-default btn-xs"
-                        type="button">Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-          <hr/>
         </div>
       </div>
+      <div class="row review-pad" v-if="review_being_updated && review.editable">
+        <div class="col-lg-10" id="review-update-input">
+          <textarea class="nova-textarea" v-model="review_text" v-on:keyup.enter="sendUpdatedReview"></textarea>
+        </div>
+        <div class="col-lg-2">
+          <p id="rating-stars" v-bind:class="{ rated: is_rated }">
+            <i v-for="i in n" v-on:click="rate(i)" class="clickable fa fa-star"></i><i v-for="i in 5-n" v-on:click="rate(n+i)" class="clickable fa fa-star-o"></i>
+          </p>
+        </div>
+      </div>
+      <div class="row review-pad" v-else>
+        <div class="col-lg-12">
+          <p>{{ review.comment }}</p>
+        </div>
+      </div>
+      <div class="row" v-if="review.editable">
+        <div class="col-lg-12">
+          <div class="btn-group" role="group">
+            <button v-if="! review_being_updated" @click="beginUpdatingReview(review)"
+                    class="btn btn-default btn-xs" type="button">Edit
+            </button>
+            <button v-if="! review_being_updated" @click="beginDeletingReview(review)"
+                    class="btn btn-default btn-xs" type="button">Delete
+            </button>
+            <button v-if="review_being_updated" @click="sendUpdatedReview"
+                    class="btn btn-default btn-xs" type="button">Save
+            </button>
+            <button v-if="review_being_updated" @click="endUpdatingReview"
+                    class="btn btn-default btn-xs" type="button">Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+      <hr/>
+    </div>
   </div>
   {% endraw %}
   <div class="row">
@@ -259,18 +252,16 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-lg-12">
-      <div v-if="show_review_input" class="col-lg-12" id="review-input">
-        <div>
-          <textarea v-model="review_text" placeholder="Write a review ..." v-on:keydown.enter.prevent="sendNewReview"></textarea>
-          <p class="alert" v-show="rating_notified">Not rated yet</p>
-          <p id="rating-stars" v-bind:class="{ rated: is_rated }">
-            <i v-for="i in n" v-on:click="rate(i)" class="clickable fa fa-star"></i><i v-for="i in 5-n" v-on:click="rate(n+i)" class="clickable fa fa-star-o"></i>
-          </p>
-        </div>
-        <div>
-          <button type="submit" v-on:click="sendNewReview" class="btn btn-default">Send</button>
-        </div>
+    <div v-if="show_review_input" class="col-lg-12" id="review-input">
+      <div>
+        <textarea v-model="review_text" placeholder="Write a review ..." v-on:keydown.enter.prevent="sendNewReview"></textarea>
+        <p class="alert" v-show="rating_notified">Not rated yet</p>
+        <p id="rating-stars" v-bind:class="{ rated: is_rated }">
+          <i v-for="i in n" v-on:click="rate(i)" class="clickable fa fa-star"></i><i v-for="i in 5-n" v-on:click="rate(n+i)" class="clickable fa fa-star-o"></i>
+        </p>
+      </div>
+      <div>
+        <button type="submit" v-on:click="sendNewReview" class="btn btn-default">Send</button>
       </div>
     </div>
   </div>
