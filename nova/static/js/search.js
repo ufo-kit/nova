@@ -80,9 +80,13 @@ Vue.component('notification-item', {
   },
   computed: {
     notificationClass: function () {
-      return {
-        'fa-envelope-open-o': this.notification.type == 'message',
-        'fa-question': this.notification.type != 'message',
+      switch (this.notification.type) {
+        case 'message':
+          return 'fa-envelope-open-o'
+        case 'bookmark':
+          return 'fa-bookmark'
+        default:
+          return 'fa-questions'
       }
     }
   }

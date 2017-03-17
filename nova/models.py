@@ -224,8 +224,10 @@ class Notification(db.Model):
     user = db.relationship('User')
     type = db.Column(db.String)
 
-    def __init__(self, type='message'):
+    def __init__(self, user, type='message', message=None):
+        self.user = user
         self.type = type
+        self.message = message
 
     def __repr__(self):
         return '<Notification(user={}, message={})>'.format(self.user.name, self.message)

@@ -50,7 +50,6 @@ class Dataset(Resource):
     def get(self, dataset_id):
         user = logic.get_user(request.headers['Auth-Token'])
         dataset = db.session.query(models.Dataset).\
-                filter(models.Access.user == user).\
                 filter(models.Dataset.id == dataset_id).\
                 first()
         return dataset.to_dict()
@@ -163,6 +162,21 @@ class Bookmark(Resource):
             abort(401)
 
         logic.create_bookmark(dataset_id, user_id)
+
+        # notify owner
+        owner = db.session.query(models.User).\
+            filter(models.Dataset.id == dataset_id).\
+            first()
+
+        if owner.id == user_id:
+            return 201
+
+        # FIXME: ratelimit bookmarking or DOS attacks become a piece of cake
+        message = "{} bookmarked a dataset".format(user.name)
+        notification = models.Notification(owner, type='bookmark', message=message)
+        db.session.add(notification)
+        db.session.commit()
+
         return 201
 
     def delete(self, dataset_id, user_id):
