@@ -227,27 +227,23 @@
               <div class="btn-group" role="group">
                 <button v-if="! review_being_updated"
                         v-on:click="beginUpdatingReview(review)"
-                        class="btn btn-primary btn-xs"
-                        type="button">
-                  <i class="fa fa-pencil"></i> Edit
+                        class="btn btn-default btn-xs"
+                        type="button">Edit
                 </button>
                 <button v-if="! review_being_updated"
                         v-on:click="beginDeletingReview(review)"
-                        class="btn btn-danger btn-xs"
-                        type="button">
-                  <i class="fa fa-trash"></i> Delete
+                        class="btn btn-default btn-xs"
+                        type="button">Delete
                 </button>
                 <button v-if="review_being_updated"
                         v-on:click="sendUpdatedReview"
-                        class="btn btn-primary btn-xs"
-                        type="button">
-                  <i class="fa fa-arrow-right"></i> Update
+                        class="btn btn-default btn-xs"
+                        type="button">Save
                 </button>
                 <button v-if="review_being_updated"
                         v-on:click="endUpdatingReview"
-                        class="btn btn-primary btn-xs"
-                        type="button">
-                  <i class="fa fa-times"></i> Cancel
+                        class="btn btn-default btn-xs"
+                        type="button">Cancel
                 </button>
               </div>
             </div>
