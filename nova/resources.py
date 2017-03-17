@@ -65,6 +65,25 @@ class Dataset(Resource):
         dataset.closed = request.form.get('closed', False)
         db.session.commit()
 
+    def patch(self, dataset_id):
+        user = logic.get_user(request.headers['Auth-Token'])
+        payload = request.get_json()
+
+        dataset = db.session.query(models.Dataset).\
+                filter(models.Access.user == user).\
+                filter(models.Dataset.id == dataset_id).\
+                first()
+
+        if not dataset:
+            abort(404, "Dataset does not exist for this user")
+
+        if not 'description' in payload:
+            abort(400, "Cannot modify attributes other than description")
+
+        # TODO: sanitize input
+        dataset.description = payload['description']
+        db.session.commit()
+
 
 class Search(Resource):
     method_decorators = [authenticate]

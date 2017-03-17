@@ -1,4 +1,3 @@
-
 Vue.component('confirmdeletion', {
   template: '#modal-template',
   props: ['show']
@@ -44,6 +43,62 @@ var meta = new Vue ({
   }
 })
 
+var description = new Vue ({
+  el:'#dataset-description',
+  data: {
+    token: readCookie('token'),
+    text: '',
+    old: '',
+    empty: true,
+    editing: false,
+  },
+  created: function() {
+    var options = {headers: { 'Auth-Token': this.token }}
+
+    this.$http.get('/api/datasets/' + dataset_id, options).then((response) => {
+      this.empty = response.body.description == null
+
+      if (this.empty)
+        this.text = "No description provided."
+      else
+        this.text = response.body.description
+    })
+  },
+  methods: {
+    onEdit: function () {
+      this.editing = true
+      this.old = this.text
+
+      if (this.empty) {
+        this.text = ''
+      }
+    },
+    onSave: function () {
+      this.editing = false
+      this.empty = this.text == ''
+
+      if (!this.empty) {
+        var options = {headers: { 'Auth-Token': this.token }}
+
+        this.$http.patch('/api/datasets/' + dataset_id, {description: this.text}, options).then((response) => {
+          console.log("success")
+        })
+      }
+    },
+    onCancel: function () {
+      this.editing = false
+      this.text = this.old
+    },
+  },
+  computed: {
+    displayText: function () {
+      return this.empty ? "No description provided." : this.text
+    },
+    buttonText: function () {
+      return this.editing ? "Save" : "Edit"
+    }
+  }
+})
 
 var reviews = new Vue ({
   el:'#reviews',

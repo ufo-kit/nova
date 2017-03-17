@@ -64,11 +64,21 @@
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=128&h=128"/>
     {% endif %}
   </div>
-  <div class="col-md-6">
-    {% if dataset.description %}
-      <p>{{ dataset.description }}</p>
-    {% endif %}
+  {% raw %}
+  <div class="col-md-6" id="dataset-description">
+    <div v-if="! editing">
+      <p :class="{ 'text-muted': empty }">{{ displayText }}</p>
+    </div>
+    <div v-else>
+      <textarea class="nova-textarea" v-model="text"></textarea>
+    </div>
+    <div class="btn-group" role="group">
+      <button class="btn btn-xs btn-default" @click="onEdit" v-if="!editing">Edit</button>
+      <button class="btn btn-xs btn-default" @click="onSave" v-if="editing">Save</button>
+      <button class="btn btn-xs btn-default" @click="onCancel" v-if="editing">Cancel</button>
+    </div>
   </div>
+  {% endraw %}
   <div class="col-md-4">
     {% if dataset.type == "samplescan" %}
     <p>
@@ -199,7 +209,7 @@
           </div>
           <div class="row" v-if="review_being_updated && review.editable">
             <div class="col-lg-10" id="review-update-input">
-              <textarea v-model="review_text" v-on:keyup.enter="sendUpdatedReview"></textarea>
+              <textarea class="nova-textarea" v-model="review_text" v-on:keyup.enter="sendUpdatedReview"></textarea>
             </div>
             <div class="col-lg-2">
               <p id="rating-stars" v-bind:class="{ rated: is_rated }">

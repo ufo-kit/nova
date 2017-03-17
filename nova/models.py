@@ -95,7 +95,7 @@ class Dataset(db.Model):
 
     def to_dict(self):
         path = os.path.join(app.config['NOVA_ROOT_PATH'], self.path)
-        return dict(name=self.name, path=path, closed=self.closed)
+        return dict(name=self.name, path=path, closed=self.closed, description=self.description)
 
     def __repr__(self):
         return '<Dataset(name={}, path={}>'.format(self.name, self.path)
