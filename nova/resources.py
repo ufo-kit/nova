@@ -30,7 +30,7 @@ class Datasets(Resource):
 
         return [dict(name=d.name, id=d.id) for d in
                     db.session.query(models.Dataset).\
-                    filter(models.Access.user == user).\
+                    filter(models.Permission.can_read).\
                     all()]
 
     def post(self):
@@ -57,7 +57,7 @@ class Dataset(Resource):
     def put(self, dataset_id):
         user = logic.get_user(request.headers['Auth-Token'])
         dataset = db.session.query(models.Dataset).\
-                filter(models.Access.user == user).\
+                filter(models.Permission.owner == user).\
                 filter(models.Dataset.id == dataset_id).\
                 first()
 
@@ -69,7 +69,7 @@ class Dataset(Resource):
         payload = request.get_json()
 
         dataset = db.session.query(models.Dataset).\
-                filter(models.Access.user == user).\
+                filter(models.Permission.owner == user).\
                 filter(models.Dataset.id == dataset_id).\
                 first()
 
@@ -202,7 +202,7 @@ class Review(Resource):
             abort(401)
         review = logic.get_review(dataset_id, user_id)
         if review['exists']:
-                return review
+            return review
         abort(404)
 
     def put(self, dataset_id, user_id):
@@ -328,7 +328,7 @@ class Connection(Resource):
         connection = logic.get_connection(from_id, to_id)
         if connection['exists']:
             return connection
-        return 'Object Not Found', 404
+        abort(404, "Connection does not exist")
 
     def put(self, from_id, to_id, option):
         connection = logic.get_connection(from_id, to_id)
@@ -336,11 +336,11 @@ class Connection(Resource):
         if connection['exists']:
             logic.update_connection(from_id, to_id, change)
             return 'Object Modified', 200
-        if increase>=0:
+        if increase >= 0:
             connection = logic.create_connection(from_id, to_id)
             if connection:
                 return 'Object Created', 201
-        return 'Failed', 500
+        abort(500, 'Failed')
 
 
 class Connections(Resource):
@@ -355,3 +355,15 @@ class Connections(Resource):
         return [{'id': c.id, 'from_user': c.from_id, 'to_user':c.to_id, 'degree':c.degree}
                  for c in connections]
 
+
+class Activity(Resource):
+    method_decorators = [authenticate]
+
+    def __init__(self):
+        self.user = logic.get_user(request.headers['Auth-Token'])
+
+    def get(self, query_id):
+        connections = db.session.query(models.Connection).\
+                    filter(or_(models.Connection.from_id == query_id, models.Connection.to_id == query_id))
+        return [{'id': c.id, 'from_user': c.from_id, 'to_user':c.to_id, 'degree':c.degree}
+                 for c in connections]

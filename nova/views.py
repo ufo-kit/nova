@@ -4,7 +4,7 @@ import re
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar, tasks, models, es
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
-                         Order, Access, Notification, Process, Bookmark)
+                         Order, Notification, Process, Bookmark, Permission)
 from flask import (Response, render_template, request, flash, redirect,
                    url_for, jsonify, send_from_directory, abort)
 from flask_login import login_user, logout_user, current_user
@@ -136,22 +136,7 @@ def index(page=1):
         current_user.first_time = False
         db.session.commit()
         return render_template('index/welcome.html', user=current_user)
-
-    shared = db.session.query(Dataset, Access).\
-        filter(Access.user == current_user).\
-        filter(Access.dataset_id == Dataset.id).\
-        filter(Access.owner == False).\
-        filter(Access.seen == False).\
-        all()
-
-    shared, shared_accesses = zip(*shared) if shared else ([], [])
-
-    for access in shared_accesses:
-        access.seen = True
-
-    db.session.commit()
-
-    return render_template('index/index.html')
+    return render_template('index/index.html', user=current_user)
 
 
 @app.route('/settings')
@@ -311,33 +296,30 @@ def update():
 @app.route('/close/<int:dataset_id>')
 @login_required(admin=False)
 def close(dataset_id):
-    dataset, access = db.session.query(Dataset, Access).\
+    dataset, permission = db.session.query (Dataset, Permission).\
         filter(Dataset.id == dataset_id).\
-        filter(Access.user == current_user).\
-        filter(Access.dataset_id == dataset_id).first()
+        filter(Permission.dataset_id == dataset_id).\
+        filter(Permission.owner == current_user)
 
-    if not access.owner:
-        return redirect(url_for('index'))
-
-    dataset.closed = True
-    db.session.commit()
+    if permission.count() > 0:
+        dataset.closed = True
+        db.session.commit()
     return redirect(url_for('index'))
 
 
 @app.route('/open/<int:dataset_id>')
 @login_required(admin=False)
 def open_dataset(dataset_id):
-    dataset, access = db.session.query(Dataset, Access).\
+    dataset, permission = db.session.query (Dataset, Permission).\
         filter(Dataset.id == dataset_id).\
-        filter(Access.user == current_user).\
-        filter(Access.dataset_id == dataset_id).first()
+        filter(Permission.dataset_id == dataset_id).\
+        filter(Permission.owner == current_user)
 
-    if not access.owner:
-        return redirect(url_for('index'))
-
-    dataset.closed = False
-    db.session.commit()
+    if permission.count() > 0:
+        dataset.closed = False
+        db.session.commit()
     return redirect(url_for('index'))
+
 
 @app.route('/reindex')
 @login_required(admin=True)
@@ -346,11 +328,11 @@ def reindex():
     es.indices.create(index='datasets')
 
     # # FIXME: make this a bulk operation
-    for access in Access.query.filter(Access.owner == True).all():
-        dataset = access.dataset
+    for permission in Permission.query.filter(Permission.dataset_id != None).all():
+        dataset = permission.dataset
         name = dataset.name
         tokenized = name.lower().replace('_', ' ')
-        body = dict(name=name, tokenized=tokenized, owner=access.user.name,
+        body = dict(name=name, tokenized=tokenized, owner=permission.owner.name,
                     description=dataset.description,
                     collection=dataset.collection.name)
         es.create(index='datasets', doc_type='dataset', body=body)
@@ -373,7 +355,9 @@ def complete_search():
     body = {'query': {'match': {'tokenized': {'query': query, 'fuzziness': 'AUTO', 'operator': 'and'}}}}
     hits = es.search(index='datasets', doc_type='dataset', body=body)
     names = [h['_source']['name'] for h in hits['hits']['hits']]
-    datasets = Access.query.join(Dataset).filter(Dataset.name.in_(names))
+    datasets = Permission.query.join(Dataset).\
+             filter(Dataset.name.in_(names)).\
+             filter(Permission.can_read == True)
     pagination = datasets.paginate(page=page, per_page=8)
 
     return render_template('base/search.html', pagination=pagination, query=query)
@@ -381,8 +365,7 @@ def complete_search():
 @app.route('/filter', methods = ['GET'])
 @app.route('/filter/<int:page>', methods=['GET'])
 def filter(page=1):
-    samples = Access.query.join(SampleScan)
-
+    samples = Permission.query.join(SampleScan).filter(Permission.can_read == True)
     search_terms = {x: request.args[x] for x in ('genus', 'family', 'order') if x in request.args}
 
     # XXX: this is lame, please abstract somehow ...
@@ -409,18 +392,12 @@ def share(dataset_id, user_id=None):
         return render_template('dataset/share.html', users=users, dataset_id=dataset_id)
 
     user = db.session.query(User).filter(User.id == user_id).first()
-    dataset, access = db.session.query(Dataset, Access).\
-        filter(Access.dataset_id == dataset_id).\
-        filter(Access.owner == True).\
-        filter(Dataset.id == dataset_id).\
-        first()
-
-    # Do not share again with the owner of the dataset
-    if access.user != user:
-        access = Access(user=user, dataset=dataset, owner=False, writable=False)
-        db.session.add(access)
-        db.session.commit()
-
+    dataset, permission = db.session.query(Dataset,Access).\
+        filter(Permission.dataset_id == dataset_id).\
+        filter(Permission.owner == user).\
+        filter(Dataset.id == dataset_id).first()
+    #TODO: Create Direct Access for users
+    #if permission is not None:
     return redirect(url_for('index'))
 
 
@@ -506,32 +483,19 @@ def show_dataset(name, collection_name, dataset_name, path=''):
 @app.route('/delete/<int:dataset_id>')
 @login_required(admin=False)
 def delete(dataset_id=None):
-    dataset, access = db.session.query(Dataset, Access).\
+    dataset, permission = db.session.query (Dataset, Permission).\
         filter(Dataset.id == dataset_id).\
-        filter(Access.user == current_user).\
-        filter(Access.dataset_id == dataset_id).first()
-
-    if not access.owner:
-        return redirect(url_for('index'))
-
-    process = Process.query.filter(Process.destination_id == dataset_id).first()
-    db.session.delete(process)
-
-    shared_with = db.session.query(Access).\
-        filter(Access.user != current_user).\
-        filter(Access.dataset_id == dataset_id).all()
-
-    for access in shared_with:
-        db.session.add(Notification(user=access.user, message="{} has been deleted.".format(dataset.name)))
-
-    db.session.commit()
-
-    if dataset:
+        filter(Permission.dataset_id == dataset_id).\
+        filter(Permission.owner == current_user)
+    #TODO: Add notifications for deletion to bookmarks and forks
+    if permission.count () >0:
+        dataset = dataset.first()
         path = fs.path_of(dataset)
+        process = Process.query.filter(Process.destination_id == dataset_id).first()
+        db.session.delete(process)
         db.session.delete(dataset)
         db.session.commit()
         app.logger.info("Would remove {}, however deletion is currently disabled".format(path))
-
     return redirect(url_for('index'))
 
 
@@ -539,8 +503,8 @@ def delete(dataset_id=None):
 def upload(dataset_id):
     user = logic.check_token(request.args.get('token'))
     dataset = db.session.query(Dataset).\
-            filter(Access.user == user).\
-            filter(Access.dataset_id == dataset_id).\
+            filter(Permission.owner == user).\
+            filter(Permission.dataset_id == dataset_id).\
             filter(Dataset.id == dataset_id).first()
 
     if dataset is None:
@@ -558,12 +522,16 @@ def upload(dataset_id):
 def clone(dataset_id):
     user = logic.check_token(request.args.get('token'))
     dataset = db.session.query(Dataset).\
-            filter(Access.user == user).\
-            filter(Access.dataset_id == dataset_id).\
             filter(Dataset.id == dataset_id).first()
-
-    fileobj = memtar.create_tar(fs.path_of(dataset))
-    fileobj.seek(0)
+    if dataset is None:
+        abort(404, 'Dataset not found')
+    permission = db.session.query(Permission).\
+            filter(Permission.dataset_id == dataset_id).\
+            filter(Permission.can_fork == True)
+    if permission.count() == 0:
+        permission = db.session.query(Permission).\
+            filter(Permission.collection_id == dataset.collection_id).\
+            filter(Permission.can_fork == True)
 
     def generate():
         while True:
@@ -573,5 +541,8 @@ def clone(dataset_id):
                 break
 
             yield data
-
+    if permission.count == 0:
+        abort(500)
+    fileobj = memtar.create_tar(fs.path_of(dataset))
+    fileobj.seek(0)
     return Response(generate(), mimetype='application/gzip')

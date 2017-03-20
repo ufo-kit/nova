@@ -87,6 +87,7 @@ class Dataset(db.Model):
 
     collection = db.relationship('Collection')
     accesses = db.relationship('Access', cascade='all, delete, delete-orphan')
+    permissions = db.relationship('Permission', cascade='all, delete, delete-orphan')
 
     __mapper_args__ = {
         'polymorphic_identity': 'dataset',
@@ -99,6 +100,21 @@ class Dataset(db.Model):
 
     def __repr__(self):
         return '<Dataset(name={}, path={}>'.format(self.name, self.path)
+
+
+class Collection(db.Model):
+
+    __tablename__ = 'collections'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    description = db.Column(db.String)
+
+    datasets = db.relationship('Dataset', cascade='all, delete, delete-orphan')
+    permissions = db.relationship('Permission', cascade='all, delete, delete-orphan')
+
+    def __repr__(self):
+        return '<Collection(name={})>'.format(self.name)
 
 
 class Taxon(db.Model):
@@ -179,6 +195,28 @@ class Volume(Dataset):
     slices = db.Column(db.String)
 
 
+class Permission(db.Model):
+
+    __tablename__ = 'permissions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
+    collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
+
+    can_read = db.Column(db.Boolean, default=True)
+    can_interact = db.Column(db.Boolean, default=True)
+    can_fork = db.Column(db.Boolean, default=False)
+
+    owner = db.relationship('User')
+    dataset = db.relationship('Dataset', back_populates='permissions')
+    collection = db.relationship('Collection', back_populates='permissions')
+
+    def __repr__(self):
+        return '<Permission(user={}, dataset={}, read={}, interact={}, fork={}>'.\
+            format(self.user.name, self.dataset.name, self.can_read, self.can_interact, self.can_fork)
+
+
 class Access(db.Model):
 
     __tablename__ = 'accesses'
@@ -197,22 +235,6 @@ class Access(db.Model):
     def __repr__(self):
         return '<Access(user={}, dataset={}, owner={}, writable={}>'.\
             format(self.user.name, self.dataset.name, self.owner, self.writable)
-
-
-class Collection(db.Model):
-
-    __tablename__ = 'collections'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    name = db.Column(db.String)
-    description = db.Column(db.String)
-    user = db.relationship('User')
-    datasets = db.relationship('Dataset', cascade='all, delete, delete-orphan')
-
-    def __repr__(self):
-        return '<Collection(name={})>'.format(self.name)
 
 
 class Notification(db.Model):
