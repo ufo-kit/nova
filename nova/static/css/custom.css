@@ -195,26 +195,17 @@ a:hover {
     width: 80px;
 }
 
-.search-results-wrapper {
-  position:fixed;
+.search-results {
+  position: absolute;
+  background-color: #fff;
+  width: 700px;
+  padding: 12px 20px 12px 20px;
+  border: 1px solid #cccccc;
+  background: #fff;
   z-index: 9990;
-  top: 55px;
-  left: 0;
-  height: calc(100% - 55px);
-  width: 100%;
-  background-color: #fff;
-  transition: .3s ease;
 }
 
-.search-results-container {
-  padding: 20px 30px;
-  background-color: #fff;
-  color: #000;
-  position: relative;
-}
-
-.see-more-results a
-{
+.see-more-results a {
   font-size: 20px;
 }
 

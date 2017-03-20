@@ -37,7 +37,7 @@ var mainsearch = new Vue ({
           return response.json();
         }).then((items) => {
           this.search_results = items
-          if (items.length >0) this.showResults()
+          if (items.length > 0) this.showResults()
           else this.hideResults()
         })
       },
@@ -55,6 +55,24 @@ var mainsearch = new Vue ({
     clearQuery: function () {
       this.search_query = ''
     },
+  },
+  directives: {
+    'click-outside': {
+      bind: function(el, binding, vnode) {
+        const handler = (e) => {
+          if (!el.contains(e.target) && el !== e.target) {
+            binding.value(e)
+          }
+        }
+        el.__vueClickOutside__ = handler
+
+        document.addEventListener('click', handler)
+      },
+      unbind: function(el, binding) {
+        document.removeEventListener('click', el.__vueClickOutside__)
+          el.__vueClickOutside__ = null
+      }
+    }
   }
 })
 
