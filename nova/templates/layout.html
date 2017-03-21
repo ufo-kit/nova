@@ -40,15 +40,21 @@
         {% if current_user.is_authenticated %}
         <div id="main-search" class="col-lg-6 col-lg-offset-1">
           <div class="input-group">
-            <input v-model="search_query"
+            <input name="searchquery" class="form-control" type="search"
+                   autocomplete="off" placeholder="Search"
+                   v-model="search_query"
                    v-on:keydown.enter.prevent="showFullResults"
-                   v-on:keydown.esc.prevent="clearQuery"
-                   type="search" class="form-control" name="searchquery" autocomplete="off" placeholder="Search"></input>
-            <span class="input-group-addon" v-bind:class="{ clickable: show_results }" @click="clearQuery">
-              <i class="fa" v-bind:class="{ 'fa-search': !show_results, 'fa-times': show_results }"></i>
+                   v-on:keydown.esc.prevent="clearQuery"></input>
+            <span class="input-group-addon"
+                  v-bind:class="{ clickable: show_results }"
+                  @click="clearQuery">
+              <i class="fa"
+                 v-bind:class="{ 'fa-search': !show_results, 'fa-times': show_results }"></i>
             </span>
           </div>
-          <div class="search-results" v-if="show_results" v-click-outside="clearQuery">
+          <div class="search-results"
+               v-if="show_results"
+               v-click-outside="clearQuery">
             <div class="row dataset-selectable-row clickable"
                  v-for="item in search_results"
                  @click="showDataset(item)">
@@ -67,30 +73,30 @@
             </div>
             <div class="row dataset-pad">
               <div class="col-lg-12">
-                <a @click="showFullResults()" class="clickable">Show all results …</a>
+                <a class="clickable" @click="showFullResults()">Show all results …</a>
               </div>
             </div>
           </div>
         </div>
         <ul class="nav navbar-nav navbar-right">
-          <li class="dropdown" id="main-notification">
+          <li id="main-notification" class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
               <i class="fa" v-bind:class="{ 'fa-bell-o': notifications.length == 0, 'fa-bell': notifications.length > 0}"></i>
-              {% raw %}<span v-if="notifications.length > 0" class="badge">{{ notifications.length }}</span>{% endraw %}
+              {% raw %}<span class="badge" v-if="notifications.length > 0">{{ notifications.length }}</span>{% endraw %}
             </a>
-            <ul v-if="notifications.length > 0" class="dropdown-menu">
+            <ul class="dropdown-menu" v-if="notifications.length > 0">
               <li class="notification-entry" is="notification-item" v-for="notification in notifications"
                   v-on:dismiss="dismissNotification" :notification="notification">
                 <hr>
               </li>
-              <li role="separator" class="divider"></li>
+              <li class="divider" role="separator"></li>
               <li><button class="btn btn-primary btn-sm" v-on:click="dismissAllNotifications">Clear all</button></li>
             </ul>
           </li>
           <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
             <img src="https://www.gravatar.com/avatar/{{ current_user.gravatar }}?s=24"/>&nbsp; {{ current_user.name }} &nbsp;<i class="fa fa-caret-down" aria-hidden="true"></i></a>
-          <ul class="dropdown-menu" id="main-menu">
+          <ul id="main-menu" class="dropdown-menu">
             <li><a href="{{ url_for("profile", name=current_user.name) }}">
               <i class="fa fa-user fa-fw"></i><span class="label-padding">Profile</span></a>
             </li>
