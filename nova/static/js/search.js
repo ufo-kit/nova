@@ -49,8 +49,11 @@ var mainsearch = new Vue ({
     hideResults: function() {
       this.show_results = false
     },
+    showDataset: function(item) {
+      window.location = item.url
+    },
     showFullResults: function(query) {
-      window.location = "/search?q="+this.search_query
+      window.location = "/search?q=" + this.search_query
     },
     clearQuery: function () {
       this.search_query = ''

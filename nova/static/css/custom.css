@@ -34,6 +34,17 @@ a:hover {
   margin-bottom: 10.5px;
 }
 
+.dataset-selectable-row {
+  margin-left: -20px;
+  margin-right: -20px;
+  padding-top: 10px;
+  background-color: #fff;
+}
+
+.dataset-selectable-row:hover {
+  background-color: #ececec;
+}
+
 .nova-main {
   padding-bottom: 60px;
 }
@@ -190,7 +201,6 @@ a:hover {
     vertical-align: center;
 }
 
-
 #review-input button[type='submit'] {
     width: 80px;
 }
@@ -199,7 +209,7 @@ a:hover {
   position: absolute;
   background-color: #fff;
   width: 700px;
-  padding: 12px 20px 12px 20px;
+  padding: 6px 20px 12px 20px;
   border: 1px solid #cccccc;
   background: #fff;
   z-index: 9990;

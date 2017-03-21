@@ -49,7 +49,9 @@
             </span>
           </div>
           <div class="search-results" v-if="show_results" v-click-outside="clearQuery">
-            <div class="row dataset-pad" v-for="item in search_results">
+            <div class="row dataset-selectable-row clickable"
+                 v-for="item in search_results"
+                 @click="showDataset(item)">
               <div class="col-sm-1">
                 <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
               </div>
@@ -63,7 +65,7 @@
                 </h3>
               </div>
             </div>
-            <div class="row">
+            <div class="row dataset-pad">
               <div class="col-lg-12">
                 <a @click="showFullResults()" class="clickable">Show all results …</a>
               </div>
