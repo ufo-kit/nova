@@ -40,8 +40,8 @@
       <h2>
     {% raw %}
       <div class="clickable">
-        <i v-bind:class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }"
-           v-on:click="bookmark"></i>
+        <i :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }"
+           @click="bookmark"></i>
       </div>
     {% endraw %}
 {% if dataset.type == "samplescan" %}
@@ -202,7 +202,7 @@
       <div class="row">
         <div class="col-lg-12">
           <div class="pull-left">
-            <a v-bind:href="review.sender_url">{{ review.sender_name }}</a> <span class="text-muted">{{ when(review.created_at) }}</span>
+            <a :href="review.sender_url">{{ review.sender_name }}</a> <span class="text-muted">{{ when(review.created_at) }}</span>
           </div>
           <div class="pull-right">
             <i class="fa fa-star" v-if="! review_being_updated || ! review.editable" v-for="n in review.rating"></i>
@@ -211,11 +211,11 @@
       </div>
       <div class="row review-pad" v-if="review_being_updated && review.editable">
         <div id="review-update-input" class="col-lg-10">
-          <textarea class="nova-textarea" v-model="review_text" v-on:keyup.enter="sendUpdatedReview"></textarea>
+          <textarea class="nova-textarea" v-model="review_text" @keyup.enter="sendUpdatedReview"></textarea>
         </div>
         <div class="col-lg-2">
-          <p id="rating-stars" v-bind:class="{ rated: is_rated }">
-            <i class="clickable fa fa-star" v-for="i in n" v-on:click="rate(i)"></i><i class="clickable fa fa-star-o" v-for="i in 5-n" v-on:click="rate(n+i)"></i>
+          <p id="rating-stars" :class="{ rated: is_rated }">
+            <i class="clickable fa fa-star" v-for="i in n" @click="rate(i)"></i><i class="clickable fa fa-star-o" v-for="i in 5-n" @click="rate(n+i)"></i>
           </p>
         </div>
       </div>
@@ -256,14 +256,14 @@
       <div>
         <textarea placeholder="Write a review ..."
                   v-model="review_text"
-                  v-on:keydown.enter.prevent="sendNewReview"></textarea>
+                  @keydown.enter.prevent="sendNewReview"></textarea>
         <p class="alert" v-show="rating_notified">Not rated yet</p>
-        <p id="rating-stars" v-bind:class="{ rated: is_rated }">
-          <i class="clickable fa fa-star" v-for="i in n" v-on:click="rate(i)"></i><i class="clickable fa fa-star-o" v-for="i in 5-n" v-on:click="rate(n+i)"></i>
+        <p id="rating-stars" :class="{ rated: is_rated }">
+          <i class="clickable fa fa-star" v-for="i in n" @click="rate(i)"></i><i class="clickable fa fa-star-o" v-for="i in 5-n" @click="rate(n+i)"></i>
         </p>
       </div>
       <div>
-        <button class="btn btn-default" type="submit" v-on:click="sendNewReview">Send</button>
+        <button class="btn btn-default" type="submit" @click="sendNewReview">Send</button>
       </div>
     </div>
   </div>

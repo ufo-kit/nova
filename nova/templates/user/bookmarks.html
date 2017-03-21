@@ -15,9 +15,9 @@
     <div class="col-sm-11">
       <h3 class="dataset-link">
         {% raw %}
-        <a v-bind:href="item.owner_url">{{ item.owner }}</a> /
-        <a v-bind:href="item.collection_url">{{ item.collection }}</a> /
-        <a v-bind:href="item.url">{{ item.name }}</a>
+        <a :href="item.owner_url">{{ item.owner }}</a> /
+        <a :href="item.collection_url">{{ item.collection }}</a> /
+        <a :href="item.url">{{ item.name }}</a>
         {% endraw %}
       </h3>
       <p></p>

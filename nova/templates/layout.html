@@ -43,13 +43,13 @@
             <input name="searchquery" class="form-control" type="search"
                    autocomplete="off" placeholder="Search"
                    v-model="search_query"
-                   v-on:keydown.enter.prevent="showFullResults"
-                   v-on:keydown.esc.prevent="clearQuery"></input>
+                   @keydown.enter.prevent="showFullResults"
+                   @keydown.esc.prevent="clearQuery"></input>
             <span class="input-group-addon"
-                  v-bind:class="{ clickable: show_results }"
+                  :class="{ clickable: show_results }"
                   @click="clearQuery">
               <i class="fa"
-                 v-bind:class="{ 'fa-search': !show_results, 'fa-times': show_results }"></i>
+                 :class="{ 'fa-search': !show_results, 'fa-times': show_results }"></i>
             </span>
           </div>
           <div class="search-results"
@@ -64,9 +64,9 @@
               <div class="col-sm-11">
                 <h3 class="dataset-link">
                   {% raw %}
-                  <a v-bind:href="item.owner_url">{{ item.owner }}</a> /
-                  <a v-bind:href="item.collection_url">{{ item.collection }}</a> /
-                  <a v-bind:href="item.url">{{ item.name }}</a>
+                  <a :href="item.owner_url">{{ item.owner }}</a> /
+                  <a :href="item.collection_url">{{ item.collection }}</a> /
+                  <a :href="item.url">{{ item.name }}</a>
                   {% endraw %}
                 </h3>
               </div>
@@ -81,16 +81,16 @@
         <ul class="nav navbar-nav navbar-right">
           <li id="main-notification" class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-              <i class="fa" v-bind:class="{ 'fa-bell-o': notifications.length == 0, 'fa-bell': notifications.length > 0}"></i>
+              <i class="fa" :class="{ 'fa-bell-o': notifications.length == 0, 'fa-bell': notifications.length > 0}"></i>
               {% raw %}<span class="badge" v-if="notifications.length > 0">{{ notifications.length }}</span>{% endraw %}
             </a>
             <ul class="dropdown-menu" v-if="notifications.length > 0">
               <li class="notification-entry" is="notification-item" v-for="notification in notifications"
-                  v-on:dismiss="dismissNotification" :notification="notification">
+                  @dismiss="dismissNotification" :notification="notification">
                 <hr>
               </li>
               <li class="divider" role="separator"></li>
-              <li><button class="btn btn-primary btn-sm" v-on:click="dismissAllNotifications">Clear all</button></li>
+              <li><button class="btn btn-primary btn-sm" @click="dismissAllNotifications">Clear all</button></li>
             </ul>
           </li>
           <li class="dropdown">
