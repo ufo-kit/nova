@@ -6,7 +6,7 @@ from nova import app, db, login_manager, fs, logic, memtar, tasks, models, es
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
                          Order, Access, Notification, Process, Bookmark)
 from flask import (Response, render_template, request, flash, redirect,
-                   url_for, jsonify, send_from_directory)
+                   url_for, jsonify, send_from_directory, abort)
 from flask_login import login_user, logout_user, current_user
 from flask_wtf import Form
 from flask_sqlalchemy import Pagination
@@ -88,6 +88,12 @@ def handle_invalid_usage(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response
+
+
+@app.errorhandler(404)
+def handle_page_not_found(error):
+    print error.description
+    return render_template('404.html', description=error.description), 404
 
 
 @login_manager.user_loader
@@ -457,9 +463,15 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     collection = Collection.query.\
         filter(Collection.name == collection_name).first()
 
+    if collection is None:
+        abort(404, 'collection {} not found'.format(collection_name))
+
     dataset = Dataset.query.join(Collection).\
         filter(Collection.name == collection_name).\
         filter(Dataset.name == dataset_name).first()
+
+    if dataset is None:
+        abort(404, 'dataset {} not found'.format(dataset_name))
 
     if path:
         filepath = os.path.join(dataset.path, path)
