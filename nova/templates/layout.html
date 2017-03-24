@@ -44,7 +44,7 @@
                    autocomplete="off" placeholder="Search"
                    v-model="search_query"
                    @keydown.enter.prevent="showFullResults"
-                   @keydown.esc.prevent="clearQuery"></input>
+                   @keydown.esc.prevent="clearQuery"/>
             <span class="input-group-addon"
                   :class="{ clickable: show_results }"
                   @click="clearQuery">
@@ -101,7 +101,7 @@
               <i class="fa fa-user fa-fw"></i><span class="label-padding">Profile</span></a>
             </li>
             <li><a href="{{ url_for("list_bookmarks", name=current_user.name) }}">
-              <i class="fa fa-bookmark fa-fw"></i><span class="label-padding">Bookmarks</a></span>
+              <i class="fa fa-bookmark fa-fw"></i><span class="label-padding">Bookmarks</span></a>
             </li>
             {% if current_user.is_admin %}
             <li><a href="{{ url_for("admin") }}">
