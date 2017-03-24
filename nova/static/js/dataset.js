@@ -132,11 +132,8 @@ var reviews = new Vue ({
         this.average_rating = response.body.avg_rating
         this.base_rating = Math.floor(this.average_rating)
         this.half_star = this.average_rating - this.base_rating >= .5
-
-        if (response.body.count > 0) { 
-          this.reviews = response.body.data
-          this.show_review_input = ! response.body.self_reviewed
-        }
+        this.reviews = response.body.data 
+        this.show_review_input = ! response.body.self_reviewed
       })
     },
     rate: function(n) { 
@@ -189,9 +186,12 @@ var reviews = new Vue ({
       }
       var api_str = '/api/datasets/'+this.review_under_updation.dataset_id+'/reviews/'+this.review_under_updation.user_id
       this.$http.delete(api_str, {headers: headers}).then((response) => {
-        this.show_modal_delete_review = response.status != 200
+        if (response.status == 200) {
+          this.show_modal_delete_review = false
+          this.loadReviews(headers)
+        }
       })
-      this.loadReviews(headers)
+      
     }, 
     dismissModal: function () {
       this.show_modal_delete_review = false
