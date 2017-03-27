@@ -472,7 +472,7 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     dirs = fs.get_dirs(dataset, path) if list_files else None
     files = sorted(fs.get_files(dataset, path)) if list_files else None
 
-    params = dict(collection=collection, dataset=dataset,
+    params = dict(user_name=name, collection=collection, dataset=dataset,
                   parents=parents, children=children,
                   path=path, list_files=list_files,
                   files=files, dirs=dirs, origin=[])
