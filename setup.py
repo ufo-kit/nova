@@ -22,6 +22,7 @@ setup(
     install_requires=[
         'celery',
         'elasticsearch>=2.0.0,<3.0.0',
+        'Flask',
         'Flask-Admin',
         'Flask-Cache',
         'Flask-Login',
