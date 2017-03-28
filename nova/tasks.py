@@ -11,12 +11,14 @@ URL = 'http://127.0.0.1:5000/api/datasets'
 
 def create_dataset(token, parent_id, name):
     # TODO: refactor out with code from nova client
+    headers = {'Auth-Token': token}
     data = dict(name=name, parent=parent_id)
-    return requests.post(URL, params=dict(token=token), data=data).json()
+    return requests.post(URL, headers=headers, data=data).json()
 
 
 def get_dataset_info(token, dataset_id):
-    return requests.get('{}/{}'.format(URL, dataset_id), params=dict(token=token)).json()
+    headers = {'Auth-Token': token}
+    return requests.get('{}/{}'.format(URL, dataset_id), headers=headers).json()
 
 
 @celery.task
