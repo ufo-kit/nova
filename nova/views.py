@@ -427,7 +427,7 @@ def show_collection(name, collection_name):
     collection = Collection.query.filter(Collection.name == collection_name).first()
 
     if len(collection.datasets) != 1:
-        return render_template('collection/list.html', collection=collection)
+        return render_template('collection/list.html', name=name, collection=collection)
 
     dataset = collection.datasets[0]
     return redirect(url_for('show_dataset', name=name, collection_name=collection_name, dataset_name=dataset.name))
