@@ -76,9 +76,3 @@ def reconstruct(token, result_id, parent_id, flats, darks, projections, outname)
     stdout, stderr = proc.communicate()
     print stdout, stderr
     proc.wait()
-
-    dataset = db.session.query(models.Dataset).\
-        filter(models.Dataset.id == result_id).first()
-
-    db.session.add(notification)
-    db.session.commit()
