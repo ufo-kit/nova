@@ -27,7 +27,7 @@ def create_dataset(dtype, name, user, collection, **kwargs):
 
     permission = models.Permission(owner=user, dataset=dataset, can_read=True,
                                    can_interact=True, can_fork=False)
-    db.session.add_all([dataqset, permission])
+    db.session.add_all([dataset, permission])
     db.session.commit()
     return dataset
 
