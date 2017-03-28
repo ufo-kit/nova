@@ -80,9 +80,5 @@ def reconstruct(token, result_id, parent_id, flats, darks, projections, outname)
     dataset = db.session.query(models.Dataset).\
         filter(models.Dataset.id == result_id).first()
 
-    message = '{cname} / {dname} is ready.'.format(cname=dataset.collection.name, dname=dataset.name)
-
-    notification = models.Notification(message=message, user=dataset.collection.user)
-
     db.session.add(notification)
     db.session.commit()
