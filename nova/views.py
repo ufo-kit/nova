@@ -183,8 +183,8 @@ def signup():
 @login_required(admin=False)
 def profile(name, page=1):
     user = db.session.query(User).filter(User.name == name).first()
-    pagination = Collection.query.\
-        filter(Collection.user == user).\
+    pagination = Collection.query.join(Permission).\
+        filter(Permission.owner == user).\
         paginate(page=page, per_page=8)
     return render_template('user/profile.html', user=user, pagination=pagination)
 
@@ -200,9 +200,9 @@ def list_bookmarks(name):
 @login_required(admin=False)
 def create_dataset(collection_name):
     form = CreateForm()
-    collection = Collection.query.\
+    collection = Collection.query.join(Permission).\
         filter(Collection.name == collection_name).\
-        filter(Collection.user == current_user).\
+        filter(Permission.owner == current_user).\
         first()
 
     if form.validate_on_submit():
