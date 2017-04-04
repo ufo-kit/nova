@@ -185,6 +185,7 @@ def profile(name, page=1):
     user = db.session.query(User).filter(User.name == name).first()
     pagination = Collection.query.join(Permission).\
         filter(Permission.owner == user).\
+        filter(Permission.can_read == True).\
         paginate(page=page, per_page=8)
     return render_template('user/profile.html', user=user, pagination=pagination)
 
@@ -392,7 +393,7 @@ def share(dataset_id, user_id=None):
         return render_template('dataset/share.html', users=users, dataset_id=dataset_id)
 
     user = db.session.query(User).filter(User.id == user_id).first()
-    dataset, permission = db.session.query(Dataset,Access).\
+    dataset, permission = db.session.query(Dataset,Permission).\
         filter(Permission.dataset_id == dataset_id).\
         filter(Permission.owner == user).\
         filter(Dataset.id == dataset_id).first()
@@ -424,10 +425,18 @@ def process(dataset_id):
 @app.route('/user/<name>/<collection_name>')
 @login_required(admin=False)
 def show_collection(name, collection_name):
-    collection = Collection.query.filter(Collection.name == collection_name).first()
+    collection= Collection.query.\
+        filter(Collection.name == collection_name).first()
 
-    if len(collection.datasets) != 1:
-        return render_template('collection/list.html', name=name, collection=collection)
+    permission = Permission.query.\
+        filter(Permission.collection == collection).\
+        filter(Permission.can_read == True).first()
+
+    if permission is None:
+        abort(403, 'Access Denied to collection {}'.format(collection_name))
+
+    if len(collection.datasets) != 1 or current_user == permission.owner:
+        return render_template('collection/list.html', name=name, collection=collection, owner=permission.owner)
 
     dataset = collection.datasets[0]
     return redirect(url_for('show_dataset', name=name, collection_name=collection_name, dataset_name=dataset.name))
@@ -446,9 +455,13 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     dataset = Dataset.query.join(Collection).\
         filter(Collection.name == collection_name).\
         filter(Dataset.name == dataset_name).first()
-
     if dataset is None:
         abort(404, 'dataset {} not found'.format(dataset_name))
+    permission = Permission.query.\
+        filter(Permission.dataset == dataset).\
+        filter(Permission.can_read == True).first()
+    if permission is None:
+        abort(403, 'Access Denied to dataset {}'.format(dataset_name))
 
     if path:
         filepath = os.path.join(dataset.path, path)

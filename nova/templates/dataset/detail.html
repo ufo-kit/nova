@@ -72,11 +72,17 @@
     <div v-else>
       <textarea class="nova-textarea" v-model="text"></textarea>
     </div>
+    {% endraw %}
+    {% if user_name == current_user.name %}
+    {% raw %}
     <div class="btn-group" role="group">
       <button class="btn btn-xs btn-default" @click="onEdit" v-if="!editing">Edit</button>
       <button class="btn btn-xs btn-default" @click="onSave" v-if="editing">Save</button>
       <button class="btn btn-xs btn-default" @click="onCancel" v-if="editing">Cancel</button>
     </div>
+    {% endraw %}
+    {% endif %}
+    {% raw %}
   </div>
   {% endraw %}
   <div class="col-md-4">

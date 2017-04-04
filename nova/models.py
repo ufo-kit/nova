@@ -213,8 +213,9 @@ class Permission(db.Model):
     collection = db.relationship('Collection', back_populates='permissions')
 
     def __repr__(self):
-        return '<Permission(user={}, dataset={}, read={}, interact={}, fork={}>'.\
-            format(self.user.name, self.dataset.name, self.can_read, self.can_interact, self.can_fork)
+        object = self.dataset if self.dataset else self.collection
+        return '<Permission(owner={}, object={}, read={}, interact={}, fork={}>'.\
+            format(self.owner, object, self.can_read, self.can_interact, self.can_fork)
 
 
 class Access(db.Model):
