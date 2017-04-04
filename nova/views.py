@@ -183,11 +183,13 @@ def signup():
 @login_required(admin=False)
 def profile(name, page=1):
     user = db.session.query(User).filter(User.name == name).first()
+    bookmark_count = db.session.query(Bookmark).\
+        filter(Bookmark.user == user).count()
     pagination = Collection.query.join(Permission).\
         filter(Permission.owner == user).\
         filter(Permission.can_read == True).\
         paginate(page=page, per_page=8)
-    return render_template('user/profile.html', user=user, pagination=pagination)
+    return render_template('user/profile.html', user=user, pagination=pagination, bookmark_count=bookmark_count)
 
 
 @app.route('/user/<name>/bookmarks')

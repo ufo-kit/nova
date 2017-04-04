@@ -134,11 +134,11 @@ class Bookmarks(Resource):
             datasets.append(b.dataset)
         return [{'name': d.name,
                 'description': d.description,
-                'url': url_for('show_dataset', name=d.collection.user.name, collection_name=d.collection.name, dataset_name=d.name),
-                'owner': d.collection.user.name,
-                'owner_url': url_for('profile', name=d.collection.user.name),
+                'url': url_for('show_dataset', name=d.permissions[0].owner.name, collection_name=d.collection.name, dataset_name=d.name),
+                'owner': d.permissions[0].owner.name,
+                'owner_url': url_for('profile', name=d.permissions[0].owner.name),
                 'collection': d.collection.name,
-                'collection_url': url_for('show_collection', name=d.collection.user.name, collection_name=d.collection.name)}
+                'collection_url': url_for('show_collection', name=d.permissions[0].owner.name, collection_name=d.collection.name)}
                 for d in datasets]
 
 
