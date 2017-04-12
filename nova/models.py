@@ -367,3 +367,47 @@ class Connection(db.Model):
         return '<Connection(from={}, to={}, degree={})>'.\
             format(self.from_user, self.to_user, self.degree)
 
+
+class AccessRequest(db.Model):
+    __tablename__ = 'access_requests'
+
+    id = db.Column(db.Integer,  primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
+    collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
+    can_read = db.Column(db.Boolean, default=False)
+    can_interact = db.Column(db.Boolean, default=False)
+    can_fork = db.Column(db.Boolean, default=False)
+    message = db.Column(db.String)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+    user = db.relationship('User')
+    dataset = db.relationship('Dataset')
+    collection = db.relationship('Collection')
+
+    def __repr__(self):
+        object = self.dataset if self.dataset else self.collection
+        return '<AccessRequest(user={}, object={}, read={}, interact={}, fork={}>'.\
+            format(self.user, object, self.can_read, self.can_interact, self.can_fork)
+
+
+class DirectAccess(db.Model):
+    __tablename__ = 'direct_access'
+
+    id = db.Column(db.Integer,  primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
+    collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
+    can_read = db.Column(db.Boolean, default=False)
+    can_interact = db.Column(db.Boolean, default=False)
+    can_fork = db.Column(db.Boolean, default=False)
+
+    user = db.relationship('User')
+    dataset = db.relationship('Dataset')
+    collection = db.relationship('Collection')
+
+    def __repr__(self):
+        object = self.dataset if self.dataset else self.collection
+        return '<DirectAccess(user={}, object={}, read={}, interact={}, fork={}>'.\
+            format(self.user, object, self.can_read, self.can_interact, self.can_fork)
+

@@ -4,7 +4,8 @@ import re
 from functools import wraps
 from nova import app, db, login_manager, fs, logic, memtar, tasks, models, es
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
-                         Order, Notification, Process, Bookmark, Permission)
+                         Order, Notification, Process, Bookmark, Permission,
+                         AccessRequest, DirectAccess)
 from flask import (Response, render_template, request, flash, redirect,
                    url_for, jsonify, send_from_directory, abort)
 from flask_login import login_user, logout_user, current_user
@@ -12,6 +13,7 @@ from flask_wtf import Form
 from flask_sqlalchemy import Pagination
 from wtforms import StringField, BooleanField
 from wtforms.validators import DataRequired
+from sqlalchemy import or_, and_
 
 
 def login_required(admin=False):
@@ -185,10 +187,15 @@ def profile(name, page=1):
     user = db.session.query(User).filter(User.name == name).first()
     bookmark_count = db.session.query(Bookmark).\
         filter(Bookmark.user == user).count()
-    pagination = Collection.query.join(Permission).\
-        filter(Permission.owner == user).\
-        filter(Permission.can_read == True).\
-        paginate(page=page, per_page=8)
+    collections_publicperms = Collection.query.join(Permission).\
+                            filter(Permission.owner == user).\
+                            filter(Permission.can_read == True)
+
+    collections_directaccess = Collection.query.join(DirectAccess).\
+                             filter(DirectAccess.user == current_user).\
+                             filter(DirectAccess.can_read == True)
+    collections = collections_directaccess.union(collections_publicperms)
+    pagination = collections.paginate(page=page, per_page=8)
     return render_template('user/profile.html', user=user, pagination=pagination, bookmark_count=bookmark_count)
 
 
@@ -358,8 +365,8 @@ def complete_search():
     body = {'query': {'match': {'tokenized': {'query': query, 'fuzziness': 'AUTO', 'operator': 'and'}}}}
     hits = es.search(index='datasets', doc_type='dataset', body=body)
     names = [h['_source']['name'] for h in hits['hits']['hits']]
-    datasets = Permission.query.join(Dataset).\
-             filter(Dataset.name.in_(names)).\
+
+    datasets = Permission.query.join(Dataset).filter(Dataset.name.in_(names)).\
              filter(Permission.can_read == True)
     pagination = datasets.paginate(page=page, per_page=8)
 
@@ -368,7 +375,8 @@ def complete_search():
 @app.route('/filter', methods = ['GET'])
 @app.route('/filter/<int:page>', methods=['GET'])
 def filter(page=1):
-    samples = Permission.query.join(SampleScan).filter(Permission.can_read == True)
+    samples = Permission.query.join(SampleScan).\
+            filter(Permission.can_read == True)
     search_terms = {x: request.args[x] for x in ('genus', 'family', 'order') if x in request.args}
 
     # XXX: this is lame, please abstract somehow ...
@@ -435,7 +443,16 @@ def show_collection(name, collection_name):
         filter(Permission.can_read == True).first()
 
     if permission is None:
-        abort(403, 'Access Denied to collection {}'.format(collection_name))
+        direct_access = DirectAccess.query.\
+                      filter(DirectAccess.collection == collection).\
+                      filter(DirectAccess.user == current_user).\
+                      filter(DirectAccess.can_read == True).first()
+        if direct_access is None:
+            return render_template('base/accessrequest.html', access_name='read',
+                                   item = {'type':'collection',
+                                           'name':collection_name,
+                                           'description':collection.description,
+                                           'id':collection.id})
 
     if len(collection.datasets) != 1 or current_user == permission.owner:
         return render_template('collection/list.html', name=name, collection=collection, owner=permission.owner)
@@ -461,10 +478,26 @@ def show_dataset(name, collection_name, dataset_name, path=''):
         abort(404, 'dataset {} not found'.format(dataset_name))
     permission = Permission.query.\
         filter(Permission.dataset == dataset).\
-        filter(Permission.can_read == True).first()
+        filter(or_(Permission.can_read == True, Permission.owner==current_user)).\
+               first()
+    dataset_permissions = {}
     if permission is None:
-        abort(403, 'Access Denied to dataset {}'.format(dataset_name))
-
+        direct_access = DirectAccess.query.\
+                      filter(DirectAccess.dataset == dataset).\
+                      filter(DirectAccess.user == current_user).\
+                      filter(DirectAccess.can_read == True).first()
+        if direct_access is None:
+            return render_template('base/accessrequest.html', access_name='read',
+                                  item={'type':'dataset', 'name':dataset_name,
+                                        'description':dataset.description,
+                                        'id':dataset.id,})
+        dataset_permissions = {'read': direct_access.can_read,
+                               'interact': direct_access.can_interact,
+                               'fork': direct_access.can_fork}
+    else:
+        dataset_permissions = {'read': permission.can_read,
+                           'interact': permission.can_interact,
+                           'fork': permission.can_fork}
     if path:
         filepath = os.path.join(dataset.path, path)
 
@@ -488,9 +521,9 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     files = sorted(fs.get_files(dataset, path)) if list_files else None
 
     params = dict(user_name=name, collection=collection, dataset=dataset,
-                  parents=parents, children=children,
-                  path=path, list_files=list_files,
-                  files=files, dirs=dirs, origin=[])
+                  parents=parents, children=children, path=path,
+                  list_files=list_files, files=files, dirs=dirs, origin=[],
+                  permissions=dataset_permissions)
 
     return render_template('dataset/detail.html', **params)
 
@@ -561,3 +594,37 @@ def clone(dataset_id):
     fileobj = memtar.create_tar(fs.path_of(dataset))
     fileobj.seek(0)
     return Response(generate(), mimetype='application/gzip')
+
+
+@app.route('/grantaccess/<int:ar_id>')
+@login_required(admin=False)
+def grant_access(ar_id):
+    ar = db.session.query(AccessRequest).\
+       filter(AccessRequest.id == ar_id).first()
+    if ar.dataset_id:
+        owner = ar.dataset.permissions[0].owner
+        item = { 'type':'dataset', 'name':ar.dataset.name,
+                 'id': ar.dataset.id, 'desc':ar.dataset.description,
+                 'url':url_for("show_dataset", name=owner.name,
+                              collection_name=ar.dataset.collection.name,
+                              dataset_name=ar.dataset.name)
+                 }
+    else:
+        owner = ar.collection.permissions[0].owner
+        item = { 'type':'collection', 'name':ar.collection.name,
+                 'id': ar.collection.id, 'desc':ar.collection.description,
+                 'url':url_for("show_collection", name=owner.name,
+                              collection_name=ar.dataset.collection.name)
+                 }
+    if owner == current_user:
+        user_collections = db.session.query(Collection).join(Permission).\
+                         filter(Permission.owner_id == ar.user.id).count()
+        user = { 'id': ar.user.id, 'name': ar.user.name, 'email':ar.user.email,
+               'fullname': ar.user.fullname, 'collections':user_collections,
+               'url': url_for("profile", name=ar.user.name)}
+        permissions = {'read':ar.can_read, 'interact':ar.can_interact,
+                      'fork':ar.can_fork}
+        return render_template('user/grantaccess.html', user=user, item=item,
+                               request_id = ar.id, message=ar.message,
+                               permissions=permissions)
+    abort(401)

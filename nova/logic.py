@@ -141,12 +141,88 @@ def delete_review(dataset_id, user_id):
     review = db.session.query(models.Review).\
              filter(models.Review.dataset_id == dataset_id).\
              filter(models.Review.user_id == user_id)
-    if review.count == 0:
+    if review.count() == 0:
         return False
     else:
         db.session.delete(review.first())
         db.session.commit()
         return True
+
+
+def get_owner_id_from_permission(object_type, object_id):
+    pr = db.session.query(models.Permission)
+    if object_type == 'collections':
+        pr = pr.filter(models.Permission.collection_id == object_id)
+    elif object_type == 'datasets':
+        pr = pr.filter(models.Permission.dataset_id == object_id)
+    owner_id = pr.first().owner_id
+    return owner_id
+
+def get_access_request(object_type, object_id, user_id):
+    existing = db.session.query(models.AccessRequest).\
+             filter(models.AccessRequest.user_id == user_id)
+    if object_type == 'datasets':
+        existing = existing.filter(models.AccessRequest.dataset_id == object_id)
+    elif object_type == 'collections':
+        existing = existing.filter(models.AccessRequest.collection_id == object_id)
+    if existing.count()>0:
+        existing = existing.first()
+        return {'exists': True,
+               'data':{'message': existing.message, 'can_read': existing.can_read,
+                    'can_interact': existing.can_interact, 'can_fork': existing.can_fork,
+                    'dataset_id': existing.dataset_id, 'collection_id': existing.collection_id,
+                    'user_id': existing.user_id}}
+    return {'exists': False}
+
+
+def create_access_request(object_type, object_id, user_id, permissions, message):
+    access_request = models.AccessRequest(user_id=user_id, message=message,
+                   can_read=permissions['read'],
+                   can_interact=permissions['interact'],
+                   can_fork=permissions['fork'])
+    if object_type == 'collections':
+        access_request.collection_id = object_id
+    elif object_type == 'datasets':
+        access_request.dataset_id=object_id
+    db.session.add(access_request)
+    db.session.commit()
+    return access_request
+
+
+def update_access_request(object_type, object_id, user_id, permissions, message):
+    access_request = db.session.query(models.AccessRequest).\
+                   filter(models.AccessRequest.user_id == user_id)
+    if object_type == 'datasets':
+        access_request = access_request.\
+                       filter(models.AccessRequest.dataset_id == object_id)
+    elif object_type == 'collections':
+        access_request = access_request.\
+                       filter(models.AccessRequest.collection_id == object_id)
+    access_request = access_request.first()
+    access_request.message = message
+    access_request.can_read=permissions['read']
+    access_request.can_interact=permissions['interact']
+    access_request.can_fork=permissions['fork']
+    db.session.commit()
+    return access_request
+
+def delete_access_request(object_type, object_id, user_id):
+    access_request = db.session.query(models.AccessRequest).\
+                   filter(models.AccessRequest.user_id == user_id)
+    if object_type == 'datasets':
+        access_request = access_request.\
+                       filter(models.AccessRequest.dataset_id == object_id)
+    elif object_type == 'collections':
+        access_request = access_request.\
+                       filter(models.AccessRequest.collection_id == object_id)
+    if access_request.count() == 0:
+        return False
+    else:
+        db.session.delete(access_request.first())
+        db.session.commit()
+        return True
+
+
 
 
 def get_connection(from_id, to_id):
@@ -216,3 +292,51 @@ def get_collection_permission(collection_id):
                          'interact':permission.can_interact,
                          'fork':permission.can_fork}}
     return {'exists':False}
+
+def get_direct_access(object_type, object_id, user_id):
+    access = db.session.query(models.DirectAccess).\
+        filter(models.DirectAccess.user_id == user_id)
+    if object_type == 'collections':
+        access = access.filter(models.DirectAccess.collection_id == object_id)
+    elif object_type == 'datasets':
+        access = access.filter(models.DirectAccess.dataset_id == object_id)
+    access = access.first()
+    if access:
+        return { 'exists': True }
+    return {'exists': False }
+
+def create_direct_access(object_type, object_id, user_id, permissions):
+    direct_access = models.DirectAccess(user_id=user_id,
+                  can_read=permissions['read'],
+                  can_interact=permissions['interact'],
+                  can_fork=permissions['fork'])
+    if object_type == 'collections':
+        direct_access.collection_id = object_id
+    elif object_type == 'datasets':
+        direct_access.dataset_id = object_id
+    db.session.add(direct_access)
+    db.session.commit()
+
+def update_direct_access(object_type, object_id, user_id, permissions):
+    access = db.session.query(models.DirectAccess).\
+                  filter(models.DirectAccess.user_id == user_id)
+    if object_type == 'collections':
+        access = access.filter(models.DirectAccess.collection_id == object_id)
+    elif object_type == 'datasets':
+        access = access.filter(models.DirectAccess.dataset_id == object_id)
+    access = access.first()
+    access.can_read = permissions['read']
+    access.can_interact = permissions['interact']
+    access.can_fork = permissions['fork']
+    db.session.commit()
+
+def delete_direct_access(object_type, object_id, user_id):
+    access = db.session.query(models.DirectAccess).\
+                  filter(models.DirectAccess.user_id == user_id)
+    if object_type == 'collections':
+        access = access.filter(models.DirectAccess.collection_id == object_id)
+    elif object_type == 'datasets':
+        access = access.filter(models.DirectAccess.dataset_id == object_id)
+    access = access.first()
+    db.session.delete(access)
+    db.session.commit()

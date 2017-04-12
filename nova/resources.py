@@ -3,6 +3,7 @@ from flask import request, url_for
 from flask_restful import Resource, abort, reqparse
 from itsdangerous import Signer, BadSignature
 from nova import db, models, logic, es
+from sqlalchemy import desc
 import math
 
 
@@ -364,6 +365,149 @@ class Activity(Resource):
 
     def get(self, query_id):
         connections = db.session.query(models.Connection).\
-                    filter(or_(models.Connection.from_id == query_id, models.Connection.to_id == query_id))
+                    filter(or_(
+                        models.Connection.from_id == query_id,
+                        models.Connection.to_id == query_id))
         return [{'id': c.id, 'from_user': c.from_id, 'to_user':c.to_id, 'degree':c.degree}
                  for c in connections]
+
+
+class AccessRequests(Resource):
+    method_decorators = [authenticate]
+
+    def __init__(self):
+        self.user = logic.get_user(request.headers['Auth-Token'])
+
+    def get(self):
+        dataset_access_requests = db.session.query(models.AccessRequest).\
+            join(models.Dataset).join(models.Permission).\
+            filter(models.Permission.owner == self.user).\
+            filter(models.AccessRequest.dataset_id == models.Permission.dataset_id)
+
+        collection_access_requests = db.session.query(models.AccessRequest).\
+            join(models.Collection).join(models.Permission).\
+            filter(models.Permission.owner == self.user).\
+            filter(models.AccessRequest.collection_id == models.Permission.collection_id)
+
+        access_requests = dataset_access_requests.union(collection_access_requests).\
+                        order_by(desc(models.AccessRequest.created_at)).all()
+        return [{'id': ar.id, 'user_id': ar.user_id, 'username': ar.user.name,
+                'user_url': url_for('profile', name=ar.user.name),
+                'dataset_id':ar.dataset_id, 'collection_id':ar.collection_id,
+                'object': {
+                    'type':'dataset',
+                    'name':ar.dataset.name,
+                    'url': url_for('show_dataset', name=self.user.name, collection_name=ar.dataset.collection.name, dataset_name=ar.dataset.name)
+                } if ar.dataset.id else {
+                    'type':'collection',
+                    'name':ar.collection.name,
+                    'url': url_for('show_collection', name=self.user.name, collection_name=ar.collection.name)
+                }, 'options_url': url_for('grant_access', ar_id=ar.id)}
+                for ar in access_requests]
+
+
+class AccessRequest(Resource):
+    method_decorators = [authenticate]
+
+    def __init__(self):
+        self.user = logic.get_user(request.headers['Auth-Token'])
+
+    def get(self, user_id, object_id, object_type):
+        owner_id = logic.get_owner_id_from_permission(object_type, object_id)
+        if user.id == user_id or user.id == owner_id:
+            access_request = logic.get_access_request(object_type, object_id, user_id)
+            if access_request['exists']:
+                return access_request
+            abort(404)
+        abort(401)
+
+
+    def put(self, user_id, object_id, object_type):
+        user = logic.get_user(request.headers['Auth-Token'])
+        data = request.get_json()
+        message = data['message']
+        permissions = data['permissions']
+        owner_id = logic.get_owner_id_from_permission(object_type, object_id)
+        if user.id == int(user_id):
+            access_request = logic.get_access_request(object_type, object_id, user_id)
+            if access_request['exists']:
+                if logic.update_access_request(object_type, object_id, user_id, permissions, message):
+                    return 200
+                abort(500, 'Failed to update object')
+            else:
+                if logic.create_access_request(object_type, object_id, user_id, permissions, message):
+                    return 201
+                abort(500, 'Failed to create object')
+        abort(401)
+
+
+    def delete(self, user_id, object_id, object_type):
+        user = logic.get_user(request.headers['Auth-Token'])
+        owner_id = logic.get_owner_id_from_permission(object_type, object_id)
+        if user.id == int(user_id) or user.id == owner_id:
+            if not logic.delete_access_request(object_type, object_id, user_id):
+                abort(404)
+            return 200
+        abort(401)
+
+
+class Permission(Resource):
+    method_decorators = [authenticate]
+
+    def __init__(self):
+        self.user = logic.get_user(request.headers['Auth-Token'])
+
+    def patch(self, request_id):
+        access_request = db.session.query(models.AccessRequest).\
+                       filter(models.AccessRequest.id == request_id).first()
+        perm = db.session.query(models.Permission).\
+             filter(models.Permission.collection_id == access_request.collection_id).\
+             filter(models.Permission.dataset_id == access_request.dataset_id).\
+             first()
+        if perm:
+            new_permissions = request.get_json()
+            perm.can_read = new_permissions['read']
+            perm.can_interact = new_permissions['interact']
+            perm.can_fork = new_permissions['fork']
+            db.session.commit()
+            if access_request.dataset_id:
+                logic.delete_access_request('datasets', access_request.dataset_id, access_request.user_id)
+            else:
+                logic.delete_access_request('collections', access_request.collection_id, access_request.user_id)
+            #TODO combine delete access request and patch permission into single transaction
+            #TODO issue notification that public permission has been changed
+            return 200
+        abort(404, "Permissions do not exist")
+
+
+class DirectAccess(Resource):
+    method_decorators = [authenticate]
+
+    def __init__(self):
+        self.user = logic.get_user(request.headers['Auth-Token'])
+
+    def put(self, request_id):
+        access_request = db.session.query(models.AccessRequest).\
+                       filter(models.AccessRequest.id == request_id).first()
+        user_id = access_request.user_id
+        print("user id is : " + str(user_id))
+        if access_request.dataset_id:
+            object_type = 'datasets'
+            object_id = access_request.dataset_id
+        else:
+            object_type = 'collections'
+            object_id = access_request.collection_id
+        data = request.get_json()
+        direct_access = logic.get_direct_access(object_type, object_id, user_id)
+        #TODO combine delete access request and grant direct access into single transaction
+        #TODO issue notification that access has been granted
+        if direct_access['exists']:
+            direct_access = logic.update_direct_access(object_type, object_id, user_id, data)
+            logic.delete_access_request(object_type, object_id, user_id)
+            return 201
+        direct_access = logic.create_direct_access(object_type, object_id, user_id, data)
+        logic.delete_access_request(object_type, object_id, user_id)
+        return 200
+
+
+

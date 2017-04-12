@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class=row>
+  <div class="col-lg-12">
+    <h2>Oops!</h2>
+    <p>You do not have sufficent privileges to {{ access_name }} {% if access_name == 'interact' %}with {% endif %}the following {{ item.type }}</p>
+    <h3>{{ item.name }}</h3>
+    <p>{% if item.description %} {{ item.description }} {% endif %}</p>
+  </div>
+</div>
+<div class="row" id="request-access">
+  <div class="col-lg-12">
+  <h4>You can request access to this {{ item.type }} by sending an <i><b>access request</b></i></h4>
+    <div id="request-access-checkboxes" class="col-lg-12">
+        <label><input type="checkbox" v-model="read"/> Read</label>
+        <label><input type="checkbox" v-model="interact"/> Interact</label>
+        <label><input type="checkbox" v-model="fork"/> Fork</label>
+    </div>
+    <div class="col-lg-6">
+      <textarea v-model="message" placeholder="I would like to request access to {{ item.name }} because ... "></textarea>
+    </div>
+    <div class="col-lg-12">
+      <button class="btn btn-md btn-default" @click="requestAccess">Request Access</button>
+    </div>
+  </div>
+</div>
+<script>
+  var permissions = {'read': true, 'interact': true, 'fork': true};
+  if ('{{ access_name }}' != 'fork') permissions['fork'] = false;
+  if ('{{ access_name }}' != 'interact') permissions['interact'] = false;
+  var object_type = '{{ item.type }}s';
+  var object_id = {{ item.id }};
+</script>
+<script>System.import('accessrequest.js')</script>
+{% endblock %}

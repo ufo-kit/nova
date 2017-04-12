@@ -9,4 +9,27 @@
     <p><a class="btn btn-primary" href="{{ url_for("create_collection") }}">New collection</a></p>
   </div>
 </div>
+<div class="row">
+  <div class="col-lg-8">
+    <h4>Requests</h4>
+    <div id="access-requests">
+      <div class="row" v-for="ar in access_requests">
+        {% raw %}
+        <div class="col-lg-8">
+          <p><a v-bind:href="ar.user_url">{{ ar.username }}</a> requested permission to access {{ ar.object.type }} <a v-bind:href="ar.object.url">{{ ar.object.name }}</a></p>
+        </div>
+        <div class="col-lg-4"><a v-bind:href="ar.options_url">See More</a></div>
+        {% endraw %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+  </div>
+</div>
+<script>
+  System.config({
+    baseURL: '{{ url_for("static", filename='js') }}',
+  });
+  System.import('home.js')
+</script>
 {% endblock %}

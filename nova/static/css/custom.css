@@ -284,3 +284,22 @@ a:hover {
   -webkit-transform: scale(1.1);
   transform: scale(1.1);
 }
+
+#request-access>div>div {
+  margin-top:10px;
+}
+
+#request-access-checkboxes label
+{
+  margin-right:10px;
+  font-weight:400;
+}
+ 
+#request-access textarea {
+  width:100%;
+  height: 80px;
+}
+
+#access-grant>div>div h3 {
+  text-transform: capitalize;
+}
