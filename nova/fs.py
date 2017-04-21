@@ -8,7 +8,10 @@ class Filesystem(object):
     def get_entries(self, dataset, path):
         path = path if path else '.'
         path = os.path.join(self.path, dataset.path, path)
-        return (os.path.join(path, e) for e in os.listdir(path))
+        try:
+            return (os.path.join(path, e) for e in os.listdir(path))
+        except OSError:
+            return []
 
     def get_files(self, dataset, path):
         return [(os.path.basename(e), os.stat(e).st_size) for e in self.get_entries(dataset, path) if not os.path.isdir(e)]

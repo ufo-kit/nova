@@ -48,30 +48,30 @@ class Datasets(Resource):
 class Dataset(Resource):
     method_decorators = [authenticate]
 
-    def get(self, dataset_id):
+    def get(self, collection, dataset):
         user = logic.get_user(request.headers['Auth-Token'])
         dataset = db.session.query(models.Dataset).\
-                filter(models.Dataset.id == dataset_id).\
+                filter(models.Dataset.name == dataset).\
                 first()
         return dataset.to_dict()
 
-    def put(self, dataset_id):
+    def put(self, collection, dataset):
         user = logic.get_user(request.headers['Auth-Token'])
         dataset = db.session.query(models.Dataset).\
                 filter(models.Permission.owner == user).\
-                filter(models.Dataset.id == dataset_id).\
+                filter(models.Dataset.name == dataset).\
                 first()
 
         dataset.closed = request.form.get('closed', False)
         db.session.commit()
 
-    def patch(self, dataset_id):
+    def patch(self, collection, dataset):
         user = logic.get_user(request.headers['Auth-Token'])
         payload = request.get_json()
 
         dataset = db.session.query(models.Dataset).\
                 filter(models.Permission.owner == user).\
-                filter(models.Dataset.id == dataset_id).\
+                filter(models.Dataset.name == dataset).\
                 first()
 
         if not dataset:
@@ -83,7 +83,6 @@ class Dataset(Resource):
         # TODO: sanitize input
         dataset.description = payload['description']
         db.session.commit()
-
 
 class Search(Resource):
     method_decorators = [authenticate]

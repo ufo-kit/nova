@@ -55,7 +55,7 @@ var description = new Vue ({
   created: function() {
     var options = {headers: { 'Auth-Token': this.token }}
 
-    this.$http.get('/api/datasets/' + dataset_id, options).then((response) => {
+    this.$http.get('/api/datasets/' + collection_name + '/' + dataset_name, options).then((response) => {
       this.empty = response.body.description == null
 
       if (this.empty)
@@ -80,7 +80,7 @@ var description = new Vue ({
       if (!this.empty) {
         var options = {headers: { 'Auth-Token': this.token }}
 
-        this.$http.patch('/api/datasets/' + dataset_id, {description: this.text}, options).then((response) => {
+        this.$http.patch('/api/datasets/' + collection_name + '/' + dataset_name, {description: this.text}, options).then((response) => {
           console.log("success")
         })
       }
@@ -126,7 +126,7 @@ var reviews = new Vue ({
   },
   methods: {
     loadReviews: function (headers) {
-      api_str = '/api/datasets/'+dataset_id+'/reviews'
+      api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/reviews'
       this.$http.get(api_str, {headers: headers}).then((response) => {
         this.review_count = parseInt(response.body.count)
         this.average_rating = response.body.avg_rating
@@ -150,7 +150,7 @@ var reviews = new Vue ({
         'rating': rating
       }
       var user_id = this.token.split('.')[0]
-      var api_str = '/api/datasets/'+dataset_id+'/reviews/'+user_id
+      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/reviews/' + user_id
       this.$http.put(api_str, jsonBody, {headers: headers}).then((response) => {
         this.loadReviews(headers)
       })
