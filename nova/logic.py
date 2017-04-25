@@ -72,6 +72,9 @@ def check_token(token):
     except InvalidTokenFormat as e:
         abort(400)
 
+    if user is None:
+        abort(401, "Unknown user")
+
     if not user.is_token_valid(token):
         abort(401)
 

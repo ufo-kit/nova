@@ -11,7 +11,7 @@ def authenticate(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         if 'Auth-Token' not in request.headers:
-            abort(400)
+            abort(401)
 
         if logic.check_token(request.headers['Auth-Token']):
             return func(*args, **kwargs)
