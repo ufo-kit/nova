@@ -53,6 +53,10 @@ class Dataset(Resource):
         dataset = db.session.query(models.Dataset).\
                 filter(models.Dataset.name == dataset).\
                 first()
+
+        if dataset is None:
+            abort(404)
+
         return dataset.to_dict()
 
     def put(self, collection, dataset):
@@ -74,7 +78,7 @@ class Dataset(Resource):
                 filter(models.Dataset.name == dataset).\
                 first()
 
-        if not dataset:
+        if dataset is None:
             abort(404, "Dataset does not exist for this user")
 
         if not 'description' in payload:
