@@ -313,9 +313,9 @@ class Bookmark(db.Model):
     user = db.relationship('User', foreign_keys=[user_id])
     dataset = db.relationship('Dataset', foreign_keys=[dataset_id])
 
-    def __init__(self, user_id=None, dataset_id=None):
-        self.user_id = user_id
-        self.dataset_id = dataset_id
+    def __init__(self, user, dataset):
+        self.user = user
+        self.dataset = dataset
 
     def __repr__(self):
         return '<Bookmark(user={}, dataset={})>'.format(self.user, self.dataset)

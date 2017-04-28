@@ -170,7 +170,7 @@ class Bookmark(Resource):
                 filter(models.Dataset.name == dataset_name).\
                 first()
 
-        logic.create_bookmark(dataset.id, user.id)
+        logic.create_bookmark(user, dataset)
 
         # notify owner
         owner = db.session.query(models.User).\

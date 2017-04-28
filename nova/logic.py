@@ -81,14 +81,16 @@ def check_token(token):
     return user
 
 
-def create_bookmark(dataset_id, user_id):
-    permit = get_dataset_permission(dataset_id)
-    if permit['exists'] and permit['data']['interact']:
-        bookmark = models.Bookmark(dataset_id=dataset_id, user_id=user_id)
+def create_bookmark(user, dataset):
+    permissions = get_dataset_permissions(dataset)
+
+    if permissions and permissions.can_interact:
+        bookmark = models.Bookmark(user, dataset)
         db.session.add(bookmark)
         db.session.commit()
         return bookmark
-    return False
+
+    return None
 
 
 def delete_bookmark(dataset_id, user_id):
@@ -274,16 +276,11 @@ def decrease_connection(from_id, to_id):
     else:
         connection = models.Connection(from_id=from_id, to_id=to_id)
 
-def get_dataset_permission(dataset_id):
-    permission = db.session.query(models.Permission).\
-               filter(models.Permission.dataset_id == dataset_id)
-    if permission.count() > 0:
-        permission = permission.first()
-        return {'exists': True,
-                'data': {'read':permission.can_read,
-                         'interact':permission.can_interact,
-                         'fork':permission.can_fork}}
-    return {'exists':False}
+def get_dataset_permissions(dataset):
+    return db.session.query(models.Permission).\
+            filter(models.Permission.dataset_id == dataset.id).\
+            first()
+
 
 def get_collection_permission(collection_id):
     permission = db.session.query(models.Permission).\
