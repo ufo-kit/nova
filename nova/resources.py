@@ -149,27 +149,32 @@ class Bookmarks(Resource):
 class Bookmark(Resource):
     method_decorators = [authenticate]
 
-    def get(self, dataset_id, user_id):
-        if int(dataset_id) == 0 or int(user_id) == 0:
-            return abort(400)
+    def get(self, user_id, collection_name, dataset_name):
+        bookmarks = db.session.query(models.Bookmark).\
+                join(models.Dataset).\
+                join(models.Collection).\
+                filter(models.Collection.name == collection_name).\
+                filter(models.Dataset.name == dataset_name)
+        return {'exists' : bookmarks.count() == 1}
 
-        bookmark = db.session.query(models.Bookmark).\
-                 filter(models.Bookmark.user_id == user_id).\
-                 filter(models.Bookmark.dataset_id == dataset_id)
-        return {'exists' : bookmark.count() == 1}
-
-    def post(self, dataset_id, user_id):
+    def post(self, user_id, collection_name, dataset_name):
         user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
 
         if user.id != user_id:
             abort(401)
 
-        logic.create_bookmark(dataset_id, user_id)
+        dataset = db.session.query(models.Dataset).\
+                join(models.Collection).\
+                filter(models.Collection.name == collection_name).\
+                filter(models.Dataset.name == dataset_name).\
+                first()
+
+        logic.create_bookmark(dataset.id, user.id)
 
         # notify owner
         owner = db.session.query(models.User).\
-            filter(models.Dataset.id == dataset_id).\
+            filter(models.Dataset.id == dataset.id).\
             first()
 
         if owner.id == user_id:
@@ -183,14 +188,20 @@ class Bookmark(Resource):
 
         return 201
 
-    def delete(self, dataset_id, user_id):
+    def delete(self, user_id, collection_name, dataset_name):
         user = logic.get_user(request.headers['Auth-Token'])
         user_id = int(user_id)
 
         if user.id != user_id:
             abort(401)
 
-        if not logic.delete_bookmark(dataset_id, user_id):
+        dataset = db.session.query(models.Dataset).\
+                join(models.Collection).\
+                filter(models.Collection.name == collection_name).\
+                filter(models.Dataset.name == dataset_name).\
+                first()
+
+        if not logic.delete_bookmark(dataset.id, user.id):
             abort(404)
 
         return 200
@@ -247,14 +258,18 @@ class Review(Resource):
 class Reviews(Resource):
     method_decorators = [authenticate]
 
-    def get(self, dataset_id):
+    def get(self, collection_name, dataset_name):
         user = logic.get_user(request.headers['Auth-Token'])
 
-        if int(dataset_id) == 0:
-            abort(400, 'Malformed syntax')
+        dataset = db.session.query(models.Dataset).\
+                join(models.Collection).\
+                filter(models.Collection.name == collection_name).\
+                filter(models.Dataset.name == dataset_name).\
+                first()
 
         reviews = db.session.query(models.Review).\
-                 filter(models.Review.dataset_id == dataset_id)
+                filter(models.Review.dataset == dataset)
+
         number = reviews.count()
         total = 0
         data = []

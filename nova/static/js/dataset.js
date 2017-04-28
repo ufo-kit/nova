@@ -11,7 +11,7 @@ var meta = new Vue ({
   },
   created: function() {
     var user_id = this.token.split('.')[0]
-    var api_str = '/api/user/' + user_id + '/bookmarks/' + dataset_id
+    var api_str = '/api/user/' + user_id + '/bookmarks/' + collection_name + '/' + dataset_name
     var headers = {
       'Auth-Token': this.token
     }
@@ -27,7 +27,7 @@ var meta = new Vue ({
       }
 
       var user_id = this.token.split('.')[0]
-      var api_str = '/api/user/' + user_id + '/bookmarks/' + dataset_id
+      var api_str = '/api/user/' + user_id + '/bookmarks/' + collection_name + '/' + dataset_name
 
       if (this.bookmarked) {
         this.$http.delete(api_str, {headers: headers}).then((response) => {
