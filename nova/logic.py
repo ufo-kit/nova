@@ -93,18 +93,6 @@ def create_bookmark(user, dataset):
     return None
 
 
-def delete_bookmark(dataset_id, user_id):
-    bookmark = db.session.query(models.Bookmark).\
-             filter(models.Bookmark.dataset_id == dataset_id).\
-             filter(models.Bookmark.user_id == user_id)
-    if bookmark.count == 0:
-        return False
-    else:
-        db.session.delete(bookmark.first())
-        db.session.commit()
-        return True
-
-
 def get_review(dataset_id, user_id):
     existing = db.session.query(models.Review).\
              filter(models.Review.user_id == user_id).\

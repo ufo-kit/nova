@@ -201,8 +201,16 @@ class Bookmark(Resource):
                 filter(models.Dataset.name == dataset_name).\
                 first()
 
-        if not logic.delete_bookmark(dataset.id, user.id):
-            abort(404)
+        bookmark = db.session.query(models.Bookmark).\
+                filter(models.Bookmark.dataset == dataset).\
+                filter(models.Bookmark.user == user).\
+                first()
+
+        if bookmark is None:
+            abort(204)
+
+        db.session.delete(bookmark)
+        db.session.commit()
 
         return 200
 
