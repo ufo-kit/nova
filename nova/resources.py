@@ -207,56 +207,56 @@ class Bookmarks(Resource):
         return 200
 
 
-class Review(Resource):
+class Reviews(Resource):
     method_decorators = [authenticate]
 
-    def get(self, dataset_id, user_id):
+    def put(self, collection_name, dataset_name):
         user = logic.get_user(request.headers['Auth-Token'])
-        user_id = int(user_id)
-        if user.id != user_id:
-            abort(401)
-        review = logic.get_review(dataset_id, user_id)
-        if review['exists']:
-            return review
-        abort(404)
-
-    def put(self, dataset_id, user_id):
-        user = logic.get_user(request.headers['Auth-Token'])
-        user_id = int(user_id)
         data = request.get_json()
+
+        # sanitize this
         comment = data['comment']
         rating = data['rating']
 
-        if user.id != user_id:
+        dataset, permission = db.session.query(models.Dataset, models.Permission).\
+                join(models.Collection).\
+                filter(models.Collection.name == collection_name).\
+                filter(models.Dataset.name == dataset_name).\
+                first()
+
+        if not permission.can_interact:
             abort(401)
 
-        review = logic.get_review(dataset_id, user_id)
+        review = db.session.query(models.Review).\
+                filter(models.Review.user == user).\
+                filter(models.Review.dataset == dataset).\
+                first()
 
-        if review['exists']:
-            if logic.update_review(dataset_id, user_id, rating, comment):
-                return 200
-
-            abort(500, 'Failed to update object')
+        if review is None:
+            review = models.Review(user, dataset, rating, comment)
+            db.session.add(review)
         else:
-            if logic.create_review(dataset_id, user_id, rating, comment):
-                return 201
-            abort(500, 'Failed to create object')
+            review.comment = comment
+            review.rating = rating
 
-
-    def delete(self, dataset_id, user_id):
-        user = logic.get_user(request.headers['Auth-Token'])
-        user_id = int(user_id)
-
-        if user.id != user_id:
-            abort(401)
-
-        if not logic.delete_review(dataset_id, user_id):
-            abort(404)
-
+        db.session.commit()
         return 200
 
-class Reviews(Resource):
-    method_decorators = [authenticate]
+    def delete(self, collection_name, dataset_name):
+        user = logic.get_user(request.headers['Auth-Token'])
+        review = db.session.query(models.Review).\
+                join(models.Dataset).\
+                join(models.Collection).\
+                filter(models.Collection.name == collection_name).\
+                filter(models.Dataset.name == dataset_name).\
+                first()
+
+        if review is None:
+            abort(204)
+
+        db.session.delete(review)
+        db.session.commit()
+        return 200
 
     def get(self, collection_name, dataset_name):
         user = logic.get_user(request.headers['Auth-Token'])
@@ -283,15 +283,13 @@ class Reviews(Resource):
                 i_reviewed = True
                 current_i_review = True
 
-            data.append(dict(sender_name=review.user.name,
-                             sender_url=url_for('profile', name=review.user.name),
+            data.append(dict(name=review.user.name, url=url_for('profile', name=review.user.name),
                              rating=review.rating, comment=review.comment,
-                             dataset_id=dataset_id, user_id=review.user.id,
                              created_at=str(review.created_at),
-                             editable=current_i_review, id=review.id))
+                             editable=current_i_review))
 
         average = total / float(number) if number > 0 else 0
-        return {'count': number, 'avg_rating': average, 'data': data, 'self_reviewed': i_reviewed}
+        return {'count': number, 'rating': average, 'data': data, 'self_reviewed': i_reviewed}
 
 
 class Notifications(Resource):

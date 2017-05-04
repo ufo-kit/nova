@@ -81,55 +81,6 @@ def check_token(token):
     return user
 
 
-def get_review(dataset_id, user_id):
-    existing = db.session.query(models.Review).\
-             filter(models.Review.user_id == user_id).\
-             filter(models.Review.dataset_id == dataset_id)
-    if existing.count()>0:
-        existing = existing.first()
-        return {'exists': True,
-               'data':{'comment': existing.comment, 'rating': existing.rating,
-                    'dataset_id': existing.dataset_id,
-                    'user_id': existing.user_id}}
-    return {'exists': False}
-
-
-def create_review(dataset_id, user_id, rating, comment):
-    permit = get_dataset_permission(dataset_id)
-    if permit['exists'] and permit['data']['interact']:
-        review = models.Review(dataset_id=dataset_id, user_id=user_id,
-                               rating=rating, comment=comment)
-        db.session.add(review)
-        db.session.commit()
-        return review
-    return False
-
-
-def update_review(dataset_id, user_id, rating, comment):
-    permit = get_dataset_permission(dataset_id)
-    if permit['exists'] and permit['data']['interact']:
-        review = db.session.query(models.Review).\
-                filter(models.Review.user_id == user_id).\
-                filter(models.Review.dataset_id == dataset_id).first()
-        review.comment = comment
-        review.rating = rating
-        db.session.commit()
-        return review
-    return False
-
-
-def delete_review(dataset_id, user_id):
-    review = db.session.query(models.Review).\
-             filter(models.Review.dataset_id == dataset_id).\
-             filter(models.Review.user_id == user_id)
-    if review.count() == 0:
-        return False
-    else:
-        db.session.delete(review.first())
-        db.session.commit()
-        return True
-
-
 def get_owner_id_from_permission(object_type, object_id):
     pr = db.session.query(models.Permission)
     if object_type == 'collections':

@@ -334,16 +334,15 @@ class Review(db.Model):
     user = db.relationship('User', foreign_keys=[user_id])
     dataset = db.relationship('Dataset', foreign_keys=[dataset_id])
 
-    def __init__(self, user_id=None, dataset_id=None, rating=None, comment=''):
-        self.user_id = user_id
-        self.dataset_id = dataset_id
+    def __init__(self, user, dataset, rating, comment):
+        self.user = user
+        self.dataset = dataset
         self.rating = rating
         self.comment = comment
 
     def __repr__(self):
-        return '<Bookmark(user={}, dataset={}, rating={}, comment={})>'.\
+        return '<Review(user={}, dataset={}, rating={}, comment={})>'.\
             format(self.user, self.dataset, self.rating, self.comment)
-
 
 
 class Connection(db.Model):

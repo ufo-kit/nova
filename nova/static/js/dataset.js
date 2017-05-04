@@ -115,7 +115,6 @@ var reviews = new Vue ({
     review_text: '',
     n: 0,
     review_being_updated: false,
-    review_under_updation: '',
     show_modal_delete_review: false
   },
   created: function() {
@@ -129,7 +128,7 @@ var reviews = new Vue ({
       api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/reviews'
       this.$http.get(api_str, {headers: headers}).then((response) => {
         this.review_count = parseInt(response.body.count)
-        this.average_rating = response.body.avg_rating
+        this.average_rating = response.body.rating
         this.base_rating = Math.floor(this.average_rating)
         this.half_star = this.average_rating - this.base_rating >= .5
         this.reviews = response.body.data 
@@ -150,7 +149,7 @@ var reviews = new Vue ({
         'rating': rating
       }
       var user_id = this.token.split('.')[0]
-      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/reviews/' + user_id
+      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/reviews'
       this.$http.put(api_str, jsonBody, {headers: headers}).then((response) => {
         this.loadReviews(headers)
       })
@@ -158,7 +157,6 @@ var reviews = new Vue ({
     beginUpdatingReview: function(review) {
       this.n = review.rating
       this.review_text = review.comment
-      this.review_under_updation = review.id
       this.review_being_updated = true
     },
     endUpdatingReview: function() {
@@ -174,7 +172,6 @@ var reviews = new Vue ({
       else this.rating_notified = true
     },
     beginDeletingReview: function(review) {
-      this.review_under_updation = review
       this.show_modal_delete_review = true
     },
     deleteReview: function() {
@@ -184,7 +181,7 @@ var reviews = new Vue ({
       var headers = {
         'Auth-Token': this.token
       }
-      var api_str = '/api/datasets/'+this.review_under_updation.dataset_id+'/reviews/'+this.review_under_updation.user_id
+      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/reviews'
       this.$http.delete(api_str, {headers: headers}).then((response) => {
         if (response.status == 200) {
           this.show_modal_delete_review = false
