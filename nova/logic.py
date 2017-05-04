@@ -81,18 +81,6 @@ def check_token(token):
     return user
 
 
-def create_bookmark(user, dataset):
-    permissions = get_dataset_permissions(dataset)
-
-    if permissions and permissions.can_interact:
-        bookmark = models.Bookmark(user, dataset)
-        db.session.add(bookmark)
-        db.session.commit()
-        return bookmark
-
-    return None
-
-
 def get_review(dataset_id, user_id):
     existing = db.session.query(models.Review).\
              filter(models.Review.user_id == user_id).\

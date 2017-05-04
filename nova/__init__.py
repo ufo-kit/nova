@@ -66,7 +66,7 @@ admin.add_view(AdminModelView(nova.models.Process, db.session))
 admin.add_view(AdminModelView(nova.models.Reconstruction, db.session))
 
 
-from nova.resources import (Datasets, Dataset, Search, Bookmarks, Bookmark,
+from nova.resources import (Datasets, Dataset, Search, Bookmarks, UserBookmarks,
         Reviews, Review, Notifications, Notification, Connections, Connection,
         AccessRequests, AccessRequest, Permission, DirectAccess)
 
@@ -80,11 +80,11 @@ errors = {
 api = Api(app, errors=errors)
 api.add_resource(Datasets, '/api/datasets')
 api.add_resource(Dataset, '/api/datasets/<collection>/<dataset>')
+api.add_resource(Bookmarks, '/api/datasets/<collection_name>/<dataset_name>/bookmarks')
 api.add_resource(Reviews, '/api/datasets/<collection_name>/<dataset_name>/reviews')
 api.add_resource(Review, '/api/datasets/<collection>/<dataset>/reviews/<user_id>')
 api.add_resource(Search, '/api/search')
-api.add_resource(Bookmarks, '/api/user/<username>/bookmarks')
-api.add_resource(Bookmark, '/api/user/<user_id>/bookmarks/<collection_name>/<dataset_name>')
+api.add_resource(UserBookmarks, '/api/user/<username>/bookmarks')
 api.add_resource(Notifications, '/api/notifications')
 api.add_resource(Notification, '/api/notification/<notification_id>')
 api.add_resource(Connections, '/api/user/<user_id>/connections')

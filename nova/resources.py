@@ -126,7 +126,7 @@ class Search(Resource):
 
 
 
-class Bookmarks(Resource):
+class UserBookmarks(Resource):
     method_decorators = [authenticate]
 
     def get(self, username):
@@ -146,10 +146,10 @@ class Bookmarks(Resource):
                 for d in datasets]
 
 
-class Bookmark(Resource):
+class Bookmarks(Resource):
     method_decorators = [authenticate]
 
-    def get(self, user_id, collection_name, dataset_name):
+    def get(self, collection_name, dataset_name):
         bookmarks = db.session.query(models.Bookmark).\
                 join(models.Dataset).\
                 join(models.Collection).\
@@ -157,27 +157,28 @@ class Bookmark(Resource):
                 filter(models.Dataset.name == dataset_name)
         return {'exists' : bookmarks.count() == 1}
 
-    def post(self, user_id, collection_name, dataset_name):
+    def post(self, collection_name, dataset_name):
         user = logic.get_user(request.headers['Auth-Token'])
-        user_id = int(user_id)
 
-        if user.id != user_id:
-            abort(401)
-
-        dataset = db.session.query(models.Dataset).\
+        dataset, permission = db.session.query(models.Dataset, models.Permission).\
                 join(models.Collection).\
                 filter(models.Collection.name == collection_name).\
                 filter(models.Dataset.name == dataset_name).\
                 first()
 
-        logic.create_bookmark(user, dataset)
+        if not permission.can_interact:
+            abort(401)
+
+        bookmark = models.Bookmark(user, dataset)
+        db.session.add(bookmark)
+        db.session.commit()
 
         # notify owner
         owner = db.session.query(models.User).\
             filter(models.Dataset.id == dataset.id).\
             first()
 
-        if owner.id == user_id:
+        if owner.id == user.id:
             return 201
 
         # FIXME: ratelimit bookmarking or DOS attacks become a piece of cake
@@ -188,25 +189,16 @@ class Bookmark(Resource):
 
         return 201
 
-    def delete(self, user_id, collection_name, dataset_name):
+    def delete(self, collection_name, dataset_name):
         user = logic.get_user(request.headers['Auth-Token'])
-        user_id = int(user_id)
 
-        if user.id != user_id:
-            abort(401)
-
-        dataset = db.session.query(models.Dataset).\
+        dataset, bookmark = db.session.query(models.Dataset, models.Bookmark).\
                 join(models.Collection).\
                 filter(models.Collection.name == collection_name).\
                 filter(models.Dataset.name == dataset_name).\
                 first()
 
-        bookmark = db.session.query(models.Bookmark).\
-                filter(models.Bookmark.dataset == dataset).\
-                filter(models.Bookmark.user == user).\
-                first()
-
-        if bookmark is None:
+        if dataset is None or bookmark is None:
             abort(204)
 
         db.session.delete(bookmark)
