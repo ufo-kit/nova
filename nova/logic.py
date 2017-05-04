@@ -193,6 +193,7 @@ def increase_connection(from_id, to_id):
     else:
         connection = models.Connection(from_id=from_id, to_id=to_id)
 
+
 def decrease_connection(from_id, to_id):
     connection = db.session.query(models.Connection).\
                    filter(models.Connection.from_id == from_id).\
@@ -203,22 +204,6 @@ def decrease_connection(from_id, to_id):
     else:
         connection = models.Connection(from_id=from_id, to_id=to_id)
 
-def get_dataset_permissions(dataset):
-    return db.session.query(models.Permission).\
-            filter(models.Permission.dataset_id == dataset.id).\
-            first()
-
-
-def get_collection_permission(collection_id):
-    permission = db.session.query(models.Permission).\
-               filter(models.Permission.dataset_id == dataset_id)
-    if permission.count() > 0:
-        permission = permission.first()
-        return {'exists': True,
-                'data': {'read':permission.can_read,
-                         'interact':permission.can_interact,
-                         'fork':permission.can_fork}}
-    return {'exists':False}
 
 def get_direct_access(object_type, object_id, user_id):
     access = db.session.query(models.DirectAccess).\
