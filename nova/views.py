@@ -2,12 +2,13 @@ import os
 import io
 import re
 from functools import wraps
-from nova import app, db, login_manager, fs, logic, memtar, tasks, models, es
+from nova import (app, db, login_manager, fs, logic, memtar, tasks, models, es,
+        users)
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
-                         Order, Notification, Process, Bookmark, Permission,
-                         AccessRequest, DirectAccess)
+        Order, Notification, Process, Bookmark, Permission,
+        AccessRequest, DirectAccess)
 from flask import (Response, render_template, request, flash, redirect,
-                   url_for, jsonify, send_from_directory, abort)
+        url_for, jsonify, send_from_directory, abort)
 from flask_login import login_user, logout_user, current_user
 from flask_wtf import Form
 from flask_sqlalchemy import Pagination
@@ -549,7 +550,7 @@ def delete(dataset_id=None):
 
 @app.route('/upload/<int:dataset_id>', methods=['POST'])
 def upload(dataset_id):
-    user = logic.check_token(request.args.get('token'))
+    user = users.check_token(request.args.get('token'))
     dataset = db.session.query(Dataset).\
             filter(Permission.owner == user).\
             filter(Permission.dataset_id == dataset_id).\
@@ -568,7 +569,7 @@ def upload(dataset_id):
 
 @app.route('/clone/<int:dataset_id>')
 def clone(dataset_id):
-    user = logic.check_token(request.args.get('token'))
+    user = users.check_token(request.args.get('token'))
     dataset = db.session.query(Dataset).\
             filter(Dataset.id == dataset_id).first()
     if dataset is None:

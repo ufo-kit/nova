@@ -2,7 +2,7 @@ from functools import wraps
 from flask import request, url_for
 from flask_restful import Resource, abort, reqparse
 from itsdangerous import Signer, BadSignature
-from nova import db, models, logic, es
+from nova import db, models, logic, es, users
 from sqlalchemy import desc
 import math
 
@@ -13,8 +13,12 @@ def authenticate(func):
         if 'Auth-Token' not in request.headers:
             abort(401)
 
-        if logic.check_token(request.headers['Auth-Token']):
-            return func(*args, **kwargs)
+        user = users.check_token(request.headers['Auth-Token'])
+
+        if user is None:
+            abort(401)
+
+        return func(*args, user=user, **kwargs)
 
     return wrapper
 
@@ -22,9 +26,7 @@ def authenticate(func):
 class Datasets(Resource):
     method_decorators = [authenticate]
 
-    def get(self):
-        user = logic.get_user(request.headers['Auth-Token'])
-
+    def get(self, user=None):
         if 'query' in request.args:
             query = request.args['query']
             return []
@@ -34,13 +36,11 @@ class Datasets(Resource):
                     filter(models.Permission.can_read).\
                     all()]
 
-    def post(self):
+    def post(self, user=None):
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, help="Dataset name")
         parser.add_argument('parent', type=int, help="Dataset parent", default=None)
         args = parser.parse_args()
-
-        user = logic.get_user(request.headers['Auth-Token'])
         dataset = logic.app.config['DEBUG'] and not create_dataset(args.name, user, parent_id=args.parent)
         return dict(id=dataset.id)
 
@@ -48,8 +48,7 @@ class Datasets(Resource):
 class Dataset(Resource):
     method_decorators = [authenticate]
 
-    def get(self, collection, dataset):
-        user = logic.get_user(request.headers['Auth-Token'])
+    def get(self, collection, dataset, user=None):
         dataset = db.session.query(models.Dataset).\
                 filter(models.Dataset.name == dataset).\
                 first()
@@ -59,8 +58,7 @@ class Dataset(Resource):
 
         return dataset.to_dict()
 
-    def put(self, collection, dataset):
-        user = logic.get_user(request.headers['Auth-Token'])
+    def put(self, collection, dataset, user=None):
         dataset = db.session.query(models.Dataset).\
                 filter(models.Permission.owner == user).\
                 filter(models.Dataset.name == dataset).\
@@ -69,8 +67,7 @@ class Dataset(Resource):
         dataset.closed = request.form.get('closed', False)
         db.session.commit()
 
-    def patch(self, collection, dataset):
-        user = logic.get_user(request.headers['Auth-Token'])
+    def patch(self, collection, dataset, user=None):
         payload = request.get_json()
 
         dataset = db.session.query(models.Dataset).\
@@ -91,7 +88,7 @@ class Dataset(Resource):
 class Search(Resource):
     method_decorators = [authenticate]
 
-    def get(self):
+    def get(self, user=None):
         parser = reqparse.RequestParser()
         parser.add_argument('q')
         query = parser.parse_args()['q']
@@ -125,11 +122,10 @@ class Search(Resource):
                  for h in hits]
 
 
-
 class UserBookmarks(Resource):
     method_decorators = [authenticate]
 
-    def get(self, username):
+    def get(self, username, user=None):
         bookmarks = db.session.query(models.Bookmark).join(models.Bookmark.user).\
                   filter(models.User.name == username).\
                   all()
@@ -149,7 +145,7 @@ class UserBookmarks(Resource):
 class Bookmarks(Resource):
     method_decorators = [authenticate]
 
-    def get(self, collection_name, dataset_name):
+    def get(self, collection_name, dataset_name, user=None):
         bookmarks = db.session.query(models.Bookmark).\
                 join(models.Dataset).\
                 join(models.Collection).\
@@ -157,9 +153,7 @@ class Bookmarks(Resource):
                 filter(models.Dataset.name == dataset_name)
         return {'exists' : bookmarks.count() == 1}
 
-    def post(self, collection_name, dataset_name):
-        user = logic.get_user(request.headers['Auth-Token'])
-
+    def post(self, collection_name, dataset_name, user=None):
         dataset, permission = db.session.query(models.Dataset, models.Permission).\
                 join(models.Collection).\
                 filter(models.Collection.name == collection_name).\
@@ -189,9 +183,7 @@ class Bookmarks(Resource):
 
         return 201
 
-    def delete(self, collection_name, dataset_name):
-        user = logic.get_user(request.headers['Auth-Token'])
-
+    def delete(self, collection_name, dataset_name, user=None):
         dataset, bookmark = db.session.query(models.Dataset, models.Bookmark).\
                 join(models.Collection).\
                 filter(models.Collection.name == collection_name).\
@@ -210,8 +202,7 @@ class Bookmarks(Resource):
 class Reviews(Resource):
     method_decorators = [authenticate]
 
-    def put(self, collection_name, dataset_name):
-        user = logic.get_user(request.headers['Auth-Token'])
+    def put(self, collection_name, dataset_name, user=None):
         data = request.get_json()
 
         # sanitize this
@@ -242,8 +233,7 @@ class Reviews(Resource):
         db.session.commit()
         return 200
 
-    def delete(self, collection_name, dataset_name):
-        user = logic.get_user(request.headers['Auth-Token'])
+    def delete(self, collection_name, dataset_name, user=None):
         review = db.session.query(models.Review).\
                 join(models.Dataset).\
                 join(models.Collection).\
@@ -258,9 +248,7 @@ class Reviews(Resource):
         db.session.commit()
         return 200
 
-    def get(self, collection_name, dataset_name):
-        user = logic.get_user(request.headers['Auth-Token'])
-
+    def get(self, collection_name, dataset_name, user=None):
         dataset = db.session.query(models.Dataset).\
                 join(models.Collection).\
                 filter(models.Collection.name == collection_name).\
@@ -295,8 +283,7 @@ class Reviews(Resource):
 class Notifications(Resource):
     method_decorators = [authenticate]
 
-    def get(self):
-        user = logic.get_user(request.headers['Auth-Token'])
+    def get(self, user=None):
         notifications = db.session.query(models.Notification).\
             filter(models.Notification.user_id == user.id).\
             all()
@@ -321,8 +308,7 @@ class Notifications(Resource):
 class Notification(Resource):
     method_decorators = [authenticate]
 
-    def delete(self, notification_id):
-        user = logic.get_user(request.headers['Auth-Token'])
+    def delete(self, notification_id, user=None):
         notification = db.session.query(models.Notification).\
             filter(models.Notification.id == notification_id).\
             filter(models.Notification.user_id == user.id).\
@@ -339,7 +325,7 @@ class Connection(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
+        self.user = users.from_token(request.headers['Auth-Token'])
 
     def get(self, from_id, to_id):
         connection = logic.get_connection(from_id, to_id)
@@ -364,7 +350,7 @@ class Connections(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
+        self.user = users.from_token(request.headers['Auth-Token'])
 
     def get(self, query_id):
         connections = db.session.query(models.Connection).\
@@ -377,7 +363,7 @@ class Activity(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
+        self.user = users.from_token(request.headers['Auth-Token'])
 
     def get(self, query_id):
         connections = db.session.query(models.Connection).\
@@ -392,7 +378,7 @@ class AccessRequests(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
+        self.user = users.from_token(request.headers['Auth-Token'])
 
     def get(self):
         dataset_access_requests = db.session.query(models.AccessRequest).\
@@ -426,7 +412,7 @@ class AccessRequest(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
+        self.user = users.from_token(request.headers['Auth-Token'])
 
     def get(self, user_id, object_id, object_type):
         owner_id = logic.get_owner_id_from_permission(object_type, object_id)
@@ -438,7 +424,7 @@ class AccessRequest(Resource):
         abort(401)
 
     def put(self, user_id, object_id, object_type):
-        user = logic.get_user(request.headers['Auth-Token'])
+        user = users.from_token(request.headers['Auth-Token'])
         data = request.get_json()
         message = data['message']
         permissions = data['permissions']
@@ -456,7 +442,7 @@ class AccessRequest(Resource):
         abort(401)
 
     def delete(self, user_id, object_id, object_type):
-        user = logic.get_user(request.headers['Auth-Token'])
+        user = users.from_token(request.headers['Auth-Token'])
         owner_id = logic.get_owner_id_from_permission(object_type, object_id)
         if user.id == int(user_id) or user.id == owner_id:
             if not logic.delete_access_request(object_type, object_id, user_id):
@@ -469,7 +455,7 @@ class Permission(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
+        self.user = user.from_token(request.headers['Auth-Token'])
 
     def patch(self, request_id):
         access_request = db.session.query(models.AccessRequest).\
@@ -498,7 +484,7 @@ class DirectAccess(Resource):
     method_decorators = [authenticate]
 
     def __init__(self):
-        self.user = logic.get_user(request.headers['Auth-Token'])
+        self.user = user.from_token(request.headers['Auth-Token'])
 
     def put(self, request_id):
         access_request = db.session.query(models.AccessRequest).\
