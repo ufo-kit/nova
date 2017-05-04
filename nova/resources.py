@@ -437,7 +437,6 @@ class AccessRequest(Resource):
             abort(404)
         abort(401)
 
-
     def put(self, user_id, object_id, object_type):
         user = logic.get_user(request.headers['Auth-Token'])
         data = request.get_json()
@@ -455,7 +454,6 @@ class AccessRequest(Resource):
                     return 201
                 abort(500, 'Failed to create object')
         abort(401)
-
 
     def delete(self, user_id, object_id, object_type):
         user = logic.get_user(request.headers['Auth-Token'])
@@ -506,7 +504,6 @@ class DirectAccess(Resource):
         access_request = db.session.query(models.AccessRequest).\
                        filter(models.AccessRequest.id == request_id).first()
         user_id = access_request.user_id
-        print("user id is : " + str(user_id))
         if access_request.dataset_id:
             object_type = 'datasets'
             object_id = access_request.dataset_id
@@ -524,6 +521,3 @@ class DirectAccess(Resource):
         direct_access = logic.create_direct_access(object_type, object_id, user_id, data)
         logic.delete_access_request(object_type, object_id, user_id)
         return 200
-
-
-
