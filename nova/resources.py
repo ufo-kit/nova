@@ -146,12 +146,15 @@ class Bookmarks(Resource):
     method_decorators = [authenticate]
 
     def get(self, collection_name, dataset_name, user=None):
-        bookmarks = db.session.query(models.Bookmark).\
+        bookmark = db.session.query(models.Bookmark).\
                 join(models.Dataset).\
                 join(models.Collection).\
+                join(models.User).\
                 filter(models.Collection.name == collection_name).\
-                filter(models.Dataset.name == dataset_name)
-        return {'exists' : bookmarks.count() == 1}
+                filter(models.Dataset.name == dataset_name).\
+                filter(models.Bookmark.user == user).\
+                first()
+        return bookmark.to_dict() if bookmark else {}
 
     def post(self, collection_name, dataset_name, user=None):
         dataset, permission = db.session.query(models.Dataset, models.Permission).\

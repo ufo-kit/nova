@@ -63,7 +63,7 @@ admin.add_view(AdminModelView(nova.models.Dataset, db.session))
 admin.add_view(AdminModelView(nova.models.Access, db.session))
 admin.add_view(AdminModelView(nova.models.Notification, db.session))
 admin.add_view(AdminModelView(nova.models.Review, db.session))
-admin.add_view(AdminModelView(nova.models.Reconstruction, db.session))
+admin.add_view(AdminModelView(nova.models.Bookmark, db.session))
 
 
 from nova.resources import (Datasets, Dataset, Search, Bookmarks, UserBookmarks,

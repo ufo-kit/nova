@@ -17,7 +17,7 @@ var meta = new Vue ({
     }
 
     this.$http.get(api_str, {headers: headers}).then((response) => {
-      this.bookmarked = response.body.exists
+      this.bookmarked = response.body.hasOwnProperty("collection")
     })
   },
   methods: {

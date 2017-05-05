@@ -320,6 +320,9 @@ class Bookmark(db.Model):
     def __repr__(self):
         return '<Bookmark(user={}, dataset={})>'.format(self.user, self.dataset)
 
+    def to_dict(self):
+        return dict(user=self.user.name, collection=self.dataset.collection.name, dataset=self.dataset.name)
+
 
 class Review(db.Model):
 
