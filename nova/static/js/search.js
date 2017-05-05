@@ -104,6 +104,8 @@ Vue.component('notification-item', {
       switch (this.notification.type) {
         case 'message':
           return 'fa-envelope-open-o'
+        case 'review':
+          return 'fa-pencil'
         case 'bookmark':
           return 'fa-bookmark'
         default:

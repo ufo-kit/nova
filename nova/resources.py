@@ -23,6 +23,12 @@ def authenticate(func):
     return wrapper
 
 
+def get_dataset_owner(dataset):
+    return db.session.query(models.User).\
+        filter(models.Dataset.id == dataset.id).\
+        first()
+
+
 class Datasets(Resource):
     method_decorators = [authenticate]
 
@@ -175,15 +181,13 @@ class Bookmarks(Resource):
         db.session.commit()
 
         # notify owner
-        owner = db.session.query(models.User).\
-            filter(models.Dataset.id == dataset.id).\
-            first()
+        owner = get_dataset_owner(dataset)
 
         if owner.id == user.id:
             return 201
 
         # FIXME: ratelimit bookmarking or DOS attacks become a piece of cake
-        message = "{} bookmarked a dataset".format(user.name)
+        message = "{} bookmarked {}/{}".format(user.name, collection_name, dataset_name)
         notification = models.Notification(owner, type='bookmark', message=message)
         db.session.add(notification)
         db.session.commit()
@@ -238,6 +242,17 @@ class Reviews(Resource):
             review.rating = rating
 
         db.session.commit()
+
+        owner = get_dataset_owner(dataset)
+
+        if owner.id == user.id:
+            return 201
+
+        message = "{} reviewed {}/{}".format(user.name, collection_name, dataset_name)
+        notification = models.Notification(owner, type='review', message=message)
+        db.session.add(notification)
+        db.session.commit()
+
         return 200
 
     def delete(self, collection_name, dataset_name, user=None):
