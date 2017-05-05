@@ -157,6 +157,10 @@ class Bookmarks(Resource):
         return bookmark.to_dict() if bookmark else {}
 
     def post(self, collection_name, dataset_name, user=None):
+        if self.get(collection_name, dataset_name, user):
+            # bookmark exists already
+            return 200
+
         dataset, permission = db.session.query(models.Dataset, models.Permission).\
                 join(models.Collection).\
                 filter(models.Collection.name == collection_name).\
@@ -293,7 +297,7 @@ class Notifications(Resource):
 
         return {'notifications': [n.to_dict() for n in notifications]}
 
-    def patch(self):
+    def patch(self, user=None):
         payload = request.get_json()
 
         if 'ids' not in payload:
