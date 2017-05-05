@@ -475,13 +475,17 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     dataset = Dataset.query.join(Collection).\
         filter(Collection.name == collection_name).\
         filter(Dataset.name == dataset_name).first()
+
     if dataset is None:
         abort(404, 'dataset {} not found'.format(dataset_name))
+
     permission = Permission.query.\
         filter(Permission.dataset == dataset).\
         filter(or_(Permission.can_read == True, Permission.owner==current_user)).\
                first()
+
     dataset_permissions = {}
+
     if permission is None:
         direct_access = DirectAccess.query.\
                       filter(DirectAccess.dataset == dataset).\
@@ -489,9 +493,11 @@ def show_dataset(name, collection_name, dataset_name, path=''):
                       filter(DirectAccess.can_read == True).first()
         if direct_access is None:
             return render_template('base/accessrequest.html', access_name='read',
-                                  item={'type':'dataset', 'name':dataset_name,
-                                        'description':dataset.description,
-                                        'id':dataset.id,})
+                                   user_name=name,
+                                   dataset=dataset, collection=collection,
+                                   item={'type':'dataset', 'name':dataset_name,
+                                         'description':dataset.description,
+                                         'id':dataset.id,})
         dataset_permissions = {'read': direct_access.can_read,
                                'interact': direct_access.can_interact,
                                'fork': direct_access.can_fork}

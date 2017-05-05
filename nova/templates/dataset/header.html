@@ -1,0 +1,31 @@
+{% set page_title = 'Dataset ' + dataset.name %}
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div id="meta-info" class="row">
+  <div class="col-lg-12">
+    <div class="page-header">
+      <h2>
+    {% raw %}
+      <div class="clickable">
+        <i :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }"
+           @click="bookmark"></i>
+      </div>
+    {% endraw %}
+{% if dataset.type == "samplescan" %}
+      Sample scan
+{% elif dataset.type == "volume" %}
+      Volume
+{% else %}
+      Information
+{% endif %}
+– <a href="{{ url_for("show_collection", name=user_name, collection_name=collection.name) }}">{{ collection.name }}</a> / {{ dataset.name }}
+      </h2>
+    </div>
+  </div>
+</div>
+
+{% block dataset_content %}{% endblock %}
+
+{% endblock %}

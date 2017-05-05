@@ -1,16 +1,16 @@
-{% extends "layout.html" %}
-{% block body %}
-<div class=row>
+{% extends "dataset/header.html" %}
+{% block dataset_content %}
+<div class="row">
   <div class="col-lg-12">
     <h2>Oops!</h2>
-    <p>You do not have sufficent privileges to {{ access_name }} {% if access_name == 'interact' %}with {% endif %}the following {{ item.type }}</p>
-    <h3>{{ item.name }}</h3>
-    <p>{% if item.description %} {{ item.description }} {% endif %}</p>
   </div>
 </div>
 <div class="row" id="request-access">
   <div class="col-lg-12">
-  <h4>You can request access to this {{ item.type }} by sending an <i><b>access request</b></i></h4>
+    <p>You do not have sufficent privileges to {{ access_name }} {% if
+    access_name == 'interact' %} with {% endif %} this dataset.  You can request
+    access to this {{ item.type }} by asking the owner of the dataset to let you
+    </p>
     <div id="request-access-checkboxes" class="col-lg-12">
         <label><input type="checkbox" v-model="read"/> Read</label>
         <label><input type="checkbox" v-model="interact"/> Interact</label>
