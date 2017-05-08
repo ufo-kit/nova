@@ -70,37 +70,6 @@ def get_access_request(object_type, object_id, user_id):
     return {'exists': False}
 
 
-def create_access_request(object_type, object_id, user_id, permissions, message):
-    access_request = models.AccessRequest(user_id=user_id, message=message,
-                   can_read=permissions['read'],
-                   can_interact=permissions['interact'],
-                   can_fork=permissions['fork'])
-    if object_type == 'collections':
-        access_request.collection_id = object_id
-    elif object_type == 'datasets':
-        access_request.dataset_id=object_id
-    db.session.add(access_request)
-    db.session.commit()
-    return access_request
-
-
-def update_access_request(object_type, object_id, user_id, permissions, message):
-    access_request = db.session.query(models.AccessRequest).\
-                   filter(models.AccessRequest.user_id == user_id)
-    if object_type == 'datasets':
-        access_request = access_request.\
-                       filter(models.AccessRequest.dataset_id == object_id)
-    elif object_type == 'collections':
-        access_request = access_request.\
-                       filter(models.AccessRequest.collection_id == object_id)
-    access_request = access_request.first()
-    access_request.message = message
-    access_request.can_read=permissions['read']
-    access_request.can_interact=permissions['interact']
-    access_request.can_fork=permissions['fork']
-    db.session.commit()
-    return access_request
-
 def delete_access_request(object_type, object_id, user_id):
     access_request = db.session.query(models.AccessRequest).\
                    filter(models.AccessRequest.user_id == user_id)

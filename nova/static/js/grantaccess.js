@@ -13,8 +13,6 @@ var accessgrant = new Vue ({
     read: permissions.read,
     interact: permissions.interact,
     fork: permissions.fork,
-    show_modal_direct_access_grant: false,
-    show_modal_public_permissions_change: false
   },
   watch: {
     read: function() {
@@ -29,39 +27,22 @@ var accessgrant = new Vue ({
     }
   },
   methods: {
-    begin_direct_access: function() {
-      this.show_modal_direct_access_grant = true
-    },
-    begin_public_permissions: function() {
-      this.show_modal_public_permissions_change = true
-    },
-    grantAccess: function() {
-      var headers = {
-        'Auth-Token': this.token
-      }
-      var access = {'read':this.read, 'interact':this.interact, 'fork':this.fork}
-      var api_str = '/api/accessreqs/'+request_id+'/grantaccess'
-      this.$http.put(api_str, access, {headers: headers}).then((response) => {
-        if (response.status == 200 || response.status == 201)
-          this.show_modal_direct_access_grant = false
-          window.location = '/'
-      })
-    },
-    changePermissions: function() {
-      var headers = {
-        'Auth-Token': this.token
-      }
-      var access = {'read':this.read, 'interact':this.interact, 'fork':this.fork}
-      var api_str = '/api/accessreqs/'+request_id+'/changepermissions'
+    onGrantAccess: function() {
+      var headers = { 'Auth-Token': this.token }
+      var access = {'action': 'grant', 'read': this.read, 'interact': this.interact, 'fork': this.fork}
+      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/request/' + request_id
       this.$http.patch(api_str, access, {headers: headers}).then((response) => {
-        if (response.status == 200)
-          this.show_modal_public_permissions_change = false
+        if (response.status == 200 || response.status == 201)
           window.location = '/'
       })
     },
-    dismissModal: function() {
-      this.show_modal_direct_access_grant = false
-      this.show_modal_public_permissions_change = false
-    }
+    onDenyAccess: function() {
+      var headers = { 'Auth-Token': this.token }
+      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/request/' + request_id
+      this.$http.delete(api_str, {headers: headers}).then((response) => {
+        if (response.status == 200)
+          window.location = '/'
+      })
+    },
   }
 })

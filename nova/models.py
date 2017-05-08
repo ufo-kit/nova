@@ -412,4 +412,3 @@ class DirectAccess(db.Model):
         object = self.dataset if self.dataset else self.collection
         return '<DirectAccess(user={}, object={}, read={}, interact={}, fork={}>'.\
             format(self.user, object, self.can_read, self.can_interact, self.can_fork)
-

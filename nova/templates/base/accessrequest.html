@@ -30,6 +30,8 @@
   if ('{{ access_name }}' != 'interact') permissions['interact'] = false;
   var object_type = '{{ item.type }}s';
   var object_id = {{ item.id }};
+  var collection_name = '{{ collection.name }}';
+  var dataset_name = '{{ dataset.name }}';
 </script>
 <script>System.import('accessrequest.js')</script>
 {% endblock %}

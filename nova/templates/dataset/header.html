@@ -8,10 +8,6 @@
     <div class="page-header">
       <h2>
     {% raw %}
-      <div class="clickable">
-        <i :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }"
-           @click="bookmark"></i>
-      </div>
     {% endraw %}
 {% if dataset.type == "samplescan" %}
       Sample scan
@@ -20,8 +16,12 @@
 {% else %}
       Information
 {% endif %}
-– <a href="{{ url_for("show_collection", name=user_name, collection_name=collection.name) }}">{{ collection.name }}</a> / {{ dataset.name }}
+– <a href="{{ url_for("show_collection", name=user_name, collection_name=dataset.collection.name) }}">{{ dataset.collection.name }}</a> / {{ dataset.name }}
       </h2>
+      <div class="clickable">
+        <i :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }"
+           @click="bookmark"></i>
+      </div>
     </div>
   </div>
 </div>

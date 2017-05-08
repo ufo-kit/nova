@@ -399,18 +399,15 @@ class Activity(Resource):
 class AccessRequests(Resource):
     method_decorators = [authenticate]
 
-    def __init__(self):
-        self.user = users.from_token(request.headers['Auth-Token'])
-
-    def get(self):
+    def get(self, user=None):
         dataset_access_requests = db.session.query(models.AccessRequest).\
             join(models.Dataset).join(models.Permission).\
-            filter(models.Permission.owner == self.user).\
+            filter(models.Permission.owner == user).\
             filter(models.AccessRequest.dataset_id == models.Permission.dataset_id)
 
         collection_access_requests = db.session.query(models.AccessRequest).\
             join(models.Collection).join(models.Permission).\
-            filter(models.Permission.owner == self.user).\
+            filter(models.Permission.owner == user).\
             filter(models.AccessRequest.collection_id == models.Permission.collection_id)
 
         access_requests = dataset_access_requests.union(collection_access_requests).\
@@ -421,11 +418,11 @@ class AccessRequests(Resource):
                 'object': {
                     'type':'dataset',
                     'name':ar.dataset.name,
-                    'url': url_for('show_dataset', name=self.user.name, collection_name=ar.dataset.collection.name, dataset_name=ar.dataset.name)
+                    'url': url_for('show_dataset', name=user.name, collection_name=ar.dataset.collection.name, dataset_name=ar.dataset.name)
                 } if ar.dataset.id else {
                     'type':'collection',
                     'name':ar.collection.name,
-                    'url': url_for('show_collection', name=self.user.name, collection_name=ar.collection.name)
+                    'url': url_for('show_collection', name=user.name, collection_name=ar.collection.name)
                 }, 'options_url': url_for('grant_access', ar_id=ar.id)}
                 for ar in access_requests]
 
@@ -433,44 +430,40 @@ class AccessRequests(Resource):
 class AccessRequest(Resource):
     method_decorators = [authenticate]
 
-    def __init__(self):
-        self.user = users.from_token(request.headers['Auth-Token'])
-
-    def get(self, user_id, object_id, object_type):
-        owner_id = logic.get_owner_id_from_permission(object_type, object_id)
-        if user.id == user_id or user.id == owner_id:
-            access_request = logic.get_access_request(object_type, object_id, user_id)
-            if access_request['exists']:
-                return access_request
-            abort(404)
-        abort(401)
-
-    def put(self, user_id, object_id, object_type):
-        user = users.from_token(request.headers['Auth-Token'])
+    def put(self, collection_name, dataset_name, user=None):
+        # XXX: sanitize data ...
         data = request.get_json()
         message = data['message']
-        permissions = data['permissions']
-        owner_id = logic.get_owner_id_from_permission(object_type, object_id)
-        if user.id == int(user_id):
-            access_request = logic.get_access_request(object_type, object_id, user_id)
-            if access_request['exists']:
-                if logic.update_access_request(object_type, object_id, user_id, permissions, message):
-                    return 200
-                abort(500, 'Failed to update object')
-            else:
-                if logic.create_access_request(object_type, object_id, user_id, permissions, message):
-                    return 201
-                abort(500, 'Failed to create object')
-        abort(401)
+        requested = data['permissions']
 
-    def delete(self, user_id, object_id, object_type):
-        user = users.from_token(request.headers['Auth-Token'])
-        owner_id = logic.get_owner_id_from_permission(object_type, object_id)
-        if user.id == int(user_id) or user.id == owner_id:
-            if not logic.delete_access_request(object_type, object_id, user_id):
-                abort(404)
-            return 200
-        abort(401)
+        dataset, permission = db.session.query(models.Dataset, models.Permission).\
+                join(models.Collection).\
+                filter(models.Collection.name == collection_name).\
+                filter(models.Dataset.name == dataset_name).\
+                first()
+
+        owner = get_dataset_owner(dataset)
+
+        existing = db.session.query(models.AccessRequest).\
+                filter(models.AccessRequest.user == owner).\
+                filter(models.AccessRequest.dataset == dataset).\
+                first()
+
+        if existing is None:
+            access_request = models.AccessRequest(user=user, dataset=dataset,
+                    message=message, can_read=requested['read'],
+                    can_interact=requested['interact'],
+                    can_fork=requested['fork'])
+            db.session.add(access_request)
+        else:
+            existing.message = message
+            existing.can_read = requested['read']
+            existing.can_interact = requested['interact']
+            existing.can_fork = requested['fork']
+
+        db.session.commit()
+
+        return 200
 
 
 class Permission(Resource):
@@ -479,53 +472,75 @@ class Permission(Resource):
     def __init__(self):
         self.user = user.from_token(request.headers['Auth-Token'])
 
-    def patch(self, request_id):
-        access_request = db.session.query(models.AccessRequest).\
-                       filter(models.AccessRequest.id == request_id).first()
-        perm = db.session.query(models.Permission).\
-             filter(models.Permission.collection_id == access_request.collection_id).\
-             filter(models.Permission.dataset_id == access_request.dataset_id).\
-             first()
-        if perm:
-            new_permissions = request.get_json()
-            perm.can_read = new_permissions['read']
-            perm.can_interact = new_permissions['interact']
-            perm.can_fork = new_permissions['fork']
-            db.session.commit()
-            if access_request.dataset_id:
-                logic.delete_access_request('datasets', access_request.dataset_id, access_request.user_id)
-            else:
-                logic.delete_access_request('collections', access_request.collection_id, access_request.user_id)
-            #TODO combine delete access request and patch permission into single transaction
-            #TODO issue notification that public permission has been changed
-            return 200
-        abort(404, "Permissions do not exist")
+    def patch(self,  collection_name, dataset_name, user=None):
+        permission = db.session.query(models.Permission).\
+            join(models.Dataset).\
+            join(models.Collection).\
+            filter(models.Collection.name == collection_name).\
+            filter(models.Dataset.name == dataset_name).\
+            first()
+
+        if not permission:
+            abort(404, "Permissions do not exist")
+
+        new_permissions = request.get_json()
+        permission.can_read = new_permissions['read']
+        permission.can_interact = new_permissions['interact']
+        permission.can_fork = new_permissions['fork']
+        db.session.commit()
 
 
 class DirectAccess(Resource):
     method_decorators = [authenticate]
 
-    def __init__(self):
-        self.user = user.from_token(request.headers['Auth-Token'])
-
-    def put(self, request_id):
+    def patch(self, collection_name, dataset_name, request_id, user=None):
         access_request = db.session.query(models.AccessRequest).\
-                       filter(models.AccessRequest.id == request_id).first()
-        user_id = access_request.user_id
-        if access_request.dataset_id:
-            object_type = 'datasets'
-            object_id = access_request.dataset_id
+            join(models.Dataset).\
+            join(models.Permission).\
+            filter(models.Permission.owner == user).\
+            filter(models.AccessRequest.id == request_id).\
+            first()
+
+        if access_request is None:
+            abort(404, "Request does not exists")
+
+        access = db.session.query(models.DirectAccess).\
+            filter(models.Collection.name == collection_name).\
+            filter(models.Dataset.name == dataset_name).\
+            filter(models.DirectAccess.user == access_request.user).\
+            first()
+
+        permissions = request.get_json()
+
+        if access is not None:
+            access.can_read = permissions['read']
+            access.can_interact = permissions['interact']
+            access.can_fork = permissions['fork']
         else:
-            object_type = 'collections'
-            object_id = access_request.collection_id
-        data = request.get_json()
-        direct_access = logic.get_direct_access(object_type, object_id, user_id)
-        #TODO combine delete access request and grant direct access into single transaction
-        #TODO issue notification that access has been granted
-        if direct_access['exists']:
-            direct_access = logic.update_direct_access(object_type, object_id, user_id, data)
-            logic.delete_access_request(object_type, object_id, user_id)
-            return 201
-        direct_access = logic.create_direct_access(object_type, object_id, user_id, data)
-        logic.delete_access_request(object_type, object_id, user_id)
+            access = models.DirectAccess(user=user, can_read=permissions['read'],
+                    can_interact=permissions['interact'], can_fork=permissions['fork'])
+            db.session.add(access)
+
+        message = '{} granted access to {}/{}'.format(user.name, collection_name, dataset_name)
+        notification = models.Notification(access_request.user, type='bookmark', message=message)
+        db.session.add(notification)
+        db.session.delete(access_request)
+        db.session.commit()
+
         return 200
+
+    def delete(self, collection_name, dataset_name, request_id, user=None):
+        access_request = db.session.query(models.AccessRequest).\
+            join(models.Dataset).\
+            join(models.Permission).\
+            filter(models.Permission.owner == user).\
+            filter(models.AccessRequest.id == request_id).\
+            first()
+
+        # notify requester
+        if access_request is not None:
+            message = '{} denied access to {}/{}'.format(user.name, collection_name, dataset_name)
+            notification = models.Notification(access_request.user, type='bookmark', message=message)
+            db.session.add(notification)
+            db.session.delete(access_request)
+            db.session.commit()

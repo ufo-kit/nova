@@ -1,51 +1,29 @@
-{% extends "layout.html" %}
-{% block body %}
+{% extends "dataset/header.html" %}
+{% block dataset_content %}
 <div class="row" id="access-grant">
   <div class="col-lg-12">
-    <h2>Access Request</h2>
     <div class="col-lg-4">
-      <h3>Permissions Requested</h3>
-      {% if permissions.read %}<div class="col-lg-12"><i class="fa fa-fw fa-eye" aria-hidden="true"></i><span class="label-padding">Read</span></div>{% endif %}
-      {% if permissions.interact %}<div class="col-lg-12"><i class="fa fa-fw fa-commenting-o" aria-hidden="true"></i><span class="label-padding">Interact</span></div>{% endif %}
-      {% if permissions.fork %}<div class="col-lg-12"><i class="fa fa-fw fa-code-fork" aria-hidden="true"></i><span class="label-padding">Fork</span></div>{% endif %}
-      <h4>Message</h4>
-      <div class="col-lg-12"><p><i>{{ message }}</i></p></div>
-    </div>
-    <div class="col-lg-4">
-      <h3>{{ item.type }}</h3>
-      <h4 class="clickable"><a href="{{ item.url }}">{{ item.name }}</a></h4>
-      <p>{% if item.description %} {{ item.description }} {% endif %}</p>
+      <h3>Permissions</h3>
+      {% if request.can_read %}<div class="col-lg-12"><i class="fa fa-fw fa-eye" aria-hidden="true"></i><span class="label-padding">Read</span></div>{% endif %}
+      {% if request.can_interact %}<div class="col-lg-12"><i class="fa fa-fw fa-commenting-o" aria-hidden="true"></i><span class="label-padding">Interact</span></div>{% endif %}
+      {% if request.can_fork %}<div class="col-lg-12"><i class="fa fa-fw fa-code-fork" aria-hidden="true"></i><span class="label-padding">Fork</span></div>{% endif %}
+      <p>{{ request.message }}</p>
     </div>
     <div class="col-lg-4">
       <h3>User</h3>
-      <h4 class="col-lg-12"><i class="fa fa-fw fa-user" aria-hidden="true"></i><span class="label-padding"><a class="clickable" href="{{ user.url }}">{{ user.fullname }} ( {{ user.name }} )</a></span></h4>
-      <h4 class="col-lg-12"><i class="fa fa-fw fa-envelope-o" aria-hidden="true"></i><span class="label-padding"><a href="mailto:{{ user.email }}">{{ user.email }}</a></span></h4>
-      <h4 class="col-lg-12"><i class="fa fa-fw fa-folder-o" aria-hidden="true"></i><span class="label-padding">{{user.collections}} collection{% if user.collections != 1%}s{% endif %}</span></h4>
+      <h4 class="col-lg-12"><i class="fa fa-fw fa-user"
+          aria-hidden="true"></i><span class="label-padding"><a href="{{
+      url_for('profile', name=request.user.name) }}">{{ request.user.name }}</a></span></h4>
+      <h4 class="col-lg-12"><i class="fa fa-fw fa-envelope-o" aria-hidden="true"></i><span class="label-padding"><a href="mailto:{{ request.user.email }}">{{ request.user.email }}</a></span></h4>
     </div>
   </div>
   <div class="col-lg-12">
-    <p><a @click="begin_direct_access()" class="clickable">Grant Direct Access</a></p>
-    <p><a @click="begin_public_permissions()" class="clickable">Change Public Permissions</a></p>
+    <div class="btn-group" role="group">
+      <button class="btn btn-primary" @click="onGrantAccess">Grant</button>
+      <button class="btn btn-default" @click="onDenyAccess">Deny</button>
+    </div>
+    <p><a @click="begin_public_permissions()" class="clickable">Change public permissions</a></p>
   </div>
-  <confirmdirectaccess :show.sync="show_modal_direct_access_grant">
-    <h1 slot="modal-title">Grant Direct Access?</h1>
-    <div slot="modal-body">
-      <p>You are about to grant {{ user.fullname }} access to the {{ item.type }} {{ item.name }}</p>
-      <div id="request-access-checkboxes" class="col-lg-12">
-        <label><input type="checkbox" v-model="read"/> Read</label>
-        <label><input type="checkbox" v-model="interact"/> Interact</label>
-        <label><input type="checkbox" v-model="fork"/> Fork</label>
-      </div>
-    </div>
-    <div slot="modal-options">
-      <div class="modal-button">
-        <button @click="grantAccess()"><i class="fa fa-check"></i> Grant Access</button>
-      </div>
-      <div class="modal-button">
-        <button @click="dismissModal()"><i class="fa fa-times"></i> Cancel</button>
-      </div>
-    </div>
-  </confirmdirectaccess>
   <confirmpublicaccess :show.sync="show_modal_public_permissions_change">
     <h1 slot="modal-title">Change Public Permissions?</h1>
     <div slot="modal-body">
@@ -67,11 +45,13 @@
   </confirmpublicaccess>
 </div>
 <script>
-  var request_id = {{ request_id }};
+  var collection_name = '{{ dataset.collection.name }}';
+  var dataset_name = '{{ dataset.name }}';
+  var request_id = {{ request.id }};
   var permissions = {
-    'read': {% if permissions.read %} true {% else %} false {% endif %},
-    'interact': {% if permissions.interact %} true {% else %} false {% endif %},
-    'fork': {% if permissions.fork %} true {% else %} false {% endif %}
+    'read': {% if request.can_read %} true {% else %} false {% endif %},
+    'interact': {% if request.can_interact %} true {% else %} false {% endif %},
+    'fork': {% if request.can_fork %} true {% else %} false {% endif %}
   };
 </script>
 <script>

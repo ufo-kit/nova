@@ -12,24 +12,13 @@
 <div class="row">
   <div class="col-lg-8">
     <h4>Requests</h4>
-    <div id="access-requests">
-      <div class="row" v-for="ar in access_requests">
-        {% raw %}
-        <div class="col-lg-8">
-          <p><a v-bind:href="ar.user_url">{{ ar.username }}</a> requested permission to access {{ ar.object.type }} <a v-bind:href="ar.object.url">{{ ar.object.name }}</a></p>
-        </div>
-        <div class="col-lg-4"><a v-bind:href="ar.options_url">See More</a></div>
-        {% endraw %}
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-4">
+    {% for request in requests %}
+    {{ request.user.name }} requests <a href="{{ url_for('access_request',
+      name=user.name,
+      collection_name=request.dataset.collection.name,
+      dataset_name=request.dataset.name,
+      request_id=request.id) }}">access</a> to
+    {% endfor %}
   </div>
 </div>
-<script>
-  System.config({
-    baseURL: '{{ url_for("static", filename='js') }}',
-  });
-  System.import('home.js')
-</script>
 {% endblock %}

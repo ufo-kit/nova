@@ -139,7 +139,14 @@ def index(page=1):
         current_user.first_time = False
         db.session.commit()
         return render_template('index/welcome.html', user=current_user)
-    return render_template('index/index.html', user=current_user)
+
+    requests = db.session.query(AccessRequest).\
+            join(Dataset).\
+            join(Permission).\
+            filter(Permission.owner == current_user).\
+            all()
+
+    return render_template('index/index.html', user=current_user, requests=requests)
 
 
 @app.route('/settings')
@@ -463,7 +470,7 @@ def show_collection(name, collection_name):
 
 
 @app.route('/user/<name>/<collection_name>/<dataset_name>')
-@app.route('/user/<name>/<collection_name>/<dataset_name>/<path:path>')
+@app.route('/user/<name>/<collection_name>/<dataset_name>/tree/<path:path>')
 @login_required(admin=False)
 def show_dataset(name, collection_name, dataset_name, path=''):
     collection = Collection.query.\
@@ -535,6 +542,34 @@ def show_dataset(name, collection_name, dataset_name, path=''):
     return render_template('dataset/detail.html', **params)
 
 
+@app.route('/user/<name>/<collection_name>/<dataset_name>/requests/<int:request_id>')
+@login_required(admin=False)
+def access_request(name, collection_name, dataset_name, request_id):
+    request = db.session.query(AccessRequest).\
+       filter(AccessRequest.id == request_id).first()
+
+    if request.dataset_id:
+        owner = request.dataset.permissions[0].owner
+        item = dict(type='dataset', name=request.dataset.name,
+                id=request.dataset.id, description=request.dataset.description,
+                url=url_for("show_dataset", name=owner.name,
+                    collection_name=request.dataset.collection.name,
+                    dataset_name=request.dataset.name))
+    else:
+        owner = request.collection.permissions[0].owner
+        item = dict(type=collection, name=request.collection.name,
+                id=request.collection.id, description=request.collection.description,
+                url=url_for("show_collection", name=owner.name,
+                    collection_name=request.dataset.collection.name))
+
+    if owner == current_user:
+        user_collections = db.session.query(Collection).join(Permission).\
+                         filter(Permission.owner_id == request.user.id).count()
+        return render_template('user/grantaccess.html', dataset=request.dataset, item=item, request=request)
+
+    abort(401)
+
+
 @app.route('/delete/<int:dataset_id>')
 @login_required(admin=False)
 def delete(dataset_id=None):
@@ -601,37 +636,3 @@ def clone(dataset_id):
     fileobj = memtar.create_tar(fs.path_of(dataset))
     fileobj.seek(0)
     return Response(generate(), mimetype='application/gzip')
-
-
-@app.route('/grantaccess/<int:ar_id>')
-@login_required(admin=False)
-def grant_access(ar_id):
-    ar = db.session.query(AccessRequest).\
-       filter(AccessRequest.id == ar_id).first()
-    if ar.dataset_id:
-        owner = ar.dataset.permissions[0].owner
-        item = { 'type':'dataset', 'name':ar.dataset.name,
-                 'id': ar.dataset.id, 'desc':ar.dataset.description,
-                 'url':url_for("show_dataset", name=owner.name,
-                              collection_name=ar.dataset.collection.name,
-                              dataset_name=ar.dataset.name)
-                 }
-    else:
-        owner = ar.collection.permissions[0].owner
-        item = { 'type':'collection', 'name':ar.collection.name,
-                 'id': ar.collection.id, 'desc':ar.collection.description,
-                 'url':url_for("show_collection", name=owner.name,
-                              collection_name=ar.dataset.collection.name)
-                 }
-    if owner == current_user:
-        user_collections = db.session.query(Collection).join(Permission).\
-                         filter(Permission.owner_id == ar.user.id).count()
-        user = { 'id': ar.user.id, 'name': ar.user.name, 'email':ar.user.email,
-               'fullname': ar.user.fullname, 'collections':user_collections,
-               'url': url_for("profile", name=ar.user.name)}
-        permissions = {'read':ar.can_read, 'interact':ar.can_interact,
-                      'fork':ar.can_fork}
-        return render_template('user/grantaccess.html', user=user, item=item,
-                               request_id = ar.id, message=ar.message,
-                               permissions=permissions)
-    abort(401)
