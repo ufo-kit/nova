@@ -14,7 +14,7 @@ from flask_wtf import Form
 from flask_sqlalchemy import Pagination
 from wtforms import StringField, BooleanField
 from wtforms.validators import DataRequired
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, desc
 
 
 def login_required(admin=False):
@@ -140,13 +140,17 @@ def index(page=1):
         db.session.commit()
         return render_template('index/welcome.html', user=current_user)
 
+    datasets = db.session.query(Dataset).\
+        filter(Permission.owner == current_user).\
+        order_by(desc(Dataset.created)).limit(5).all()
+
     requests = db.session.query(AccessRequest).\
             join(Dataset).\
             join(Permission).\
             filter(Permission.owner == current_user).\
             all()
 
-    return render_template('index/index.html', user=current_user, requests=requests)
+    return render_template('index/index.html', user=current_user, datasets=datasets, requests=requests)
 
 
 @app.route('/settings')
