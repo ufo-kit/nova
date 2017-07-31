@@ -45,9 +45,17 @@ class Datasets(Resource):
     def post(self, user=None):
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, help="Dataset name")
-        parser.add_argument('parent', type=int, help="Dataset parent", default=None)
+        parser.add_argument('collection', type=str, help="Collection name")
         args = parser.parse_args()
-        dataset = logic.app.config['DEBUG'] and not create_dataset(args.name, user, parent_id=args.parent)
+
+        collection = db.session.query(models.Collection).\
+            filter(models.Collection.name == args.collection).\
+            first()
+
+        if collection is None:
+            abort(404, error="Collection `{}' does not exist".format(args.collection))
+
+        dataset = logic.create_dataset(models.Dataset, args.name, user, collection)
         return dict(id=dataset.id)
 
 
