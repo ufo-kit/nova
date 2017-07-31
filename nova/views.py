@@ -573,19 +573,19 @@ def access_request(name, collection_name, dataset_name, request_id):
 @app.route('/delete/<int:dataset_id>')
 @login_required(admin=False)
 def delete(dataset_id=None):
-    dataset, permission = db.session.query (Dataset, Permission).\
+    dataset, permission = db.session.query(Dataset, Permission).\
         filter(Dataset.id == dataset_id).\
         filter(Permission.dataset_id == dataset_id).\
-        filter(Permission.owner == current_user)
+        filter(Permission.owner == current_user).\
+        first()
+
     #TODO: Add notifications for deletion to bookmarks and forks
-    if permission.count () >0:
-        dataset = dataset.first()
+    if permission is not None and dataset is not None:
         path = fs.path_of(dataset)
-        process = Process.query.filter(Process.destination_id == dataset_id).first()
-        db.session.delete(process)
         db.session.delete(dataset)
         db.session.commit()
         app.logger.info("Would remove {}, however deletion is currently disabled".format(path))
+
     return redirect(url_for('index'))
 
 
