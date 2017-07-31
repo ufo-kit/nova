@@ -1,10 +1,11 @@
+import io
+import math
 from functools import wraps
 from flask import request, url_for
 from flask_restful import Resource, abort, reqparse
 from itsdangerous import Signer, BadSignature
-from nova import db, models, logic, es, users
+from nova import db, models, logic, es, users, memtar, fs
 from sqlalchemy import desc
-import math
 
 
 def authenticate(func):
@@ -98,6 +99,20 @@ class Dataset(Resource):
         # TODO: sanitize input
         dataset.description = payload['description']
         db.session.commit()
+
+
+class Data(Resource):
+    method_decorators = [authenticate]
+
+    def post(self, collection, dataset, user=None):
+        dataset = db.session.query(models.Dataset).\
+                filter(models.Permission.owner == user).\
+                filter(models.Dataset.name == dataset).\
+                first()
+
+        f = io.BytesIO(request.data)
+        memtar.extract_tar(f, fs.path_of(dataset))
+
 
 class Search(Resource):
     method_decorators = [authenticate]

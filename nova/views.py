@@ -589,25 +589,6 @@ def delete(dataset_id=None):
     return redirect(url_for('index'))
 
 
-@app.route('/upload/<int:dataset_id>', methods=['POST'])
-def upload(dataset_id):
-    user = users.check_token(request.args.get('token'))
-    dataset = db.session.query(Dataset).\
-            filter(Permission.owner == user).\
-            filter(Permission.dataset_id == dataset_id).\
-            filter(Dataset.id == dataset_id).first()
-
-    if dataset is None:
-        raise InvalidUsage('Dataset not found', status_code=404)
-
-    if dataset.closed:
-        return 'Dataset closed', 423
-
-    f = io.BytesIO(request.data)
-    memtar.extract_tar(f, fs.path_of(dataset))
-    return ''
-
-
 @app.route('/clone/<int:dataset_id>')
 def clone(dataset_id):
     user = users.check_token(request.args.get('token'))

@@ -68,9 +68,9 @@ admin.add_view(AdminModelView(nova.models.AccessRequest, db.session))
 admin.add_view(AdminModelView(nova.models.DirectAccess, db.session))
 
 
-from nova.resources import (Datasets, Dataset, Search, Bookmarks, UserBookmarks,
-        Reviews, Notifications, Notification, Connections, Connection,
-        AccessRequests, AccessRequest, Permission, DirectAccess)
+from nova.resources import (Datasets, Dataset, Data, Search, Bookmarks,
+        UserBookmarks, Reviews, Notifications, Notification, Connections,
+        Connection, AccessRequests, AccessRequest, Permission, DirectAccess)
 
 errors = {
     'BadSignature': {
@@ -82,6 +82,7 @@ errors = {
 api = Api(app, errors=errors)
 api.add_resource(Datasets, '/api/datasets')
 api.add_resource(Dataset, '/api/datasets/<collection>/<dataset>')
+api.add_resource(Data, '/api/datasets/<collection>/<dataset>/data')
 api.add_resource(Bookmarks, '/api/datasets/<collection_name>/<dataset_name>/bookmarks')
 api.add_resource(Reviews, '/api/datasets/<collection_name>/<dataset_name>/reviews')
 api.add_resource(Permission, '/api/datasets/<collection_name>/<dataset_name>/permissions')
