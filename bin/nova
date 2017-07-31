@@ -31,7 +31,7 @@ class Config(object):
         self.query = None
         self.collection = None
 
-        if os.path.exists(self.path):
+        if self.exists:
             parser = ConfigParser.RawConfigParser()
             parser.read(self.path)
 
@@ -44,6 +44,10 @@ class Config(object):
             self.token = get('core', 'token')
             self.remote = get('core', 'remote')
             self.id = get('core', 'id')
+
+    @property
+    def exists(self):
+        return os.path.exists(self.path)
 
     def override(self, args, global_conf):
         args = vars(args)
@@ -140,6 +144,9 @@ def close(config):
 
 
 def init(config):
+    if config.exists:
+        raise RuntimeError("Dataset already initialized")
+
     name = config.name if config.name else os.path.basename(os.path.abspath(os.curdir))
 
     # create dataset on remote
@@ -238,3 +245,5 @@ if __name__ == '__main__':
             logging.error(data['error'])
         else:
             logging.error(data['message'])
+    except Exception as e:
+        logging.error(str(e))
