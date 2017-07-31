@@ -94,25 +94,35 @@
             </ul>
           </li>
           <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
-            <img src="https://www.gravatar.com/avatar/{{ current_user.gravatar }}?s=24"/>&nbsp; {{ current_user.name }} &nbsp;<i class="fa fa-caret-down" aria-hidden="true"></i></a>
-          <ul id="main-menu" class="dropdown-menu">
-            <li><a href="{{ url_for("profile", name=current_user.name) }}">
-              <i class="fa fa-user fa-fw"></i><span class="label-padding">Profile</span></a>
-            </li>
-            <li><a href="{{ url_for("list_bookmarks", name=current_user.name) }}">
-              <i class="fa fa-bookmark fa-fw"></i><span class="label-padding">Bookmarks</span></a>
-            </li>
-            {% if current_user.is_admin %}
-            <li><a href="{{ url_for("admin") }}">
-              <i class="fa fa-users fa-fw"></i><span class="label-padding">Admin</span></a>
-            </li>
-            {% endif %}
-            <li role="separator" class="divider"></li>
-            <li><a href="{{ url_for("logout") }}">
-              <i class="fa fa-sign-out fa-fw"></i><span class="label-padding">Sign out</span></a>
-            </li>
-          </ul>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+              <i class="fa fa-plus" aria-hidden="true"></i>&nbsp; <i class="fa fa-caret-down" aria-hidden="true"></i>
+            </a>
+            <ul id="add-menu" class="dropdown-menu">
+              <li>
+                <a href="{{ url_for("create_collection") }}">New collection</a>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+              <img src="https://www.gravatar.com/avatar/{{ current_user.gravatar }}?s=24"/>&nbsp; <i class="fa fa-caret-down" aria-hidden="true"></i></a>
+            <ul id="main-menu" class="dropdown-menu">
+              <li><a href="{{ url_for("profile", name=current_user.name) }}">
+                <i class="fa fa-user fa-fw"></i><span class="label-padding">Profile</span></a>
+              </li>
+              <li><a href="{{ url_for("list_bookmarks", name=current_user.name) }}">
+                <i class="fa fa-bookmark fa-fw"></i><span class="label-padding">Bookmarks</span></a>
+              </li>
+              {% if current_user.is_admin %}
+              <li><a href="{{ url_for("admin") }}">
+                <i class="fa fa-users fa-fw"></i><span class="label-padding">Admin</span></a>
+              </li>
+              {% endif %}
+              <li role="separator" class="divider"></li>
+              <li><a href="{{ url_for("logout") }}">
+                <i class="fa fa-sign-out fa-fw"></i><span class="label-padding">Sign out</span></a>
+              </li>
+            </ul>
           </li>
         </ul>
         {% endif %}
