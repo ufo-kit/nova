@@ -11,6 +11,16 @@ import logging
 import xdg.BaseDirectory
 
 
+class ApiError(Exception):
+    def __init__(self, response):
+        self.response = response
+
+
+def raise_on_api_error(response):
+    if response.status_code != 200:
+        raise ApiError(response)
+
+
 class Config(object):
     def __init__(self, dataset_id=None, root=None):
         self.root = root or os.path.abspath('.nova')
@@ -100,14 +110,7 @@ def push(config):
     f = memtar.create_tar(os.path.abspath('.'))
     f.seek(0L)
     r = config.post('/upload/', data=f)
-
-    if r.status_code == 200:
-        return
-
-    if r.status_code == 423:
-        logging.error("Dataset is closed and cannot be modified.")
-    else:
-        logging.error(r.reason)
+    raise_on_api_error(r)
 
 
 def clone(config):
@@ -130,9 +133,7 @@ def clone(config):
 def close(config):
     data = dict(id=config.id, closed=True)
     r = config.put(config.dataset_url, data=data)
-
-    if r.status_code != 200:
-        logging.error(r.reason)
+    raise_on_api_error(r)
 
 
 def init(config):
@@ -141,6 +142,8 @@ def init(config):
     # create dataset on remote
     data = dict(name=name)
     r = config.post('/api/datasets', data=data)
+    raise_on_api_error(r)
+
     result = r.json()
 
     # write initial configuration
@@ -150,27 +153,26 @@ def init(config):
 
 def info(config):
     r = config.get('/api/datasets/{}'.format(config.id))
+    raise_on_api_error(r)
     print json.dumps(r.json(), indent=2)
 
 
 def search(config):
     params = {'q': config.query}
     r = config.get('/api/search', params=params)
+    raise_on_api_error(r)
 
-    if r.status_code == 200:
-        for d in r.json():
-            print d['name']
+    for d in r.json():
+        print d['name']
 
 
 def list_datasets(config):
     r = config.get('/api/datasets')
+    raise_on_api_error(r)
     data = r.json()
 
-    if r.status_code != 200:
-        print data['message']
-    else:
-        for d in data:
-            print d['id'], d['name']
+    for d in data:
+        print d['id'], d['name']
 
 
 if __name__ == '__main__':
@@ -222,4 +224,13 @@ if __name__ == '__main__':
 
     config = Config()
     config.override(args, global_conf);
-    args.run(config)
+
+    try:
+        args.run(config)
+    except ApiError as e:
+        data = e.response.json()
+
+        if 'error' in data:
+            logging.error(data['error'])
+        else:
+            logging.error(data['message'])
