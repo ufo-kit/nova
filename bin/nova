@@ -45,6 +45,8 @@ class Config(object):
             self.token = get('core', 'token')
             self.remote = get('core', 'remote')
             self.id = get('core', 'id')
+            self.collection = get('core', 'collection')
+            self.name = get('core', 'name')
 
     @property
     def exists(self):
@@ -61,7 +63,7 @@ class Config(object):
         self.name = get('name') or self.name
         self.id = get('id') or self.id
         self.query = get('query') or self.query
-        self.collection = get('collection')
+        self.collection = get('collection') or self.collection
 
     @property
     def path(self):
@@ -132,7 +134,9 @@ def push(config):
 
     f = create_tar(os.path.abspath('.'))
     f.seek(0L)
-    r = config.post('/upload/', data=f)
+
+    url = '/'.join(['/api/datasets', config.collection, config.name, 'data'])
+    r = config.post(url, data=f)
     raise_on_api_error(r)
 
 
