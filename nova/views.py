@@ -585,33 +585,3 @@ def delete(dataset_id=None):
         app.logger.info("Would remove {}, however deletion is currently disabled".format(path))
 
     return redirect(url_for('index'))
-
-
-@app.route('/clone/<int:dataset_id>')
-def clone(dataset_id):
-    user = users.check_token(request.args.get('token'))
-    dataset = db.session.query(Dataset).\
-            filter(Dataset.id == dataset_id).first()
-    if dataset is None:
-        abort(404, 'Dataset not found')
-    permission = db.session.query(Permission).\
-            filter(Permission.dataset_id == dataset_id).\
-            filter(Permission.can_fork == True)
-    if permission.count() == 0:
-        permission = db.session.query(Permission).\
-            filter(Permission.collection_id == dataset.collection_id).\
-            filter(Permission.can_fork == True)
-
-    def generate():
-        while True:
-            data = fileobj.read(4096)
-
-            if not data:
-                break
-
-            yield data
-    if permission.count == 0:
-        abort(500)
-    fileobj = memtar.create_tar(fs.path_of(dataset))
-    fileobj.seek(0)
-    return Response(generate(), mimetype='application/gzip')

@@ -1,7 +1,7 @@
 import io
 import math
 from functools import wraps
-from flask import request, url_for
+from flask import request, url_for, Response
 from flask_restful import Resource, abort, reqparse
 from itsdangerous import Signer, BadSignature
 from nova import db, models, logic, es, users, memtar, fs, search
@@ -104,6 +104,30 @@ class Dataset(Resource):
 
 class Data(Resource):
     method_decorators = [authenticate]
+
+    def get(self, collection, dataset, user=None):
+        dataset = db.session.query(models.Dataset).\
+                filter(models.Permission.owner == user).\
+                filter(models.Collection.name == collection).\
+                filter(models.Dataset.name == dataset).\
+                first()
+
+        if dataset is None:
+            abort(404, error="Dataset `{}/{}' does not exist".format(collection, dataset))
+
+        fileobj = memtar.create_tar(fs.path_of(dataset))
+        fileobj.seek(0)
+
+        def generate():
+            while True:
+                data = fileobj.read(4096)
+
+                if not data:
+                    break
+
+                yield data
+
+        return Response(generate(), mimetype='application/gzip')
 
     def post(self, collection, dataset, user=None):
         dataset = db.session.query(models.Dataset).\
