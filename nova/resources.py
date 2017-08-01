@@ -4,7 +4,7 @@ from functools import wraps
 from flask import request, url_for
 from flask_restful import Resource, abort, reqparse
 from itsdangerous import Signer, BadSignature
-from nova import db, models, logic, es, users, memtar, fs
+from nova import db, models, logic, es, users, memtar, fs, search
 from sqlalchemy import desc
 
 
@@ -57,6 +57,7 @@ class Datasets(Resource):
             abort(404, error="Collection `{}' does not exist".format(args.collection))
 
         dataset = logic.create_dataset(models.Dataset, args.name, user, collection)
+        search.insert(dataset)
         return dict(id=dataset.id)
 
 

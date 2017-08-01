@@ -3,7 +3,7 @@ import io
 import re
 from functools import wraps
 from nova import (app, db, login_manager, fs, logic, memtar, tasks, models, es,
-        users)
+        users, search)
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
         Order, Notification, Process, Bookmark, Permission,
         AccessRequest, DirectAccess)
@@ -349,15 +349,9 @@ def reindex():
     es.indices.delete(index='datasets', ignore=[400, 404])
     es.indices.create(index='datasets')
 
-    # # FIXME: make this a bulk operation
-    for permission in Permission.query.filter(Permission.dataset_id != None).all():
-        dataset = permission.dataset
-        name = dataset.name
-        tokenized = name.lower().replace('_', ' ')
-        body = dict(name=name, tokenized=tokenized, owner=permission.owner.name,
-                    description=dataset.description,
-                    collection=dataset.collection.name)
-        es.create(index='datasets', doc_type='dataset', body=body)
+    # FIXME: make this a bulk operation
+    for dataset in Dataset.query.all():
+        search.insert(dataset)
 
     return redirect(url_for('index'))
 
