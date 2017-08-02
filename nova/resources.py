@@ -34,11 +34,7 @@ class Datasets(Resource):
     method_decorators = [authenticate]
 
     def get(self, user=None):
-        if 'query' in request.args:
-            query = request.args['query']
-            return []
-
-        return [dict(name=d.name, id=d.id) for d in
+        return [d.to_dict() for d in
                     db.session.query(models.Dataset).\
                     filter(models.Permission.can_read).\
                     all()]
