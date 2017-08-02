@@ -9,10 +9,10 @@
 </div>
 <div class="row">
   <div class="col-lg-6">
-    {% if failed %}
+    {% if error %}
     <div class="alert alert-warning">
       <button type="button"class="close" data-dismiss="alert" aria-label="Close">&times;</button>
-      User name and password did not match.
+      {{ error }}
     </div>
     {% endif %}
     <div class="well bs-component">

@@ -109,7 +109,11 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = db.session.query(User).filter(User.name == form.name.data).first()
+        name = form.name.data
+        user = db.session.query(User).filter(User.name == name).first()
+
+        if user is None:
+            return render_template('user/login.html', form=form, error="User {} does not exist.".format(name)), 401
 
         if user.password == form.password.data:
             login_user(user)
@@ -119,7 +123,7 @@ def login():
             response.set_cookie('token', user.token)
             return response
         else:
-            return render_template('user/login.html', form=form, failed=True), 401
+            return render_template('user/login.html', form=form, error="User name and password do not match."), 401
 
     return render_template('user/login.html', form=form, failed=False)
 
