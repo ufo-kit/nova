@@ -143,6 +143,9 @@ class Search(Resource):
         parser.add_argument('q')
         query = parser.parse_args()['q']
 
+        if query is None:
+            abort(400, error="No query specified.")
+
         body = {
             'sort': [
                 { 'name': 'asc' }
