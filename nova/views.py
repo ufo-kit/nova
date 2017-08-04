@@ -160,8 +160,10 @@ def index(page=1):
 @app.route('/settings')
 @login_required(admin=True)
 def admin():
+    from nova.resources import services
+
     users = db.session.query(User).all()
-    return render_template('user/admin.html', users=users)
+    return render_template('user/admin.html', users=users, services=services.values())
 
 
 @app.route('/token/generate')

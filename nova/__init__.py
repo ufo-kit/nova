@@ -68,9 +68,7 @@ admin.add_view(AdminModelView(nova.models.AccessRequest, db.session))
 admin.add_view(AdminModelView(nova.models.DirectAccess, db.session))
 
 
-from nova.resources import (Datasets, Dataset, Data, Search, Bookmarks,
-        UserBookmarks, Reviews, Notifications, Notification, Connections,
-        Connection, AccessRequests, AccessRequest, Permission, DirectAccess)
+from nova import resources
 
 errors = {
     'BadSignature': {
@@ -80,18 +78,22 @@ errors = {
 }
 
 api = Api(app, errors=errors)
-api.add_resource(Datasets, '/api/datasets')
-api.add_resource(Dataset, '/api/datasets/<collection>/<dataset>')
-api.add_resource(Data, '/api/datasets/<collection>/<dataset>/data')
-api.add_resource(Bookmarks, '/api/datasets/<collection_name>/<dataset_name>/bookmarks')
-api.add_resource(Reviews, '/api/datasets/<collection_name>/<dataset_name>/reviews')
-api.add_resource(Permission, '/api/datasets/<collection_name>/<dataset_name>/permissions')
-api.add_resource(AccessRequest, '/api/datasets/<collection_name>/<dataset_name>/request')
-api.add_resource(DirectAccess, '/api/datasets/<collection_name>/<dataset_name>/request/<request_id>')
-api.add_resource(Search, '/api/search')
-api.add_resource(UserBookmarks, '/api/user/<username>/bookmarks')
-api.add_resource(Notifications, '/api/notifications')
-api.add_resource(Notification, '/api/notification/<notification_id>')
-api.add_resource(Connections, '/api/user/<user_id>/connections')
-api.add_resource(Connection, '/api/connection/<from_id>/<to_id>/<option>')
+api.add_resource(resources.Datasets, '/api/datasets')
+api.add_resource(resources.Dataset, '/api/datasets/<collection>/<dataset>')
+api.add_resource(resources.Data, '/api/datasets/<collection>/<dataset>/data')
+api.add_resource(resources.Bookmarks, '/api/datasets/<collection_name>/<dataset_name>/bookmarks')
+api.add_resource(resources.Reviews, '/api/datasets/<collection_name>/<dataset_name>/reviews')
+api.add_resource(resources.Permission, '/api/datasets/<collection_name>/<dataset_name>/permissions')
+api.add_resource(resources.AccessRequest, '/api/datasets/<collection_name>/<dataset_name>/request')
+api.add_resource(resources.DirectAccess, '/api/datasets/<collection_name>/<dataset_name>/request/<request_id>')
+api.add_resource(resources.Search, '/api/search')
+api.add_resource(resources.UserBookmarks, '/api/user/<username>/bookmarks')
+api.add_resource(resources.Notifications, '/api/notifications')
+api.add_resource(resources.Notification, '/api/notification/<notification_id>')
+api.add_resource(resources.Connections, '/api/user/<user_id>/connections')
+api.add_resource(resources.Connection, '/api/connection/<from_id>/<to_id>/<option>')
+
+api.add_resource(resources.Services, '/api/services')
+api.add_resource(resources.Service, '/api/service/<name>')
+
 import nova.views

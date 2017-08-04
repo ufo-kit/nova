@@ -8,6 +8,10 @@ from nova import db, models, logic, es, users, memtar, fs, search
 from sqlalchemy import desc
 
 
+# TODO: serialize this in the DB?
+services = {}
+
+
 def authenticate(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -28,6 +32,36 @@ def get_dataset_owner(dataset):
     return db.session.query(models.User).\
         filter(models.Dataset.id == dataset.id).\
         first()
+
+
+class Services(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, required=True)
+        parser.add_argument('url', type=str, required=True)
+        parser.add_argument('secret', type=str, required=True)
+        args = parser.parse_args()
+
+        if args.name in services:
+            abort(400, error="Service `{}' already exists".format(args.name))
+
+        services[args.name] = dict(name=args.name, url=args.url)
+
+    def get(self):
+        return services.values()
+
+
+class Service(Resource):
+    def delete(self, name):
+        parser = reqparse.RequestParser()
+        parser.add_argument('secret', type=str, required=True)
+
+        args = parser.parse_args()
+
+        if not name in services:
+            abort(400, error="Service `{}' is not registered".format(name))
+
+        del services[name]
 
 
 class Datasets(Resource):
