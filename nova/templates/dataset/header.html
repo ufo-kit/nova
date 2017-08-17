@@ -2,13 +2,10 @@
 {% extends "layout.html" %}
 
 {% block body %}
-
-<div id="meta-info" class="row">
-  <div class="col-lg-12">
-    <div class="page-header">
+<div class="page-header">
+  <div id="meta-info" class="row">
+    <div class="col-md-12">
       <h2>
-    {% raw %}
-    {% endraw %}
 {% if dataset.type == "samplescan" %}
       Sample scan
 {% elif dataset.type == "volume" %}
@@ -17,11 +14,9 @@
       Information
 {% endif %}
 – <a href="{{ url_for("show_collection", name=user_name, collection_name=dataset.collection.name) }}">{{ dataset.collection.name }}</a> / {{ dataset.name }}
-      </h2>
-      <div class="clickable">
-        <i :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }"
+        <i class="clickable pull-right" :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }"
            @click="bookmark"></i>
-      </div>
+      </h2>
     </div>
   </div>
 </div>
