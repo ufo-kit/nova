@@ -38,7 +38,7 @@
           <a class="navbar-brand" href="/"><img src="{{ url_for('static', filename='img/nova-logo.svg') }}" height="100%"></a>
         </div>
         {% if current_user.is_authenticated %}
-        <div id="main-search" class="col-lg-6 col-lg-offset-1">
+        <div id="main-search" class="navbar-form navbar-left">
           <div class="input-group">
             <input name="searchquery" class="form-control" type="search"
                    autocomplete="off" placeholder="Search"
