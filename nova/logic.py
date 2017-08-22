@@ -11,14 +11,19 @@ def create_collection(name, user, description=None):
     return collection
 
 
-def create_dataset(dtype, name, user, collection, **kwargs):
+def create_dataset(dtype, name, user, collection, path=None, **kwargs):
     # TODO: merge functionality with import_dataset
     root = app.config['NOVA_ROOT_PATH']
-    path = os.path.join(root, user.name, collection.name, name)
 
-    dataset = dtype(name=name, path=path, collection=collection, **kwargs)
-    abspath = os.path.join(root, path)
-    os.makedirs(abspath)
+    if path is None:
+        path = os.path.join(root, user.name, collection.name, name)
+        abspath = os.path.join(root, path)
+        os.makedirs(abspath)
+    else:
+        # TODO: verify path
+        abspath = os.path.abspath(path)
+
+    dataset = dtype(name=name, path=abspath, collection=collection, **kwargs)
 
     permission = models.Permission(owner=user, dataset=dataset, can_read=True,
                                    can_interact=True, can_fork=False)

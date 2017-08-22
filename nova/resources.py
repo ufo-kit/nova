@@ -77,7 +77,10 @@ class Datasets(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, help="Dataset name")
         parser.add_argument('collection', type=str, help="Collection name")
+        parser.add_argument('description', type=str, help="Description")
+        parser.add_argument('path', type=str, help="Data path")
         args = parser.parse_args()
+        print(args)
 
         collection = db.session.query(models.Collection).\
             filter(models.Collection.name == args.collection).\
@@ -86,7 +89,8 @@ class Datasets(Resource):
         if collection is None:
             abort(404, error="Collection `{}' does not exist".format(args.collection))
 
-        dataset = logic.create_dataset(models.Dataset, args.name, user, collection)
+        dataset = logic.create_dataset(models.Dataset, args.name, user,
+                collection, description=args.description, path=args.path)
         search.insert(dataset)
         return dict(id=dataset.id)
 
