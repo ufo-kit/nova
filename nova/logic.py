@@ -1,6 +1,6 @@
 import os
 from flask import abort
-from nova import app, db, models
+from nova import app, db, fs, models
 
 
 def create_collection(name, user, description=None):
@@ -12,17 +12,7 @@ def create_collection(name, user, description=None):
 
 
 def create_dataset(dtype, name, user, collection, path=None, **kwargs):
-    # TODO: merge functionality with import_dataset
-    root = app.config['NOVA_ROOT_PATH']
-
-    if path is None:
-        path = os.path.join(root, user.name, collection.name, name)
-        abspath = os.path.join(root, path)
-        os.makedirs(abspath)
-    else:
-        # TODO: verify path
-        abspath = os.path.abspath(path)
-
+    abspath = fs.create_workspace(user, collection, name, path)
     dataset = dtype(name=name, path=abspath, collection=collection, **kwargs)
 
     permission = models.Permission(owner=user, dataset=dataset, can_read=True,

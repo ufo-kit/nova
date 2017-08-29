@@ -1,5 +1,6 @@
 import io
 import math
+import datetime
 from functools import wraps
 from flask import request, url_for, Response
 from flask_restful import Resource, abort, reqparse
@@ -74,13 +75,16 @@ class Datasets(Resource):
                     all()]
 
     def post(self, user=None):
+        def validate_datetime(x):
+            return datetime.strptime(x, '%Y-%m-%dT%H:%M:%S')
+
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, help="Dataset name")
         parser.add_argument('collection', type=str, help="Collection name")
         parser.add_argument('description', type=str, help="Description")
         parser.add_argument('path', type=str, help="Data path")
+        parser.add_argument('created', type=validate_datetime, help="Time of creation")
         args = parser.parse_args()
-        print(args)
 
         collection = db.session.query(models.Collection).\
             filter(models.Collection.name == args.collection).\
@@ -89,8 +93,12 @@ class Datasets(Resource):
         if collection is None:
             abort(404, error="Collection `{}' does not exist".format(args.collection))
 
-        dataset = logic.create_dataset(models.Dataset, args.name, user,
-                collection, description=args.description, path=args.path)
+        abspath = fs.create_workspace(user, collection, args.name, args.path)
+        dataset = models.Dataset(name=args.name, path=abspath, collection=collection, description=args.description, created=args.created)
+
+        permission = models.Permission(owner=user, dataset=dataset, can_read=True, can_interact=True, can_fork=False)
+        db.session.add_all([dataset, permission])
+        db.session.commit()
         search.insert(dataset)
         return dict(id=dataset.id)
 

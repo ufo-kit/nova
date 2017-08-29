@@ -9,4 +9,3 @@ def insert(dataset):
                 owner=permission.owner.name, description=dataset.description,
                 collection=dataset.collection.name)
     es.create(index='datasets', doc_type='dataset', body=body)
-

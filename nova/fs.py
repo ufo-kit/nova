@@ -35,3 +35,12 @@ class Filesystem(object):
 
     def path_of(self, dataset):
         return os.path.join(self.path, dataset.path)
+
+    def create_workspace(self, user, collection, name, path=None):
+        if path is not None:
+            return os.path.abspath(path)
+
+        path = os.path.join(self.path, user.name, collection.name, name)
+        abspath = os.path.join(self.path, path)
+        os.makedirs(abspath)
+        return abspath
