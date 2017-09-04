@@ -2,9 +2,43 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<div class="page-header">
-  <div id="meta-info" class="row">
-    <div class="col-md-12">
+<div id="meta-info" class="row">
+  <confirmderivation :show.sync="show_modal_derive_dataset">
+    <div slot="modal-title">
+      <h1>Derive Dataset</h1>
+      <h3>{{dataset.name}}</h3>
+      <h4>Set a name and permissions for the derived dataset</h4>
+    </div>
+    <div slot="modal-body">
+      <table id="derivation_options">
+        <tr><td>Name</td>
+          <td>
+            <input type="text" v-model="derived_dataset_name" placeholder="Add a name"
+              :class="{ 'text-warning': !derived_name_available }"></input>
+            <i v-show="!derived_name_available" class="fa fa-times-circle-o text-warning"></i><br />
+            <p class="fineprint">The name should be unique<br/>The name cannot be changed later</p>
+          </td>
+        </tr>
+        <tr><td>Permissions</td>
+          <td>
+            <input type="checkbox" v-model="derived_read" /> Read <br />
+            <input type="checkbox" v-model="derived_interact" /> Interact <br />
+            <input type="checkbox" v-model="derived_fork" /> Fork <br />
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div slot="modal-options">
+      <div :class="{ 'modal-button text-primary': derived_name_available, 'modal-button text-muted': !derived_name_available}">
+        <button @click="completeDatasetDerive()"><i class=" fa fa-clone" :disabled="!derived_name_available"></i> Derive</button>
+      </div>
+      <div class="modal-button">
+        <button class="modal-cancel-button" @click="cancelDatasetDerive()"><i class="fa fa-times"></i> Cancel</button>
+      </div>
+    </div>
+  </confirmderivation>
+  <div class="col-md-12">
+    <div class="page-header">
       <h2>
 {% if dataset.type == "samplescan" %}
       Sample scan
@@ -14,13 +48,12 @@
       Information
 {% endif %}
 – <a href="{{ url_for("show_collection", name=user_name, collection_name=dataset.collection.name) }}">{{ dataset.collection.name }}</a> / {{ dataset.name }}
-        <i class="clickable pull-right" :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }"
-           @click="bookmark"></i>
+        <i class="clickable pull-right" :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }" @click="bookmark"></i>
+        <i class="clickable pull-right fa fa-clone" @click="beginDatasetDerive"></i>
       </h2>
     </div>
   </div>
 </div>
-
 {% block dataset_content %}{% endblock %}
 
 {% endblock %}

@@ -68,6 +68,19 @@ class User(db.Model):
     def get_id(self):
         return self.name
 
+class Collection(db.Model):
+
+    __tablename__ = 'collections'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    description = db.Column(db.String)
+
+    datasets = db.relationship('Dataset', cascade='all, delete, delete-orphan')
+
+    def __repr__(self):
+        return '<Collection(name={})>'.format(self.name)
+
 
 class Dataset(db.Model):
 
@@ -82,10 +95,9 @@ class Dataset(db.Model):
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     closed = db.Column(db.Boolean, default=False)
     collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
-
     has_thumbnail = db.Column(db.Boolean, default=False)
 
-    collection = db.relationship('Collection')
+    collection = db.relationship('Collection', back_populates='datasets')
     accesses = db.relationship('Access', cascade='all, delete, delete-orphan')
     permissions = db.relationship('Permission', cascade='all, delete, delete-orphan')
 
@@ -100,21 +112,6 @@ class Dataset(db.Model):
 
     def __repr__(self):
         return '<Dataset(name={}, path={}>'.format(self.name, self.path)
-
-
-class Collection(db.Model):
-
-    __tablename__ = 'collections'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    description = db.Column(db.String)
-
-    datasets = db.relationship('Dataset', cascade='all, delete, delete-orphan')
-    permissions = db.relationship('Permission', cascade='all, delete, delete-orphan')
-
-    def __repr__(self):
-        return '<Collection(name={})>'.format(self.name)
 
 
 class Taxon(db.Model):
@@ -202,7 +199,6 @@ class Permission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
-    collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
 
     can_read = db.Column(db.Boolean, default=True)
     can_interact = db.Column(db.Boolean, default=True)
@@ -210,12 +206,10 @@ class Permission(db.Model):
 
     owner = db.relationship('User')
     dataset = db.relationship('Dataset', back_populates='permissions')
-    collection = db.relationship('Collection', back_populates='permissions')
 
     def __repr__(self):
-        object = self.dataset if self.dataset else self.collection
-        return '<Permission(owner={}, object={}, read={}, interact={}, fork={}>'.\
-            format(self.owner, object, self.can_read, self.can_interact, self.can_fork)
+        return '<Permission(dataset={}, owner = {}, read={}, interact={}, fork={}>'.\
+            format(self.dataset, self.owner, self.can_read, self.can_interact, self.can_fork)
 
 
 class Access(db.Model):
@@ -272,9 +266,11 @@ class Process(db.Model):
 
     source_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
     destination_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
+    collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
 
     source = db.relationship('Dataset', foreign_keys=[source_id])
     destination = db.relationship('Dataset', foreign_keys=[destination_id])
+    collection = db.relationship('Collection')
 
     __mapper_args__ = {
         'polymorphic_identity': 'process',
@@ -300,6 +296,16 @@ class Reconstruction(Process):
     darks = db.Column(db.String())
     projections = db.Column(db.String())
     output = db.Column(db.String())
+
+
+class Derivation(Process):
+
+    __tablename__ = 'derivations'
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'derivation'
+    }
+    id = db.Column(db.Integer, db.ForeignKey('processes.id'), primary_key=True)
 
 
 class Bookmark(db.Model):
@@ -376,7 +382,6 @@ class AccessRequest(db.Model):
     id = db.Column(db.Integer,  primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
-    collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
     can_read = db.Column(db.Boolean, default=False)
     can_interact = db.Column(db.Boolean, default=False)
     can_fork = db.Column(db.Boolean, default=False)
@@ -385,12 +390,10 @@ class AccessRequest(db.Model):
 
     user = db.relationship('User')
     dataset = db.relationship('Dataset')
-    collection = db.relationship('Collection')
 
     def __repr__(self):
-        object = self.dataset if self.dataset else self.collection
-        return '<AccessRequest(user={}, object={}, read={}, interact={}, fork={}>'.\
-            format(self.user, object, self.can_read, self.can_interact, self.can_fork)
+        return '<AccessRequest(user={}, dataset={}, read={}, interact={}, fork={}>'.\
+            format(self.user, self.dataset, self.can_read, self.can_interact, self.can_fork)
 
 
 class DirectAccess(db.Model):
@@ -399,16 +402,14 @@ class DirectAccess(db.Model):
     id = db.Column(db.Integer,  primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
-    collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'))
     can_read = db.Column(db.Boolean, default=False)
     can_interact = db.Column(db.Boolean, default=False)
     can_fork = db.Column(db.Boolean, default=False)
 
     user = db.relationship('User')
     dataset = db.relationship('Dataset')
-    collection = db.relationship('Collection')
+
 
     def __repr__(self):
-        object = self.dataset if self.dataset else self.collection
-        return '<DirectAccess(user={}, object={}, read={}, interact={}, fork={}>'.\
-            format(self.user, object, self.can_read, self.can_interact, self.can_fork)
+        return '<DirectAccess(user={}, dataset={}, read={}, interact={}, fork={}>'.\
+            format(self.user, object, self.dataset, self.can_interact, self.can_fork)

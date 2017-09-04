@@ -78,7 +78,17 @@
     <h3>Parent dataset</h3>
   </div>
 </div>
-{{ dataset_row(collection, parents[0]) }}
+{% for group in parents|group(3) %}
+<div class="row dataset-pad">
+  {% for dataset in group %}
+  <div class="col-lg-4">
+    <div class="row">
+      {{ dataset_partial(collection, dataset) }}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
 {% endif %}
 {% if children %}
 <div class="row">
@@ -223,11 +233,11 @@
     <h1 slot="modal-title">Confirm Deletion</h1>
     <p slot="modal-body">Are you sure you want to delete this review?</p>
     <div slot="modal-options">
-      <div class="modal-button modal-button-delete">
-        <button class="modal-delete-button" @click="deleteReview()"><i class="fa fa-trash"></i> Delete</button>
+      <div class="modal-button text-warning">
+        <button @click="deleteReview()"><i class="fa fa-trash"></i> Delete</button>
       </div>
       <div class="modal-button">
-        <button class="modal-cancel-button" @click="dismissModal()"><i class="fa fa-times"></i> Cancel</button>
+        <button @click="dismissModal()"><i class="fa fa-times"></i> Cancel</button>
       </div>
     </div>
   </confirmdeletion>

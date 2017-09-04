@@ -3,13 +3,25 @@ Vue.component('confirmdeletion', {
   props: ['show']
 })
 
+Vue.component('confirmderivation', {
+  template: '#modal-template',
+  props: ['show']
+})
+
 var meta = new Vue ({
   el:'#meta-info',
   data: {
     token: readCookie('token'),
     bookmarked: false,
+    show_modal_derive_dataset: false,
+    derived_dataset_name: '',
+    derived_read: true,
+    derived_interact: true,
+    derived_fork: false,
+    derived_name_available: false
   },
   created: function() {
+    console.log(this.show_modal_derive_dataset)
     var user_id = this.token.split('.')[0]
     var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/bookmarks'
     var headers = {
@@ -19,6 +31,17 @@ var meta = new Vue ({
     this.$http.get(api_str, {headers: headers}).then((response) => {
       this.bookmarked = response.body.hasOwnProperty("collection")
     })
+  },
+  watch: {
+    derived_dataset_name: function (value) {
+      result = false
+      api_str = '/api/datasets/checkname?name='+encodeURIComponent(value)
+      this.$http.get(api_str, null).then((response) => {
+        if (response.status == 200)
+          this.derived_name_available = response.body['available']
+      })
+
+    }
   },
   methods: {
     bookmark: function (event) {
@@ -39,6 +62,36 @@ var meta = new Vue ({
           this.bookmarked = response.status == 200
         })
       }
+    },
+    beginDatasetDerive: function () {
+        this.show_modal_derive_dataset = true
+    },
+    cancelDatasetDerive: function () {
+        this.show_modal_derive_dataset = false
+    },
+    completeDatasetDerive: function () {
+      if (this.derived_name_available) {
+        var headers = {
+          'Auth-Token': this.token
+        }
+        jsonbody = {
+          'name': this.derived_dataset_name,
+          'permissions': {
+            'read': this.derived_read,
+            'interact': this.derived_interact,
+            'fork': this.derived_fork
+          }
+        }
+        var user_id = this.token.split('.')[0]
+        var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/derive'
+        console.log(api_str)
+        this.$http.post(api_str, jsonbody, {headers: headers}).then((response) => {
+          if(response.status == 201) {
+            this.show_modal_derive_dataset = false
+            window.location.href = response.body['url']
+          }
+        })
+      }
     }
   }
 })
@@ -57,7 +110,6 @@ var description = new Vue ({
 
     this.$http.get('/api/datasets/' + collection_name + '/' + dataset_name, options).then((response) => {
       this.empty = response.body.description == null
-
       if (this.empty)
         this.text = "No description provided."
       else
@@ -131,11 +183,11 @@ var reviews = new Vue ({
         this.average_rating = response.body.rating
         this.base_rating = Math.floor(this.average_rating)
         this.half_star = this.average_rating - this.base_rating >= .5
-        this.reviews = response.body.data 
+        this.reviews = response.body.data
         this.show_review_input = ! response.body.self_reviewed
       })
     },
-    rate: function(n) { 
+    rate: function(n) {
       this.n = n
       this.is_rated = true
       this.rating_notified = false
@@ -171,7 +223,7 @@ var reviews = new Vue ({
         this.putReview(this.review_text, this.n)
       else this.rating_notified = true
     },
-    beginDeletingReview: function(review) {
+    beginDeletingReview: function() {
       this.show_modal_delete_review = true
     },
     deleteReview: function() {

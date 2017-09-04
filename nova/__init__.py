@@ -80,6 +80,7 @@ errors = {
 api = Api(app, errors=errors)
 api.add_resource(resources.Datasets, '/api/datasets')
 api.add_resource(resources.Dataset, '/api/datasets/<collection>/<dataset>')
+api.add_resource(resources.DeriveDataset, '/api/datasets/<collection>/<dataset>/derive')
 api.add_resource(resources.Data, '/api/datasets/<collection>/<dataset>/data')
 api.add_resource(resources.Bookmarks, '/api/datasets/<collection_name>/<dataset_name>/bookmarks')
 api.add_resource(resources.Reviews, '/api/datasets/<collection_name>/<dataset_name>/reviews')
@@ -92,8 +93,9 @@ api.add_resource(resources.Notifications, '/api/notifications')
 api.add_resource(resources.Notification, '/api/notification/<notification_id>')
 api.add_resource(resources.Connections, '/api/user/<user_id>/connections')
 api.add_resource(resources.Connection, '/api/connection/<from_id>/<to_id>/<option>')
-
 api.add_resource(resources.Services, '/api/services')
 api.add_resource(resources.Service, '/api/service/<name>')
+api.add_resource(resources.CheckDatasetNameAvailability, '/api/datasets/checkname')
 
 import nova.views
+

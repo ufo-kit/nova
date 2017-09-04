@@ -111,12 +111,6 @@ a:hover {
   box-shadow: none;
 }
 
-
-#meta-info div.page-header>h2>div {
-    display: inline-block; 
-    margin-right:20px;
-}
-
 .review-pad {
   padding: 10px 0;
 }
@@ -263,14 +257,6 @@ a:hover {
   margin-right: 5px;
 }
 
-.modal-button-delete>button {
-  color: #f00;
-}
-
-.modal-button-delete>i {
-  color: #f00;
-}
-
 .modal-enter {
   opacity: 0;
 }
@@ -303,3 +289,24 @@ a:hover {
 #access-grant>div>div h3 {
   text-transform: capitalize;
 }
+
+
+#derivation_options input {
+  border: none;
+  background: none;
+  padding:0;
+}
+
+#derivation_options input:focus {
+  outline: none;
+}
+
+#derivation_options td {
+  vertical-align: top;
+  padding-right: 10px;
+}
+
+.fineprint {
+  font-size: 10px;
+}
+

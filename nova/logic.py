@@ -14,7 +14,6 @@ def create_collection(name, user, description=None):
 def create_dataset(dtype, name, user, collection, path=None, **kwargs):
     abspath = fs.create_workspace(user, collection, name, path)
     dataset = dtype(name=name, path=abspath, collection=collection, **kwargs)
-
     permission = models.Permission(owner=user, dataset=dataset, can_read=True,
                                    can_interact=True, can_fork=False)
     db.session.add_all([dataset, permission])
@@ -22,13 +21,28 @@ def create_dataset(dtype, name, user, collection, path=None, **kwargs):
     return dataset
 
 
+def derive_dataset(dtype, dataset, user, name, path=None, permissions=[True,True,False]):
+    root = app.config['NOVA_ROOT_PATH']
+    if path is None:
+        path = os.path.join(root, dataset.collection.name, name)
+        abspath = os.path.join(root, path)
+        os.makedirs(abspath)
+    else:
+        # TODO: verify path
+        abspath = os.path.abspath(path)
+    derived_dataset = dtype(name=name, path=abspath, collection=dataset.collection, description=dataset.description)
+    derivation = models.Derivation(source=dataset, destination=derived_dataset, collection=dataset.collection)
+    permission = models.Permission(owner=user, dataset=derived_dataset, can_read=permissions[0],
+                                   can_interact=permissions[1], can_fork=permissions[2])
+    db.session.add_all([derived_dataset, derivation, permission])
+    db.session.commit()
+    return derived_dataset
+
+
 def import_sample_scan(name, user, path, description=None):
     collection = models.Collection(name=name, description=description)
     dataset = models.SampleScan(name=name, path=path, collection=collection,
             genus=None, family=None, order=None)
-    collection_permission = models.Permission(owner=user, collection=collection,
-                                              can_read=True, can_interact=True,
-                                              can_fork=False)
     dataset_permission = models.Permission(owner=user, dataset=dataset,
                                            can_read=True, can_interact=True,
                                            can_fork=False)

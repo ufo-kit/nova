@@ -6,7 +6,7 @@ from flask import request, url_for, Response
 from flask_restful import Resource, abort, reqparse
 from itsdangerous import Signer, BadSignature
 from nova import db, models, logic, es, users, memtar, fs, search
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 
 
 # TODO: serialize this in the DB?
@@ -144,6 +144,26 @@ class Dataset(Resource):
         db.session.commit()
 
 
+class DeriveDataset(Resource):
+    method_decorators = [authenticate]
+    def post(self, collection, dataset, user=None):
+        payload = request.get_json()
+        name = payload['name']
+        if not name or name is '':
+            abort(401)
+        permissions = payload['permissions']
+        permission_list = [permissions['read'], permissions['interact'], permissions['fork']]
+        dataset = db.session.query(models.Dataset).\
+                filter(models.Dataset.name == dataset).first()
+        if not dataset:
+            abort(404)
+
+        derived_dataset = logic.derive_dataset(models.Dataset, dataset, user,
+                                               name, permissions=permission_list)
+        search.insert(derived_dataset)
+        d = derived_dataset.to_dict()
+        return {'url': url_for('show_dataset', collection_name=derived_dataset.collection.name, dataset_name=derived_dataset.name)}, 201
+
 class Data(Resource):
     method_decorators = [authenticate]
 
@@ -179,7 +199,6 @@ class Data(Resource):
 
         f = io.BytesIO(request.data)
         memtar.extract_tar(f, fs.path_of(dataset))
-
 
 class Search(Resource):
     method_decorators = [authenticate]
@@ -637,3 +656,13 @@ class DirectAccess(Resource):
             db.session.add(notification)
             db.session.delete(access_request)
             db.session.commit()
+
+
+class CheckDatasetNameAvailability(Resource):
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, required=True)
+        name = parser.parse_args()['name']
+        dataset = db.session.query(models.Dataset).\
+            filter(func.lower(models.Dataset.name) == func.lower(name)).first()
+        return {'available': dataset == None}, 200
