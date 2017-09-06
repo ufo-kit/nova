@@ -150,18 +150,17 @@ class DeriveDataset(Resource):
         payload = request.get_json()
         name = payload['name']
         if not name or name is '':
-            abort(401)
+            abort(400, error="Name cannot be empty or blank")
         permissions = payload['permissions']
         permission_list = [permissions['read'], permissions['interact'], permissions['fork']]
         dataset = db.session.query(models.Dataset).\
                 filter(models.Dataset.name == dataset).first()
         if not dataset:
-            abort(404)
+            abort(404, error="Dataset `{}' does not exist".format(dataset))
 
         derived_dataset = logic.derive_dataset(models.Dataset, dataset, user,
                                                name, permissions=permission_list)
         search.insert(derived_dataset)
-        d = derived_dataset.to_dict()
         return {'url': url_for('show_dataset', collection_name=derived_dataset.collection.name, dataset_name=derived_dataset.name)}, 201
 
 class Data(Resource):
