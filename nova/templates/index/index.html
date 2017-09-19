@@ -9,9 +9,9 @@
 {% for dataset in datasets %}
 <div class="row">
   <h3 class="dataset-link">
-    <a href="{{ url_for("show_collection", name=current_user.name, collection_name=dataset.collection.name) }}">{{ dataset.collection.name }}</a> 
+    <a href="{{ url_for("show_collection", collection_name=dataset.collection.name) }}">{{ dataset.collection.name }}</a>
   /
-    <a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name) }}">{{ dataset.name }}</a>
+    <a href="{{ url_for("show_dataset", user=current_user.name, dataset=dataset.name) }}">{{ dataset.name }}</a>
   </h3>
 </div>
 {% endfor %}

@@ -19,7 +19,7 @@ var app = new Vue({
           'fork': this.fork }, 
         'message': this.message }
       var user_id = this.token.split('.')[0]
-      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/request'
+      var api_str = '/api/datasets/' + user_name + '/' + dataset_name + '/request'
       console.log(api_str)
       this.$http.put(api_str, request_data, {headers: headers}).then((response) => {
         if(response.status == 200 || response.status == 201)

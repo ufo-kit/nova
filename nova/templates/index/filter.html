@@ -11,16 +11,15 @@
 <div class="row dataset-pad">
   <div class="col-sm-1">
     {% if permission.dataset.has_thumbnail %}
-    <img class="img-responsive" width="64" height="64" src="{{ url_for("show_dataset", name=collection.user.name, collection_name=collection.name, dataset_name=permission.dataset.name, path='.thumb.jpg') }}"/>
+    <img class="img-responsive" width="64" height="64" src="{{ url_for("show_dataset", user=permision.owner.name, dataset=permission.dataset.name, path='.thumb.jpg') }}"/>
     {% else %}
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
     {% endif %}
   </div>
-  <div class="col-sm-11">
+  <div class="col-sm-9">
     <h3 class="dataset-link">
-      <a href="{{ url_for("profile", name=permission.owner.name) }}">{{ permission.owner.name }}</a> /
-      <a href="{{ url_for("show_collection", name=permission.owner.name, collection_name=permission.dataset.collection.name) }}">{{ permission.dataset.collection.name }}</a> /
-      <a href="{{ url_for("show_dataset", name=permission.owner.name, collection_name=permission.dataset.collection.name, dataset_name=permission.dataset.name) }}">{{ permission.dataset.name }}</a>
+      <a href="{{ url_for("show_collection", collection_name=permission.dataset.collection.name) }}">{{ permission.dataset.collection.name }}</a> /
+      <a href="{{ url_for("show_dataset", user=permission.owner.name, dataset=permission.dataset.name) }}">{{ permission.dataset.name }}</a>
     </h3>
     <p>
     {% if permission.dataset.description %}
@@ -28,6 +27,9 @@
     {% endif %}
     </p>
   </div>
+  <div class="col-sm-2">
+      <a href="{{ url_for("profile", name=permission.owner.name) }}"><i class="fa fa-user" aria-hidden="true"></i> {{ permission.owner.name }}</a>
+    </div>
 </div>
 {% endfor %}
 {% if pagination.pages > 1 %}

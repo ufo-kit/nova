@@ -13,13 +13,13 @@
       <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
     </div>
     <div class="col-sm-11">
+      {% raw %}
       <h3 class="dataset-link">
-        {% raw %}
-        <a :href="item.owner_url">{{ item.owner }}</a> /
         <a :href="item.collection_url">{{ item.collection }}</a> /
         <a :href="item.url">{{ item.name }}</a>
-        {% endraw %}
       </h3>
+      <p><a :href="item.owner_url"><i class="fa fa-user" aria-hidden="true"></i> {{ item.owner }}</a></div></p>
+      {% endraw %}
       <p></p>
     </div>
   </div>

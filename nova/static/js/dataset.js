@@ -21,9 +21,8 @@ var meta = new Vue ({
     derived_name_available: false
   },
   created: function() {
-    console.log(this.show_modal_derive_dataset)
     var user_id = this.token.split('.')[0]
-    var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/bookmarks'
+    var api_str = '/api/datasets/' + user_name + '/' + dataset_name + '/bookmarks'
     var headers = {
       'Auth-Token': this.token
     }
@@ -34,11 +33,14 @@ var meta = new Vue ({
   },
   watch: {
     derived_dataset_name: function (value) {
-      result = false
-      api_str = '/api/datasets/checkname?name='+encodeURIComponent(value)
-      this.$http.get(api_str, null).then((response) => {
-        if (response.status == 200)
-          this.derived_name_available = response.body['available']
+      var headers = {
+        'Auth-Token': this.token
+      }
+      this.derived_name_available = false
+      api_str = '/api/datasets/'+ user_name + '/'+encodeURIComponent(value)
+      this.$http.head(api_str, {headers: headers}).then(response => {
+      }, response => {
+          this.derived_name_available = (response.status == 404)
       })
 
     }
@@ -50,7 +52,7 @@ var meta = new Vue ({
       }
 
       var user_id = this.token.split('.')[0]
-      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/bookmarks'
+      var api_str = '/api/datasets/' + user_name + '/' + dataset_name + '/bookmarks'
 
       if (this.bookmarked) {
         this.$http.delete(api_str, {headers: headers}).then((response) => {
@@ -83,8 +85,7 @@ var meta = new Vue ({
           }
         }
         var user_id = this.token.split('.')[0]
-        var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/derive'
-        console.log(api_str)
+        var api_str = '/api/datasets/' + user_name + '/' + dataset_name + '/derive'
         this.$http.post(api_str, jsonbody, {headers: headers}).then((response) => {
           if(response.status == 201) {
             this.show_modal_derive_dataset = false
@@ -108,7 +109,7 @@ var description = new Vue ({
   created: function() {
     var options = {headers: { 'Auth-Token': this.token }}
 
-    this.$http.get('/api/datasets/' + collection_name + '/' + dataset_name, options).then((response) => {
+    this.$http.get('/api/datasets/' + user_name + '/' + dataset_name, options).then((response) => {
       this.empty = response.body.description == null
       if (this.empty)
         this.text = "No description provided."
@@ -132,8 +133,7 @@ var description = new Vue ({
       if (!this.empty) {
         var options = {headers: { 'Auth-Token': this.token }}
 
-        this.$http.patch('/api/datasets/' + collection_name + '/' + dataset_name, {description: this.text}, options).then((response) => {
-          console.log("success")
+        this.$http.patch('/api/datasets/' + user_name + '/' + dataset_name, {description: this.text}, options).then((response) => {
         })
       }
     },
@@ -177,7 +177,7 @@ var reviews = new Vue ({
   },
   methods: {
     loadReviews: function (headers) {
-      api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/reviews'
+      api_str = '/api/datasets/' + user_name + '/' + dataset_name + '/reviews'
       this.$http.get(api_str, {headers: headers}).then((response) => {
         this.review_count = parseInt(response.body.count)
         this.average_rating = response.body.rating
@@ -201,7 +201,7 @@ var reviews = new Vue ({
         'rating': rating
       }
       var user_id = this.token.split('.')[0]
-      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/reviews'
+      var api_str = '/api/datasets/' + user_name + '/' + dataset_name + '/reviews'
       this.$http.put(api_str, jsonBody, {headers: headers}).then((response) => {
         this.loadReviews(headers)
       })
@@ -233,7 +233,7 @@ var reviews = new Vue ({
       var headers = {
         'Auth-Token': this.token
       }
-      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/reviews'
+      var api_str = '/api/datasets/' + user_name + '/' + dataset_name + '/reviews'
       this.$http.delete(api_str, {headers: headers}).then((response) => {
         if (response.status == 200) {
           this.show_modal_delete_review = false

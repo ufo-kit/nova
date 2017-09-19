@@ -23,17 +23,19 @@
     <div class="col-sm-1">
       <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
     </div>
-    <div class="col-sm-11">
+    <div class="col-sm-9">
       <h3 class="dataset-link">
-        <a href="{{ url_for("profile", name=permission.owner.name) }}">{{ permission.owner.name }}</a> /
-        <a href="{{ url_for("show_collection", name=permission.owner.name, collection_name=permission.dataset.collection.name) }}">{{ permission.dataset.collection.name }}</a> /
-        <a href="{{ url_for("show_dataset", name=permission.owner.name, collection_name=permission.dataset.collection.name, dataset_name=permission.dataset.name) }}">{{ permission.dataset.name }}</a>
+        <a href="{{ url_for("show_collection", collection_name=permission.dataset.collection.name) }}">{{ permission.dataset.collection.name }}</a> /
+        <a href="{{ url_for("show_dataset", user=permission.owner, dataset=permission.dataset.name) }}">{{ permission.dataset.name }}</a>
       </h3>
       <p>
        {% if permission.dataset.description %}
        {{ permission.dataset.description }}
        {% endif %}
       </p>
+    </div>
+    <div class="col-sm-2">
+      <a href="{{ url_for("profile", name=permission.owner.name) }}"><i class="fa fa-user" aria-hidden="true"></i> {{ permission.owner.name }}</a>
     </div>
   </div>
   {% endfor %}

@@ -30,7 +30,7 @@ var accessgrant = new Vue ({
     onGrantAccess: function() {
       var headers = { 'Auth-Token': this.token }
       var access = {'action': 'grant', 'read': this.read, 'interact': this.interact, 'fork': this.fork}
-      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/request/' + request_id
+      var api_str = '/api/datasets/' + user_name + '/' + dataset_name + '/request/' + request_id
       this.$http.patch(api_str, access, {headers: headers}).then((response) => {
         if (response.status == 200 || response.status == 201)
           window.location = '/'
@@ -38,7 +38,7 @@ var accessgrant = new Vue ({
     },
     onDenyAccess: function() {
       var headers = { 'Auth-Token': this.token }
-      var api_str = '/api/datasets/' + collection_name + '/' + dataset_name + '/request/' + request_id
+      var api_str = '/api/datasets/' + user_name + '/' + dataset_name + '/request/' + request_id
       this.$http.delete(api_str, {headers: headers}).then((response) => {
         if (response.status == 200)
           window.location = '/'

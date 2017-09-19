@@ -3,7 +3,7 @@ from nova.models import Dataset, Permission
 
 
 def insert(dataset):
-    permission = Permission.query.filter(Dataset.id == dataset.id).first()
+    permission = Permission.query.filter(Permission.dataset_id == dataset.id).first()
     tokenized = dataset.name.lower().replace('_', ' ')
     body = dict(name=dataset.name, tokenized=tokenized,
                 owner=permission.owner.name, description=dataset.description,

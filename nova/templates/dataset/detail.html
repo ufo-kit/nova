@@ -1,22 +1,22 @@
 {% extends "dataset/header.html" %}
 {% macro dataset_link(label, path=None, ext=None) -%}
   {% if ext %}
-  <a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}{{ ext }}">{{ label }}</a>
+  <a href="{{ url_for("show_dataset", user=current_user.name, dataset=dataset.name, path=path) }}{{ ext }}">{{ label }}</a>
   {% else %}
-  <a href="{{ url_for("show_dataset", name=current_user.name, collection_name=dataset.collection.name, dataset_name=dataset.name, path=path) }}">{{ label }}</a>
+  <a href="{{ url_for("show_dataset", user=current_user.name, dataset=dataset.name, path=path) }}">{{ label }}</a>
   {% endif %}
 {%- endmacro %}
-{% macro dataset_partial(collection, dataset) -%}
+{% macro dataset_partial(user, dataset) -%}
   <div class="col-xs-2">
     {% if dataset.has_thumbnail %}
-    <img class="img-responsive" width="64" height="64" src="{{ url_for("show_dataset", name=user_name, collection_name=collection.name, dataset_name=dataset.name, path='.thumb.jpg') }}"/>
+    <img class="img-responsive" width="64" height="64" src="{{ url_for("show_dataset", user=user.name, dataset=dataset.name, path='.thumb.jpg') }}"/>
     {% else %}
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
     {% endif %}
   </div>
   <div class="col-xs-10">
     <h3 class="dataset-link">
-      <a href="{{ url_for("show_dataset", name=user_name, collection_name=collection.name, dataset_name=dataset.name) }}">{{ dataset.name }}</a>
+      <a href="{{ url_for("show_dataset", user=user.name, dataset=dataset.name) }}">{{ dataset.name }}</a>
     </h3>
     <p>
     {% if dataset.description %}
@@ -25,9 +25,9 @@
     </p>
   </div>
 {%- endmacro %}
-{% macro dataset_row(collection, dataset) -%}
+{% macro dataset_row(user, dataset) -%}
 <div class="row dataset-pad">
-  {{ dataset_partial(collection, dataset) }}
+  {{ dataset_partial(user, dataset) }}
 </div>
 {%- endmacro %}
 
@@ -36,7 +36,7 @@
 <div class="row">
   <div class="col-md-2">
     {% if dataset.has_thumbnail %}
-    <img class="img-responsive" width="128" height="128" src="{{ url_for("show_dataset", name=user_name, collection_name=collection.name, dataset_name=dataset.name, path='.thumb.jpg') }}"/>
+    <img class="img-responsive" width="128" height="128" src="{{ url_for("show_dataset", user=user, dataset=dataset.name, path='.thumb.jpg') }}"/>
     {% else %}
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=128&h=128"/>
     {% endif %}
@@ -83,7 +83,7 @@
   {% for dataset in group %}
   <div class="col-lg-4">
     <div class="row">
-      {{ dataset_partial(collection, dataset) }}
+      {{ dataset_partial(dataset.permissions.owner, dataset) }}
     </div>
   </div>
   {% endfor %}
@@ -101,7 +101,7 @@
   {% for dataset in group %}
   <div class="col-lg-4">
     <div class="row">
-      {{ dataset_partial(collection, dataset) }}
+      {{ dataset_partial(dataset.permissions.owner, dataset) }}
     </div>
   </div>
   {% endfor %}
@@ -242,7 +242,10 @@
     </div>
   </confirmdeletion>
 </div>
-<script>var collection_name = '{{ collection.name }}';</script>
-<script>var dataset_name = '{{ dataset.name }}';</script>
+<script>
+  var collection_name = '{{ collection.name }}';
+  var dataset_name = '{{ dataset.name }}';
+  var user_name = '{{ user.name }}';
+</script>
 <script>System.import('dataset.js')</script>
 {% endblock %}

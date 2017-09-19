@@ -99,7 +99,7 @@ class Dataset(db.Model):
 
     collection = db.relationship('Collection', back_populates='datasets')
     accesses = db.relationship('Access', cascade='all, delete, delete-orphan')
-    permissions = db.relationship('Permission', cascade='all, delete, delete-orphan')
+    permissions = db.relationship('Permission', uselist=False)
 
     __mapper_args__ = {
         'polymorphic_identity': 'dataset',

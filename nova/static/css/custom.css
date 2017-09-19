@@ -45,8 +45,16 @@ a:hover {
   background-color: #ececec;
 }
 
+.user-link {
+  padding-top:5px;
+}
+
+.user-link > div > a > i{
+  padding-right:5px;
+}
+
 .nova-main {
-  padding-bottom: 60px;
+  padding-bottom: 100px;
 }
 
 .nova-footer {

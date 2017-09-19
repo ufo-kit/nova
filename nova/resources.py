@@ -20,7 +20,6 @@ def authenticate(func):
             abort(401)
 
         user = users.check_token(request.headers['Auth-Token'])
-
         if user is None:
             abort(401)
 
@@ -102,13 +101,21 @@ class Datasets(Resource):
         search.insert(dataset)
         return dict(id=dataset.id)
 
-
 class Dataset(Resource):
     method_decorators = [authenticate]
+    def head(self, owner, dataset, user=None):
+        dataset = db.session.query(models.Dataset).join(models.Permission).\
+                join(models.User).filter(models.User.name == owner).\
+                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                first()
+        if dataset is None:
+            abort(404)
+        return 200
 
-    def get(self, collection, dataset, user=None):
-        dataset = db.session.query(models.Dataset).\
-                filter(models.Dataset.name == dataset).\
+    def get(self, owner, dataset, user=None):
+        dataset = db.session.query(models.Dataset).join(models.Permission).\
+                join(models.User).filter(models.User.name == owner).\
+                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
                 first()
 
         if dataset is None:
@@ -116,21 +123,24 @@ class Dataset(Resource):
 
         return dataset.to_dict()
 
-    def put(self, collection, dataset, user=None):
-        dataset = db.session.query(models.Dataset).\
+    def put(self, owner, dataset, user=None):
+        if user.name != owner:
+            abort(403)
+        dataset = db.session.query(models.Dataset).join(models.Permission).\
                 filter(models.Permission.owner == user).\
-                filter(models.Dataset.name == dataset).\
+                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
                 first()
 
         dataset.closed = request.form.get('closed', False)
         db.session.commit()
 
-    def patch(self, collection, dataset, user=None):
+    def patch(self, owner, dataset, user=None):
         payload = request.get_json()
-
+        if user.name != owner:
+            abort(403)
         dataset = db.session.query(models.Dataset).\
                 filter(models.Permission.owner == user).\
-                filter(models.Dataset.name == dataset).\
+                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
                 first()
 
         if dataset is None:
@@ -146,35 +156,35 @@ class Dataset(Resource):
 
 class DeriveDataset(Resource):
     method_decorators = [authenticate]
-    def post(self, collection, dataset, user=None):
+    def post(self, owner, dataset, user=None):
         payload = request.get_json()
         name = payload['name']
         if not name or name is '':
             abort(400, error="Name cannot be empty or blank")
         permissions = payload['permissions']
         permission_list = [permissions['read'], permissions['interact'], permissions['fork']]
-        dataset = db.session.query(models.Dataset).\
-                filter(models.Dataset.name == dataset).first()
+        dataset = db.session.query(models.Dataset).join(models.Permission).\
+                join(models.User).filter(models.User.name == owner).\
+                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                first()
         if not dataset:
             abort(404, error="Dataset `{}' does not exist".format(dataset))
 
         derived_dataset = logic.derive_dataset(models.Dataset, dataset, user,
                                                name, permissions=permission_list)
         search.insert(derived_dataset)
-        return {'url': url_for('show_dataset', collection_name=derived_dataset.collection.name, dataset_name=derived_dataset.name)}, 201
+        return {'url': url_for('show_dataset', user=user.name, dataset=derived_dataset.name)}, 201
 
 class Data(Resource):
     method_decorators = [authenticate]
 
-    def get(self, collection, dataset, user=None):
+    def get(self, dataset, user=None):
         dataset = db.session.query(models.Dataset).\
-                filter(models.Permission.owner == user).\
-                filter(models.Collection.name == collection).\
-                filter(models.Dataset.name == dataset).\
-                first()
+                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Permission.owner == user).first()
 
         if dataset is None:
-            abort(404, error="Dataset `{}/{}' does not exist".format(collection, dataset))
+            abort(404, error="Dataset `{}' does not exist".format(dataset))
 
         fileobj = memtar.create_tar(fs.path_of(dataset))
         fileobj.seek(0)
@@ -190,11 +200,10 @@ class Data(Resource):
 
         return Response(generate(), mimetype='application/gzip')
 
-    def post(self, collection, dataset, user=None):
+    def post(self, dataset, user=None):
         dataset = db.session.query(models.Dataset).\
-                filter(models.Permission.owner == user).\
-                filter(models.Dataset.name == dataset).\
-                first()
+                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Permission.owner == user).first()
 
         f = io.BytesIO(request.data)
         memtar.extract_tar(f, fs.path_of(dataset))
@@ -231,11 +240,11 @@ class Search(Resource):
 
         return [{'name': h['name'],
                  'description': h['description'],
-                 'url': url_for('show_dataset', name=h['owner'], collection_name=h['collection'], dataset_name=h['name']),
+                 'url': url_for('show_dataset', user=h['owner'], dataset=h['name']),
                  'owner': h['owner'],
                  'owner_url': url_for('profile', name=h['owner']),
                  'collection': h['collection'],
-                 'collection_url': url_for('show_collection', name=h['owner'], collection_name=h['collection'])}
+                 'collection_url': url_for('show_collection', collection_name=h['collection'])}
                  for h in hits]
 
 
@@ -243,45 +252,39 @@ class UserBookmarks(Resource):
     method_decorators = [authenticate]
 
     def get(self, username, user=None):
-        bookmarks = db.session.query(models.Bookmark).join(models.Bookmark.user).\
-                  filter(models.User.name == username).\
-                  all()
+        bookmarks = db.session.query(models.Bookmark).join(models.User).\
+                  filter(models.User.name == username).all()
         datasets = []
         for b in bookmarks:
             datasets.append(b.dataset)
         return [{'name': d.name,
                 'description': d.description,
-                'url': url_for('show_dataset', name=d.permissions[0].owner.name, collection_name=d.collection.name, dataset_name=d.name),
-                'owner': d.permissions[0].owner.name,
-                'owner_url': url_for('profile', name=d.permissions[0].owner.name),
+                'url': url_for('show_dataset', user=d.permissions.owner.name, dataset=d.name),
+                'owner': d.permissions.owner.name,
+                'owner_url': url_for('profile', name=d.permissions.owner.name),
                 'collection': d.collection.name,
-                'collection_url': url_for('show_collection', name=d.permissions[0].owner.name, collection_name=d.collection.name)}
+                'collection_url': url_for('show_collection', collection_name=d.collection.name)}
                 for d in datasets]
 
 
 class Bookmarks(Resource):
     method_decorators = [authenticate]
 
-    def get(self, collection_name, dataset_name, user=None):
-        bookmark = db.session.query(models.Bookmark).\
-                join(models.Dataset).\
-                join(models.Collection).\
-                join(models.User).\
-                filter(models.Collection.name == collection_name).\
-                filter(models.Dataset.name == dataset_name).\
-                filter(models.Bookmark.user == user).\
-                first()
+    def get(self, owner, dataset, user=None):
+        bookmark = db.session.query(models.Bookmark).join(models.Dataset).\
+                join(models.Permission).join(models.User).\
+                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.User.name == owner).\
+                filter(models.Bookmark.user == user).first()
         return bookmark.to_dict() if bookmark else {}
 
-    def post(self, collection_name, dataset_name, user=None):
-        if self.get(collection_name, dataset_name, user):
+    def post(self, owner, dataset, user=None):
+        if self.get(dataset, user):
             # bookmark exists already
             return 200
 
         dataset, permission = db.session.query(models.Dataset, models.Permission).\
-                join(models.Collection).\
-                filter(models.Collection.name == collection_name).\
-                filter(models.Dataset.name == dataset_name).\
+                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
                 first()
 
         if not permission.can_interact:
@@ -292,25 +295,22 @@ class Bookmarks(Resource):
         db.session.commit()
 
         # notify owner
-        owner = get_dataset_owner(dataset)
-
-        if owner.id == user.id:
+        if user.name == owner:
             return 201
 
         # FIXME: ratelimit bookmarking or DOS attacks become a piece of cake
-        message = "{} bookmarked {}/{}".format(user.name, collection_name, dataset_name)
+        message = "{} bookmarked {}".format(owner, dataset.name)
         notification = models.Notification(owner, type='bookmark', message=message)
         db.session.add(notification)
         db.session.commit()
 
         return 201
 
-    def delete(self, collection_name, dataset_name, user=None):
+    def delete(self, owner, dataset, user=None):
         dataset, bookmark = db.session.query(models.Dataset, models.Bookmark).\
-                join(models.Collection).\
-                filter(models.Collection.name == collection_name).\
-                filter(models.Dataset.name == dataset_name).\
-                first()
+                join(models.Permission).join(models.User).\
+                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.User.name == owner).first()
 
         if dataset is None or bookmark is None:
             abort(204)
@@ -324,7 +324,7 @@ class Bookmarks(Resource):
 class Reviews(Resource):
     method_decorators = [authenticate]
 
-    def put(self, collection_name, dataset_name, user=None):
+    def put(self, owner, dataset, user=None):
         data = request.get_json()
 
         # sanitize this
@@ -332,9 +332,7 @@ class Reviews(Resource):
         rating = data['rating']
 
         dataset, permission = db.session.query(models.Dataset, models.Permission).\
-                join(models.Collection).\
-                filter(models.Collection.name == collection_name).\
-                filter(models.Dataset.name == dataset_name).\
+                filter(models.Dataset.name == dataset).\
                 first()
 
         if not permission.can_interact:
@@ -359,19 +357,16 @@ class Reviews(Resource):
         if owner.id == user.id:
             return 201
 
-        message = "{} reviewed {}/{}".format(user.name, collection_name, dataset_name)
+        message = "{} reviewed {}".format(user.name, dataset.name)
         notification = models.Notification(owner, type='review', message=message)
         db.session.add(notification)
         db.session.commit()
 
         return 200
 
-    def delete(self, collection_name, dataset_name, user=None):
-        review = db.session.query(models.Review).\
-                join(models.Dataset).\
-                join(models.Collection).\
-                filter(models.Collection.name == collection_name).\
-                filter(models.Dataset.name == dataset_name).\
+    def delete(self, owner, dataset, user=None):
+        review = db.session.query(models.Review).join(models.Dataset).\
+                filter(models.Dataset.name == dataset).\
                 first()
 
         if review is None:
@@ -381,11 +376,9 @@ class Reviews(Resource):
         db.session.commit()
         return 200
 
-    def get(self, collection_name, dataset_name, user=None):
+    def get(self, owner, dataset, user=None):
         dataset = db.session.query(models.Dataset).\
-                join(models.Collection).\
-                filter(models.Collection.name == collection_name).\
-                filter(models.Dataset.name == dataset_name).\
+                filter(models.Dataset.name == dataset).\
                 first()
 
         reviews = db.session.query(models.Review).\
@@ -511,29 +504,18 @@ class AccessRequests(Resource):
     method_decorators = [authenticate]
 
     def get(self, user=None):
-        dataset_access_requests = db.session.query(models.AccessRequest).\
+        access_requests = models.AccessRequest.query(models.AccessRequest).\
             join(models.Dataset).join(models.Permission).\
             filter(models.Permission.owner == user).\
             filter(models.AccessRequest.dataset_id == models.Permission.dataset_id)
 
-        collection_access_requests = db.session.query(models.AccessRequest).\
-            join(models.Collection).join(models.Permission).\
-            filter(models.Permission.owner == user).\
-            filter(models.AccessRequest.collection_id == models.Permission.collection_id)
-
-        access_requests = dataset_access_requests.union(collection_access_requests).\
-                        order_by(desc(models.AccessRequest.created_at)).all()
         return [{'id': ar.id, 'user_id': ar.user_id, 'username': ar.user.name,
                 'user_url': url_for('profile', name=ar.user.name),
-                'dataset_id':ar.dataset_id, 'collection_id':ar.collection_id,
+                'dataset_id':ar.dataset_id, 'collection_id':ar.dataset.collection_id,
                 'object': {
                     'type':'dataset',
                     'name':ar.dataset.name,
-                    'url': url_for('show_dataset', name=user.name, collection_name=ar.dataset.collection.name, dataset_name=ar.dataset.name)
-                } if ar.dataset.id else {
-                    'type':'collection',
-                    'name':ar.collection.name,
-                    'url': url_for('show_collection', name=user.name, collection_name=ar.collection.name)
+                    'url': url_for('show_dataset', user=user.name, dataset=ar.dataset.name)
                 }, 'options_url': url_for('grant_access', ar_id=ar.id)}
                 for ar in access_requests]
 
@@ -541,15 +523,13 @@ class AccessRequests(Resource):
 class AccessRequest(Resource):
     method_decorators = [authenticate]
 
-    def put(self, collection_name, dataset_name, user=None):
+    def put(self, dataset_name, user=None):
         # XXX: sanitize data ...
         data = request.get_json()
         message = data['message']
         requested = data['permissions']
 
         dataset, permission = db.session.query(models.Dataset, models.Permission).\
-                join(models.Collection).\
-                filter(models.Collection.name == collection_name).\
                 filter(models.Dataset.name == dataset_name).\
                 first()
 
@@ -561,7 +541,7 @@ class AccessRequest(Resource):
                 first()
 
         if existing is None:
-            access_request = models.AccessRequest(user=user, dataset=dataset,
+            access_request = models.AccessRequest(user=user.name, dataset=dataset,
                     message=message, can_read=requested['read'],
                     can_interact=requested['interact'],
                     can_fork=requested['fork'])
@@ -583,13 +563,9 @@ class Permission(Resource):
     def __init__(self):
         self.user = user.from_token(request.headers['Auth-Token'])
 
-    def patch(self,  collection_name, dataset_name, user=None):
-        permission = db.session.query(models.Permission).\
-            join(models.Dataset).\
-            join(models.Collection).\
-            filter(models.Collection.name == collection_name).\
-            filter(models.Dataset.name == dataset_name).\
-            first()
+    def patch(self, dataset_name, user=None):
+        permission = db.session.query(models.Permission).join(models.Dataset).\
+        filter(models.Dataset.name == dataset_name).first()
 
         if not permission:
             abort(404, "Permissions do not exist")
@@ -604,7 +580,7 @@ class Permission(Resource):
 class DirectAccess(Resource):
     method_decorators = [authenticate]
 
-    def patch(self, collection_name, dataset_name, request_id, user=None):
+    def patch(self, dataset_name, request_id, user=None):
         access_request = db.session.query(models.AccessRequest).\
             join(models.Dataset).\
             join(models.Permission).\
@@ -616,7 +592,6 @@ class DirectAccess(Resource):
             abort(404, "Request does not exists")
 
         access = db.session.query(models.DirectAccess).\
-            filter(models.Collection.name == collection_name).\
             filter(models.Dataset.name == dataset_name).\
             filter(models.DirectAccess.user == access_request.user).\
             first()
@@ -628,11 +603,11 @@ class DirectAccess(Resource):
             access.can_interact = permissions['interact']
             access.can_fork = permissions['fork']
         else:
-            access = models.DirectAccess(user=user, can_read=permissions['read'],
+            access = models.DirectAccess(user=user.name, can_read=permissions['read'],
                     can_interact=permissions['interact'], can_fork=permissions['fork'])
             db.session.add(access)
 
-        message = '{} granted access to {}/{}'.format(user.name, collection_name, dataset_name)
+        message = '{} granted access to {}'.format(user.name, dataset_name)
         notification = models.Notification(access_request.user, type='bookmark', message=message)
         db.session.add(notification)
         db.session.delete(access_request)
@@ -640,7 +615,7 @@ class DirectAccess(Resource):
 
         return 200
 
-    def delete(self, collection_name, dataset_name, request_id, user=None):
+    def delete(self, dataset_name, request_id, user=None):
         access_request = db.session.query(models.AccessRequest).\
             join(models.Dataset).\
             join(models.Permission).\
@@ -650,7 +625,7 @@ class DirectAccess(Resource):
 
         # notify requester
         if access_request is not None:
-            message = '{} denied access to {}/{}'.format(user.name, collection_name, dataset_name)
+            message = '{} denied access to {}'.format(user.name, dataset_name)
             notification = models.Notification(access_request.user, type='bookmark', message=message)
             db.session.add(notification)
             db.session.delete(access_request)

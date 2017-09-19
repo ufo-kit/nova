@@ -205,15 +205,17 @@ def profile(name, page=1):
     user = db.session.query(User).filter(User.name == name).first()
     bookmark_count = db.session.query(Bookmark).\
         filter(Bookmark.user == user).count()
-    collections_publicperms = Collection.query.join(Permission).\
+    datasets_publicperms = Dataset.query.join(Permission).\
                             filter(Permission.owner == user).\
                             filter(Permission.can_read == True)
 
-    collections_directaccess = Collection.query.join(DirectAccess).\
-                             filter(DirectAccess.user == current_user).\
-                             filter(DirectAccess.can_read == True)
-    collections = collections_directaccess.union(collections_publicperms)
-    pagination = collections.paginate(page=page, per_page=8)
+    datasets_directaccess = Dataset.query.join(Permission).\
+                          filter(Permission.owner == user).\
+                          join(DirectAccess).\
+                          filter(DirectAccess.user == current_user).\
+                          filter(DirectAccess.can_read == True)
+    datasets = datasets_directaccess.union(datasets_publicperms)
+    pagination = datasets.paginate(page=page, per_page=8)
     return render_template('user/profile.html', user=user, pagination=pagination, bookmark_count=bookmark_count)
 
 
@@ -450,22 +452,15 @@ def show_collection(collection_name):
     abort(404, 'collection {} not found'.format(collection_name))
 
 
-@app.route('/dataset/<collection_name>/<dataset_name>')
-@app.route('/dataset/<collection_name>/<dataset_name>/tree/<path:path>')
+@app.route('/dataset/<user>/<dataset>')
+@app.route('/dataset/<user>/<dataset>/tree/<path:path>')
 @login_required(admin=False)
-def show_dataset(collection_name, dataset_name, path=''):
-    collection = Collection.query.\
-        filter(Collection.name == collection_name).first()
-
-    if collection is None:
-        abort(404, 'collection {} not found'.format(collection_name))
-
-    dataset = Dataset.query.join(Collection).\
-        filter(Collection.name == collection_name).\
-        filter(Dataset.name == dataset_name).first()
-
+def show_dataset(user, dataset, path=''):
+    user = User.query.filter(User.name == user).first()
+    dataset = Dataset.query.join(Permission).filter(Dataset.name == dataset).\
+            filter(Permission.owner == user).first()
     if dataset is None:
-        abort(404, 'dataset {} not found'.format(dataset_name))
+        abort(404, 'dataset {} not found'.format(dataset))
     dataset_permissions = {}
     name = None
     permission = Permission.query.filter(Permission.dataset == dataset).first()
@@ -474,7 +469,6 @@ def show_dataset(collection_name, dataset_name, path=''):
             dataset_permissions = {'read': permission.can_read,
                            'interact': permission.can_interact,
                            'fork': permission.can_fork}
-            name = permission.owner.name;
     if dataset_permissions == {}:
         direct_access = DirectAccess.query.\
                       filter(DirectAccess.dataset == dataset).\
@@ -482,9 +476,9 @@ def show_dataset(collection_name, dataset_name, path=''):
                       filter(DirectAccess.can_read == True).first()
         if direct_access is None:
             return render_template('base/accessrequest.html', access_name='read',
-                                   user_name=name,
-                                   dataset=dataset, collection=collection,
-                                   item={'type':'dataset', 'name':dataset_name,
+                                   user=user, dataset=dataset,
+                                   collection=dataset.collection,
+                                   item={'type':'dataset', 'name':dataset,
                                          'description':dataset.description,
                                          'id':dataset.id,})
         dataset_permissions = {'read': direct_access.can_read,
@@ -502,48 +496,34 @@ def show_dataset(collection_name, dataset_name, path=''):
     # FIXME: check access rights
     # FIXME: scream if no dataset found
 
-    parents = Dataset.query.join(Process.source).\
+    parents = db.session.query(Dataset).join(Process.source).\
         filter(Process.destination_id == dataset.id).all()
-
-    children = Dataset.query.join(Process.destination).\
+    children =db.session.query(Dataset).join(Process.destination).\
         filter(Process.source_id == dataset.id).all()
 
     list_files = app.config['NOVA_ENABLE_FILE_LISTING']
     dirs = fs.get_dirs(dataset, path) if list_files else None
     files = sorted(fs.get_files(dataset, path)) if list_files else None
 
-    params = dict(user_name=name, collection=collection, dataset=dataset,
+    params = dict(user=user, collection=dataset.collection, dataset=dataset,
                   parents=parents, children=children, path=path,
                   list_files=list_files, files=files, dirs=dirs, origin=[],
                   permissions=dataset_permissions)
     return render_template('dataset/detail.html', **params)
 
 
-@app.route('/dataset/<collection_name>/<dataset_name>/requests/<int:request_id>')
+@app.route('/dataset/<user>/<dataset>/requests/<int:request_id>')
 @login_required(admin=False)
-def access_request(collection_name, dataset_name, request_id):
+def access_request(dataset, request_id):
     request = db.session.query(AccessRequest).\
        filter(AccessRequest.id == request_id).first()
 
-    if request.dataset_id:
-        owner = request.dataset.permissions[0].owner
-        item = dict(type='dataset', name=request.dataset.name,
+    owner = request.dataset.permissions.owner
+    item = dict(type='dataset', name=request.dataset.name,
                 id=request.dataset.id, description=request.dataset.description,
-                url=url_for("show_dataset",
-                    collection_name=request.dataset.collection.name,
-                    dataset_name=request.dataset.name))
-    else:
-        owner = request.collection.permissions[0].owner
-        item = dict(type=collection, name=request.collection.name,
-                id=request.collection.id, description=request.collection.description,
-                url=url_for("show_collection", name=owner.name,
-                    collection_name=request.dataset.collection.name))
-
+                url=url_for("show_dataset", user=user, dataset=request.dataset.name))
     if owner == current_user:
-        user_collections = db.session.query(Collection).join(Permission).\
-                         filter(Permission.owner_id == request.user.id).count()
         return render_template('user/grantaccess.html', dataset=request.dataset, item=item, request=request)
-
     abort(401)
 
 
