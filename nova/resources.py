@@ -64,6 +64,47 @@ class Service(Resource):
         del services[name]
 
 
+class Groups(Resource):
+    method_decorators = [authenticate]
+    def get(self, user=None):
+        parser = reqparse.RequestParser()
+        parser.add_argument('filter', type=str, required=False)
+        args = parser.parse_args()
+        query = db.session.query(models.Group)
+        if args.filter is 'me':
+            query = query.join(models.Membership).\
+            filter(models.Membership.user == user)
+        return [g.to_dict() for g in query.all()]
+
+    def post(self, user=None):
+        payload = request.get_json()
+        desc = payload['description'] if payload['description'] else ''
+        if payload['name']:
+            newgroup = models.Group(name=payload['name'], description=desc)
+            membership = models.Membership(user=user, group=newgroup,
+                                           is_creator=True, is_admin=False)
+            db.session.add_all([group, membership])
+            db.session.commit()
+            return 'Created', 201
+        abort(402)
+
+
+class Group(Resource):
+    method_decorators = [authenticate]
+    def get(self, group_id, user=None):
+        return db.session.query(models.Group).\
+            filter(models.Group.id == group_id).first().to_dict()
+
+    def put(self, group_id, user=None):
+        group, membership = db.session.query(models.Group, models.Membership).\
+            filter(models.Group.id == group_id).first()
+        if not membership:
+            membership = models.Membership(group=group, user=user)
+            db.session.add(membership)
+            db.session.commit()
+            return 200
+
+
 class Datasets(Resource):
     method_decorators = [authenticate]
 
@@ -137,7 +178,7 @@ class Dataset(Resource):
     def patch(self, owner, dataset, user=None):
         payload = request.get_json()
         if user.name != owner:
-            abort(403, "PUT forbidden from this user for this dataset")
+            abort(403, "PATCH forbidden from this user for this dataset")
         dataset = db.session.query(models.Dataset).\
                 filter(models.Permission.owner == user).\
                 filter(func.lower(models.Dataset.name) == func.lower(dataset)).\

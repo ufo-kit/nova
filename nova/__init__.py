@@ -78,6 +78,8 @@ errors = {
 }
 
 api = Api(app, errors=errors)
+api.add_resource(resources.Groups, '/api/groups')
+api.add_resource(resources.Group, '/api/groups/<group_id>')
 api.add_resource(resources.Datasets, '/api/datasets')
 api.add_resource(resources.Dataset, '/api/datasets/<owner>/<dataset>')
 api.add_resource(resources.DeriveDataset, '/api/datasets/<owner>/<dataset>/derive')

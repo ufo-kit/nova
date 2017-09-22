@@ -81,6 +81,26 @@ class Collection(db.Model):
     def __repr__(self):
         return '<Collection(name={})>'.format(self.name)
 
+class Group(db.Model):
+    __tablename__ = 'groups'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    description = db.Column(db.String)
+
+    memberships = db.relationship('Memberships', cascade='all, delete, delete-orphan')
+
+class Membership(db.Model):
+    __tablename__ = 'memberships'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
+    is_creator = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False)
+
+    user = db.relationship('User')
+    group = db.relationship('Group')
 
 class Dataset(db.Model):
 
@@ -381,6 +401,7 @@ class AccessRequest(db.Model):
 
     id = db.Column(db.Integer,  primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
     dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
     can_read = db.Column(db.Boolean, default=False)
     can_interact = db.Column(db.Boolean, default=False)
@@ -389,6 +410,7 @@ class AccessRequest(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     user = db.relationship('User')
+    usergroup = db.relationship('Group')
     dataset = db.relationship('Dataset')
 
     def __repr__(self):
@@ -401,12 +423,14 @@ class DirectAccess(db.Model):
 
     id = db.Column(db.Integer,  primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
     dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'))
     can_read = db.Column(db.Boolean, default=False)
     can_interact = db.Column(db.Boolean, default=False)
     can_fork = db.Column(db.Boolean, default=False)
 
     user = db.relationship('User')
+    usergroup = db.relationship('Group')
     dataset = db.relationship('Dataset')
 
 
