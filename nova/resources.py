@@ -109,7 +109,7 @@ class Dataset(Resource):
                 filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
                 first()
         if dataset is None:
-            abort(404)
+            abort(404, "Dataset does not exist for this user")
         return 200
 
     def get(self, owner, dataset, user=None):
@@ -119,13 +119,13 @@ class Dataset(Resource):
                 first()
 
         if dataset is None:
-            abort(404)
+            abort(404, "Dataset does not exist for this user")
 
         return dataset.to_dict()
 
     def put(self, owner, dataset, user=None):
         if user.name != owner:
-            abort(403)
+            abort(403, "PUT forbidden from this user for this dataset")
         dataset = db.session.query(models.Dataset).join(models.Permission).\
                 filter(models.Permission.owner == user).\
                 filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
@@ -137,7 +137,7 @@ class Dataset(Resource):
     def patch(self, owner, dataset, user=None):
         payload = request.get_json()
         if user.name != owner:
-            abort(403)
+            abort(403, "PUT forbidden from this user for this dataset")
         dataset = db.session.query(models.Dataset).\
                 filter(models.Permission.owner == user).\
                 filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
@@ -288,7 +288,7 @@ class Bookmarks(Resource):
                 first()
 
         if not permission.can_interact:
-            abort(401)
+            abort(401, "Unauthorised permissions")
 
         bookmark = models.Bookmark(user, dataset)
         db.session.add(bookmark)
@@ -313,7 +313,7 @@ class Bookmarks(Resource):
                 filter(models.User.name == owner).first()
 
         if dataset is None or bookmark is None:
-            abort(204)
+            abort(404, "Dataset or Bookmark not found")
 
         db.session.delete(bookmark)
         db.session.commit()
@@ -336,7 +336,7 @@ class Reviews(Resource):
                 first()
 
         if not permission.can_interact:
-            abort(401)
+            abort(401, "Unauthorised Permissions")
 
         review = db.session.query(models.Review).\
                 filter(models.Review.user == user).\
@@ -370,7 +370,7 @@ class Reviews(Resource):
                 first()
 
         if review is None:
-            abort(204)
+            abort(404, "Review not found")
 
         db.session.delete(review)
         db.session.commit()
