@@ -27,6 +27,7 @@ setup(
         'Flask-Login',
         'Flask-Migrate',
         'flask-restful',
+        'Flask-Script',
         'Flask-SQLAlchemy',
         'flask-WTF',
         'jinja2',
