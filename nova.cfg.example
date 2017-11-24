@@ -12,3 +12,6 @@ NOVA_ROOT_PATH = '.'
 # debugging purposes or when data cannot be accessed, this should be set to
 # False.
 NOVA_ENABLE_FILE_LISTING = True
+
+# If True, nova will not try to connect to an ElasticSearch instance.
+DEBUG = False
