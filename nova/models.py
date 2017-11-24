@@ -88,7 +88,7 @@ class Group(db.Model):
     name = db.Column(db.String)
     description = db.Column(db.String)
 
-    memberships = db.relationship('Memberships', cascade='all, delete, delete-orphan')
+    memberships = db.relationship('Membership', cascade='all, delete, delete-orphan')
 
 class Membership(db.Model):
     __tablename__ = 'memberships'
