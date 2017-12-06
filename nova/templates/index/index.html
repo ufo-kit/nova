@@ -20,11 +20,12 @@
   <div class="col-lg-8">
     <h4>Requests</h4>
     {% for request in requests %}
-    {{ request.user.name }} requests <a href="{{ url_for('access_request',
-      name=user.name,
-      collection_name=request.dataset.collection.name,
-      dataset_name=request.dataset.name,
-      request_id=request.id) }}">access</a> to
+    <p>{{ request.user.fullname }} requests <a href="{{ url_for("access_request",
+      user=request.user.name,
+      dataset=request.dataset.name,
+      request_id=request.id) }}">access</a> to <a href="{{ url_for("show_dataset",
+      user=request.user.name,
+      dataset=request.dataset.name) }}">{{ request.dataset.name }}</a></p>
     {% endfor %}
   </div>
 </div>
