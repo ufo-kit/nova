@@ -6,7 +6,7 @@ from flask import request, url_for, Response
 from flask_restful import Resource, abort, reqparse
 from itsdangerous import Signer, BadSignature
 from nova import db, models, logic, es, users, memtar, fs, search
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, not_
 
 
 # TODO: serialize this in the DB?
@@ -681,3 +681,27 @@ class CheckDatasetNameAvailability(Resource):
         dataset = db.session.query(models.Dataset).\
             filter(func.lower(models.Dataset.name) == func.lower(name)).first()
         return {'available': dataset == None}, 200
+
+
+class UserSearch(Resource):
+    method_decorators = [authenticate]
+    def get(self, user=None):
+        parser = reqparse.RequestParser()
+        parser.add_argument('q', type=str, required=True)
+        parser.add_argument('n', type=str, required=True)
+        parser.add_argument('excl', action='append', required=False)
+        queryString = parser.parse_args()['q']
+        number = parser.parse_args()['n']
+        excl = parser.parse_args()['excl']
+        if not excl:
+            excl = []
+        excl.append(user.name)
+        if queryString == '' or number <=0:
+            return []
+        results = db.session.query(models.User).\
+            filter(func.lower(models.User.name).contains(func.lower(queryString))).\
+            filter(not_(models.User.name.in_(excl))).limit(number).all()
+        json_results = []
+        for r in results:
+            json_results.append(r.to_dict())
+        return json_results

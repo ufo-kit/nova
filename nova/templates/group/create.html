@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="page-header">
+      <h2>New group</h2>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-6">
+    <div class="bs-component">
+      <form class="form-horizontal" method="POST" action="{{ url_for("create_group") }}">
+        <div class="form-group">
+          <label for="inputName" class="col-lg-2 control-label">Name</label>
+          <div class="col-lg-10">
+            {{ form.csrf_token }}
+            <input type="text" id="inputName" name="name" class="form-control">
+          </div>
+          <label for="inputDescription" class="col-lg-2 control-label">Description</label>
+          <div class="col-lg-10">
+            <textarea rows=3 id="inputDescription" name="description" class="form-control"></textarea>
+          </div>
+          <label for="inputUsers" class="col-lg-2 control-label">Users</label>
+          <div class="col-lg-10" id="group-users">
+            {% raw %}
+            <mtiusers>
+              <div slot="mti-selected">
+                <mtiselected v-for="r in selected_users">
+                  <span slot="mti-added-name">{{r.name}}</span>
+                  <i slot="mti-added-remove" class="fa fa-times" v-on:click="remove_from_selected(r)"></i>
+                </mtiselected>
+              </div>
+              <input slot="mti-input-field" class="mti-current form-control" v-model="user_search_query"></input>
+              <div slot="mti-options">
+                <mtioption v-for="r in user_search_results">
+                  <div slot="mti-option-title">{{r.fullname}}</div>
+                  <small slot="mti-option-subtitle">{{r.name}}</small>
+                  <i slot="mti-option-add" v-on:click="add_to_selected(r)" class="mti-add-button fa fa-plus"></i>
+                </mtioption>
+              </div>
+            </mtiusers>
+            {% endraw %}
+            <input type="hidden" id="inputUsers" name="users" v-model="selected_users_names"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-lg-10 col-lg-offset-2">
+          <button type="submit" class="btn btn-primary">Create</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/creategroup.js') }}"></script>
+<!--<script>System.import('creategroup.js')</script>-->
+{% endblock %}

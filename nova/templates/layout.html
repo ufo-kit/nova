@@ -23,6 +23,34 @@
         </div>
       </transition>
     </script>
+    <script type="text/x-template" id="multi-text-input-template">
+      <transition name="mti">
+        <div class="mti-wrapper">
+          <div class="mti-input-container">
+            <div class="mti-selected"><slot name="mti-selected"></slot></div>
+            <div class="mti-input"><slot name="mti-input-field"></slot></div>
+            <div class="mti-options"><slot name="mti-options"></slot></div>
+          </div>
+        </div>
+      </transition>
+    </script>
+    <script type="text/x-template" id="mti-added-template">
+      <transition name="mti-added">
+        <div class="mti-added">
+          <p><slot name="mti-added-name"></slot>
+          <slot name="mti-added-remove"></slot></p>
+        </div>
+      </transition>
+    </script>
+    <script type="text/x-template" id="mti-option-template">
+      <transition name="mti-option">
+        <div class="mti-option">
+          <slot name="mti-option-title"></slot>
+          <slot name="mti-option-subtitle"></slot>
+          <slot name="mti-option-add"></slot>
+        </div>
+      </transition>
+    </script>
     <script src="{{ url_for('static', filename='vue/dist/vue.min.js') }}"></script>
     <script src="{{ url_for('static', filename='vue-resource/dist/vue-resource.min.js') }}"></script>
     <script src="{{ url_for('static', filename='lodash/dist/lodash.min.js') }}"></script>
@@ -102,6 +130,9 @@
             <ul id="add-menu" class="dropdown-menu">
               <li>
                 <a href="{{ url_for("create_collection") }}">New collection</a>
+              </li>
+              <li>
+                <a href="{{ url_for("create_group") }}">New Group</a>
               </li>
             </ul>
           </li>

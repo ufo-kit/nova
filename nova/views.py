@@ -12,9 +12,10 @@ from flask import (Response, render_template, request, flash, redirect,
 from flask_login import login_user, logout_user, current_user
 from flask_wtf import Form
 from flask_sqlalchemy import Pagination
-from wtforms import StringField, BooleanField
+from wtforms import StringField, BooleanField, HiddenField, FieldList
 from wtforms.validators import DataRequired
 from sqlalchemy import or_, and_
+import ast
 
 
 def login_required(admin=False):
@@ -53,6 +54,13 @@ class CreateForm(Form):
 class CreateCollectionForm(Form):
     name = StringField('name', validators=[DataRequired()])
     description = StringField('description')
+
+
+class CreateGroupForm(Form):
+    name = StringField('name', validators=[DataRequired()])
+    description = StringField('description')
+    users = HiddenField('users', validators=[DataRequired()])
+
 
 
 class RunCommandForm(Form):
@@ -544,3 +552,14 @@ def delete(dataset_id=None):
         app.logger.info("Would remove {}, however deletion is currently disabled".format(path))
 
     return redirect(url_for('index'))
+
+
+@app.route('/group/create',  methods=['GET', 'POST'])
+@login_required(admin=False)
+def create_group():
+    form = CreateGroupForm()
+    if form.validate_on_submit():
+        user_list = ast.literal_eval(form.users.data)
+        logic.create_group(current_user, form.name.data, description=form.description.data, users=user_list)
+        return redirect(url_for('index'))
+    return render_template('group/create.html', form=form)

@@ -68,6 +68,10 @@ class User(db.Model):
     def get_id(self):
         return self.name
 
+    def to_dict(self):
+        return dict(name=self.name, email=self.email, fullname = self.fullname)
+
+
 class Collection(db.Model):
 
     __tablename__ = 'collections'

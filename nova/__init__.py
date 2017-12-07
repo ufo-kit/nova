@@ -91,6 +91,7 @@ api.add_resource(resources.AccessRequest, '/api/datasets/<owner>/<dataset>/reque
 api.add_resource(resources.DirectAccess, '/api/datasets/<owner>/<dataset>/request/<request_id>')
 api.add_resource(resources.Search, '/api/search')
 api.add_resource(resources.UserBookmarks, '/api/user/<username>/bookmarks')
+api.add_resource(resources.UserSearch, '/api/user/search')
 api.add_resource(resources.Notifications, '/api/notifications')
 api.add_resource(resources.Notification, '/api/notification/<notification_id>')
 api.add_resource(resources.Connections, '/api/user/<user_id>/connections')

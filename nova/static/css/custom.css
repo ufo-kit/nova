@@ -318,3 +318,29 @@ a:hover {
   font-size: 10px;
 }
 
+
+.mti-selected {
+  display: inline-block;
+}
+
+.mti-added{
+  margin: 5px;
+  background-color: lightgray;
+  padding: 0px 5px;
+  border-radius: 5px;
+  display: inline-block;
+}
+
+.mti-options {
+  width: 100%;
+  padding: 5px;
+}
+
+.mti-option {
+  border-bottom: 1px solid #ddd;
+  margin: 4px 0;
+}
+
+.mti-add-button {
+  float: right;
+}

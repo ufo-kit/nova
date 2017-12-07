@@ -11,6 +11,20 @@ def create_collection(name, user, description=None):
     return collection
 
 
+def create_group(creator, name, description=None, users=None):
+    group = models.Group(name=name, description=description)
+    creator_membership = models.Membership(user=creator, group=group, is_creator=True, is_admin = True)
+    additions = [group, creator_membership]
+    if users:
+        for u in users:
+            user_object = models.User.query.filter(models.User.name == u).first()
+            if user_object:
+                membership = models.Membership(user=user_object, group=group)
+                additions.append(membership)
+    db.session.add_all(additions)
+    db.session.commit()
+
+
 def create_dataset(dtype, name, user, collection, path=None, **kwargs):
     abspath = fs.create_workspace(user, collection, name, path)
     dataset = dtype(name=name, path=abspath, collection=collection, **kwargs)
