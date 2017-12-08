@@ -325,8 +325,9 @@ a:hover {
 
 .mti-added{
   margin: 5px;
+  margin-left: 0px;
   background-color: lightgray;
-  padding: 0px 5px;
+  padding: 3px 10px;
   border-radius: 5px;
   display: inline-block;
 }
@@ -343,4 +344,8 @@ a:hover {
 
 .mti-add-button {
   float: right;
+}
+
+.form-group>label {
+  text-align:right;
 }

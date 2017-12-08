@@ -25,20 +25,18 @@
     </script>
     <script type="text/x-template" id="multi-text-input-template">
       <transition name="mti">
-        <div class="mti-wrapper">
-          <div class="mti-input-container">
-            <div class="mti-selected"><slot name="mti-selected"></slot></div>
-            <div class="mti-input"><slot name="mti-input-field"></slot></div>
-            <div class="mti-options"><slot name="mti-options"></slot></div>
-          </div>
+        <div class="mti-input-container">
+          <slot name="mti-selected"></slot>
+          <slot name="mti-input-field"></slot>
+          <slot name="mti-options"></slot>
         </div>
       </transition>
     </script>
     <script type="text/x-template" id="mti-added-template">
       <transition name="mti-added">
         <div class="mti-added">
-          <p><slot name="mti-added-name"></slot>
-          <slot name="mti-added-remove"></slot></p>
+          <slot name="mti-added-name"></slot>
+          <slot name="mti-added-remove"></slot>
         </div>
       </transition>
     </script>
