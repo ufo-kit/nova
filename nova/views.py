@@ -36,6 +36,7 @@ def login_required(admin=False):
 class LoginForm(Form):
     name = StringField('name', validators=[DataRequired()])
     password = StringField('password', validators=[DataRequired()])
+    redirect = HiddenField('redirect')
 
 
 class SignupForm(Form):
@@ -115,25 +116,30 @@ def load_user(user_id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    if request.method == 'GET':
+        redirect_request = request.args.get('next')
+        return render_template('user/login.html', form=form, redirect_to=redirect_request, failed=False)
+    elif request.method == 'POST':
+        redirect_to = form.redirect.data
+        if form.validate_on_submit():
+            name = form.name.data
+            user = db.session.query(User).filter(User.name == name).first()
+            if user is None:
+                return render_template('user/login.html', form=form, error="User {} does not exist.".format(name), redirect_to=redirect_to), 401
 
-    if form.validate_on_submit():
-        name = form.name.data
-        user = db.session.query(User).filter(User.name == name).first()
+            if user.password == form.password.data:
+                login_user(user)
+                flash('Logged in successfully')
+                if not redirect_to:
+                    response = app.make_response(redirect(url_for('index')))
+                else:
+                    response = app.make_response(redirect(redirect_to))
+                response.set_cookie('token', user.token)
+                return response
+            return render_template('user/login.html', form=form, error="User name and password do not match.", redirect_to=redirect_to), 401
+        return render_template('user/login.html', form=form, error="Bad Request", redirect_to=redirect_to), 400
+    return None
 
-        if user is None:
-            return render_template('user/login.html', form=form, error="User {} does not exist.".format(name)), 401
-
-        if user.password == form.password.data:
-            login_user(user)
-
-            flash('Logged in successfully')
-            response = app.make_response(redirect(url_for('index')))
-            response.set_cookie('token', user.token)
-            return response
-        else:
-            return render_template('user/login.html', form=form, error="User name and password do not match."), 401
-
-    return render_template('user/login.html', form=form, failed=False)
 
 
 @app.route('/logout')
