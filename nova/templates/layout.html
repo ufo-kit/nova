@@ -172,9 +172,11 @@
         Greifswald.</p>
       </div>
     </footer>
+    {% if current_user.is_authenticated %}
     <script>
       System.import('topbar.js')
     </script>
+    {% endif %}
     </div>
   </body>
 </html>
