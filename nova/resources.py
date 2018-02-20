@@ -314,7 +314,7 @@ class Bookmarks(Resource):
     def get(self, owner, dataset, user=None):
         bookmark = db.session.query(models.Bookmark).join(models.Dataset).\
                 join(models.Permission).join(models.User).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(func.lower(models.Dataset.name) == func.lower(dataset.name)).\
                 filter(models.User.name == owner).\
                 filter(models.Bookmark.user == user).first()
         return bookmark.to_dict() if bookmark else {}

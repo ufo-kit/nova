@@ -26,7 +26,7 @@
     <div class="col-sm-9">
       <h3 class="dataset-link">
         <a href="{{ url_for("show_collection", collection_name=permission.dataset.collection.name) }}">{{ permission.dataset.collection.name }}</a> /
-        <a href="{{ url_for("show_dataset", user=permission.owner, dataset=permission.dataset.name) }}">{{ permission.dataset.name }}</a>
+        <a href="{{ url_for("show_dataset", user=permission.owner.name, dataset=permission.dataset.name) }}">{{ permission.dataset.name }}</a>
       </h3>
       <p>
        {% if permission.dataset.description %}
