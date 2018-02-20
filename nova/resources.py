@@ -147,7 +147,7 @@ class Dataset(Resource):
     def head(self, owner, dataset, user=None):
         dataset = db.session.query(models.Dataset).join(models.Permission).\
                 join(models.User).filter(models.User.name == owner).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Dataset.name == dataset).\
                 first()
         if dataset is None:
             abort(404, "Dataset does not exist for this user")
@@ -156,7 +156,7 @@ class Dataset(Resource):
     def get(self, owner, dataset, user=None):
         dataset = db.session.query(models.Dataset).join(models.Permission).\
                 join(models.User).filter(models.User.name == owner).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Dataset.name == dataset).\
                 first()
 
         if dataset is None:
@@ -169,7 +169,7 @@ class Dataset(Resource):
             abort(403, "PUT forbidden from this user for this dataset")
         dataset = db.session.query(models.Dataset).join(models.Permission).\
                 filter(models.Permission.owner == user).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Dataset.name == dataset).\
                 first()
 
         dataset.closed = request.form.get('closed', False)
@@ -181,7 +181,7 @@ class Dataset(Resource):
             abort(403, "PATCH forbidden from this user for this dataset")
         dataset = db.session.query(models.Dataset).\
                 filter(models.Permission.owner == user).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Dataset.name == dataset).\
                 first()
 
         if dataset is None:
@@ -206,7 +206,7 @@ class DeriveDataset(Resource):
         permission_list = [permissions['read'], permissions['interact'], permissions['fork']]
         dataset = db.session.query(models.Dataset).join(models.Permission).\
                 join(models.User).filter(models.User.name == owner).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Dataset.name == dataset).\
                 first()
         if not dataset:
             abort(404, error="Dataset `{}' does not exist".format(dataset))
@@ -221,7 +221,7 @@ class Data(Resource):
 
     def get(self, dataset, user=None):
         dataset = db.session.query(models.Dataset).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Dataset.name == dataset).\
                 filter(models.Permission.owner == user).first()
 
         if dataset is None:
@@ -243,7 +243,7 @@ class Data(Resource):
 
     def post(self, dataset, user=None):
         dataset = db.session.query(models.Dataset).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Dataset.name == dataset).\
                 filter(models.Permission.owner == user).first()
 
         f = io.BytesIO(request.data)
@@ -314,7 +314,7 @@ class Bookmarks(Resource):
     def get(self, owner, dataset, user=None):
         bookmark = db.session.query(models.Bookmark).join(models.Dataset).\
                 join(models.Permission).join(models.User).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset.name)).\
+                filter(models.Dataset.name == dataset).\
                 filter(models.User.name == owner).\
                 filter(models.Bookmark.user == user).first()
         return bookmark.to_dict() if bookmark else {}
@@ -325,7 +325,7 @@ class Bookmarks(Resource):
             return 200
 
         dataset, permission = db.session.query(models.Dataset, models.Permission).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Dataset.name == dataset).\
                 first()
 
         if not permission.can_interact:
@@ -350,7 +350,7 @@ class Bookmarks(Resource):
     def delete(self, owner, dataset, user=None):
         dataset, bookmark = db.session.query(models.Dataset, models.Bookmark).\
                 join(models.Permission).join(models.User).\
-                filter(func.lower(models.Dataset.name) == func.lower(dataset)).\
+                filter(models.Dataset.name == dataset).\
                 filter(models.User.name == owner).first()
 
         if dataset is None or bookmark is None:
@@ -679,7 +679,7 @@ class CheckDatasetNameAvailability(Resource):
         parser.add_argument('name', type=str, required=True)
         name = parser.parse_args()['name']
         dataset = db.session.query(models.Dataset).\
-            filter(func.lower(models.Dataset.name) == func.lower(name)).first()
+            filter(models.Dataset.name == name).first()
         return {'available': dataset == None}, 200
 
 
@@ -699,7 +699,7 @@ class UserSearch(Resource):
         if queryString == '' or number <=0:
             return []
         results = db.session.query(models.User).\
-            filter(func.lower(models.User.name).contains(func.lower(queryString))).\
+            filter(models.User.name.contains(queryString)).\
             filter(not_(models.User.name.in_(excl))).limit(number).all()
         json_results = []
         for r in results:
