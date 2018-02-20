@@ -320,7 +320,7 @@ class Bookmarks(Resource):
         return bookmark.to_dict() if bookmark else {}
 
     def post(self, owner, dataset, user=None):
-        if self.get(dataset, user):
+        if self.get(user.name, dataset):
             # bookmark exists already
             return 200
 
