@@ -140,7 +140,7 @@ class Datasets(Resource):
         db.session.add_all([dataset, permission])
         db.session.commit()
         search.insert(dataset)
-        return dict(id=dataset.id)
+        return dict(id=dataset.id), 201
 
 class Dataset(Resource):
     method_decorators = [authenticate]

@@ -5,7 +5,7 @@ from nova import app, db, fs, models
 
 def create_collection(name, user, description=None):
     collection = models.Collection(name=name, description=description)
-    permission = models.Permission(owner=user, collection=collection)
+    permission = models.Permission(owner=user)
     db.session.add_all([collection, permission])
     db.session.commit()
     return collection
