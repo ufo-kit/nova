@@ -150,7 +150,7 @@ class Dataset(Resource):
                 filter(models.Dataset.name == dataset).\
                 first()
         if dataset is None:
-            abort(404, "Dataset does not exist for this user")
+            abort(404, error="Dataset does not exist for this user")
         return 200
 
     def get(self, owner, dataset, user=None):
@@ -160,13 +160,13 @@ class Dataset(Resource):
                 first()
 
         if dataset is None:
-            abort(404, "Dataset does not exist for this user")
+            abort(404, error="Dataset does not exist for this user")
 
         return dataset.to_dict()
 
     def put(self, owner, dataset, user=None):
         if user.name != owner:
-            abort(403, "PUT forbidden from this user for this dataset")
+            abort(403, error="PUT forbidden from this user for this dataset")
         dataset = db.session.query(models.Dataset).join(models.Permission).\
                 filter(models.Permission.owner == user).\
                 filter(models.Dataset.name == dataset).\
@@ -178,17 +178,17 @@ class Dataset(Resource):
     def patch(self, owner, dataset, user=None):
         payload = request.get_json()
         if user.name != owner:
-            abort(403, "PATCH forbidden from this user for this dataset")
+            abort(403, error="PATCH forbidden from this user for this dataset")
         dataset = db.session.query(models.Dataset).\
                 filter(models.Permission.owner == user).\
                 filter(models.Dataset.name == dataset).\
                 first()
 
         if dataset is None:
-            abort(404, "Dataset does not exist for this user")
+            abort(404, error="Dataset does not exist for this user")
 
         if not 'description' in payload:
-            abort(400, "Cannot modify attributes other than description")
+            abort(400, error="Cannot modify attributes other than description")
 
         # TODO: sanitize input
         dataset.description = payload['description']
@@ -329,7 +329,7 @@ class Bookmarks(Resource):
                 first()
 
         if not permission.can_interact:
-            abort(401, "Unauthorised permissions")
+            abort(401, error="Unauthorised permissions")
 
         bookmark = models.Bookmark(user, dataset)
         db.session.add(bookmark)
@@ -354,7 +354,7 @@ class Bookmarks(Resource):
                 filter(models.User.name == owner).first()
 
         if dataset is None or bookmark is None:
-            abort(404, "Dataset or Bookmark not found")
+            abort(404, error="Dataset or Bookmark not found")
 
         db.session.delete(bookmark)
         db.session.commit()
@@ -377,7 +377,7 @@ class Reviews(Resource):
                 first()
 
         if not permission.can_interact:
-            abort(401, "Unauthorised Permissions")
+            abort(401, error="Unauthorised Permissions")
 
         review = db.session.query(models.Review).\
                 filter(models.Review.user == user).\
@@ -411,7 +411,7 @@ class Reviews(Resource):
                 first()
 
         if review is None:
-            abort(404, "Review not found")
+            abort(404, error="Review not found")
 
         db.session.delete(review)
         db.session.commit()
@@ -498,7 +498,7 @@ class Connection(Resource):
         connection = logic.get_connection(from_id, to_id)
         if connection['exists']:
             return connection
-        abort(404, "Connection does not exist")
+        abort(404, error="Connection does not exist")
 
     def put(self, from_id, to_id, option):
         connection = logic.get_connection(from_id, to_id)
@@ -510,7 +510,7 @@ class Connection(Resource):
             connection = logic.create_connection(from_id, to_id)
             if connection:
                 return 'Object Created', 201
-        abort(500, 'Failed')
+        abort(500, error='Failed')
 
 
 class Connections(Resource):
@@ -609,7 +609,7 @@ class Permission(Resource):
         filter(models.Dataset.name == dataset_name).first()
 
         if not permission:
-            abort(404, "Permissions do not exist")
+            abort(404, error="Permissions do not exist")
 
         new_permissions = request.get_json()
         permission.can_read = new_permissions['read']
