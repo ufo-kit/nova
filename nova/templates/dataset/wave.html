@@ -1,0 +1,67 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Wave</title>
+</head>
+
+<body style="background-color: #000;">
+    <div id="container" style="width:256px; height: 256px; background-color: #aaa;"></div>
+    <script
+        src="https://code.jquery.com/jquery-3.3.1.min.js"
+        crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/wave/three.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/wave/TrackballControls.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/wave/ejs.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/wave/volumeRaycaster.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/wave/stats.min.js') }}"></script>
+    <script>
+        function beginWave(slicemaps) {
+            config = {
+                "dom_container": "container",
+                "slicemaps_paths": slicemaps,
+                "steps" : 144,
+                "shader_name": "secondPassSoebel",
+                "slices_range": [0, 255],
+                "row_col": [16, 16],
+                "renderer_size": [256, 256],
+                "renderer_canvas_size": ['*','*'],
+            };
+
+            rcl2 = new VRC.VolumeRaycaster(config);
+        }
+        function sendContinuousGetToLocationUntilDone(loc) {
+            $.ajax(loc, {
+                method:"GET",
+                crossDomain:true
+            }).done(function(data, textStatus, jqXHR) {
+                if (data.status == 'running') {
+                    setTimeout(function() {
+                        sendContinuousGetToLocationUntilDone(loc);
+                    }, 2000);
+                } else {
+                    $location = jqXHR.getResponseHeader('location');
+                    slicemaps = [$location];
+                    beginWave(slicemaps)
+                }
+            });
+        }
+        $( document ).ready(function() {
+            $params = JSON.stringify({
+                "token": "{{token|safe}}",
+                "user": "{{owner}}",
+                "dataset": "{{dataset}}"
+            });
+            $.ajax("http://localhost:5001/maps", {
+                data:$params, 
+                contentType:"application/json", 
+                method:"POST", crossDomain:true, 
+            }).done(function(data, textStatus, jqXHR){
+                $location = jqXHR.getResponseHeader('location');
+                sendContinuousGetToLocationUntilDone($location)
+            }).fail(function() { alert( "An error occured" ); });
+         });
+    </script>
+</body>
+</html>

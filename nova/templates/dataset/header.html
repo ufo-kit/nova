@@ -50,6 +50,7 @@
 – <a href="{{ url_for("show_collection", collection_name=dataset.collection.name) }}">{{ dataset.collection.name }}</a> / {{ dataset.name }}
         <i class="clickable pull-right" :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }" @click="bookmark"></i>
         <i class="clickable pull-right fa fa-clone" @click="beginDatasetDerive"></i>
+        <i class="clickable pull-right fa fa-eye" @click="openWave"></i>
       </h2>
     </div>
   </div>

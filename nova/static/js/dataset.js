@@ -93,7 +93,11 @@ var meta = new Vue ({
           }
         })
       }
-    }
+    },
+    openWave: function () {
+        window.open('/wave?user='+user_name+'&dataset='+dataset_name,'_blank',
+        'location=no, width=275, height=275, scrollbars=no, status=no')
+    },
   }
 })
 

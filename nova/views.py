@@ -553,3 +553,12 @@ def create_group():
         logic.create_group(current_user, form.name.data, description=form.description.data, users=user_list)
         return redirect(url_for('index'))
     return render_template('group/create.html', form=form)
+
+
+@app.route('/wave')
+@login_required(admin=False)
+def wave_it():
+    token = current_user.token
+    owner = request.args['user']
+    dataset_name = request.args['dataset']
+    return render_template('dataset/wave.html', owner=owner, dataset=dataset_name, token=token) 
