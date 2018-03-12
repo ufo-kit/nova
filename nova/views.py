@@ -3,7 +3,7 @@ import io
 import re
 from functools import wraps
 from nova import (app, db, login_manager, fs, logic, memtar, tasks, models, es,
-        users, search)
+        users, search, resources)
 from nova.models import (User, Collection, Dataset, SampleScan, Genus, Family,
         Order, Notification, Process, Bookmark, Permission,
         AccessRequest, DirectAccess)
@@ -519,10 +519,13 @@ def show_dataset(user, dataset, path=''):
     dirs = fs.get_dirs(dataset, path) if list_files else None
     files = sorted(fs.get_files(dataset, path)) if list_files else None
 
+    service = resources.services.get('thumbnail-server')
+    thumbnail_url = os.path.join(service['url'], user.name, dataset.name) if service else None
+
     params = dict(user=user, collection=dataset.collection, dataset=dataset,
                   parents=parents, children=children, path=path,
                   list_files=list_files, files=files, dirs=dirs, origin=[],
-                  permissions=dataset_permissions)
+                  permissions=dataset_permissions, thumbnail_url=thumbnail_url)
     return render_template('dataset/detail.html', **params)
 
 

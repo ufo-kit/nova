@@ -10,6 +10,8 @@
   <div class="col-xs-2">
     {% if dataset.has_thumbnail %}
     <img class="img-responsive" width="64" height="64" src="{{ url_for("show_dataset", user=user.name, dataset=dataset.name, path='.thumb.jpg') }}"/>
+    {% elif thumbnail_url %}
+    <img class="img-responsive" src="{{ thumbnail_url }}?size=64"/>
     {% else %}
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
     {% endif %}
@@ -37,6 +39,8 @@
   <div class="col-md-2">
     {% if dataset.has_thumbnail %}
     <img class="img-responsive" width="128" height="128" src="{{ url_for("show_dataset", user=user, dataset=dataset.name, path='.thumb.jpg') }}"/>
+    {% elif thumbnail_url %}
+    <img class="img-responsive" src="{{ thumbnail_url }}?size=128"/>
     {% else %}
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=128&h=128"/>
     {% endif %}
