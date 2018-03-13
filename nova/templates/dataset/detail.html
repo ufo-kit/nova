@@ -54,7 +54,7 @@
       <textarea class="nova-textarea" v-model="text"></textarea>
     </div>
     {% endraw %}
-    {% if user_name == current_user.name %}
+    {% if user.name == current_user.name %}
     {% raw %}
     <div class="btn-group" role="group">
       <button class="btn btn-xs btn-default" @click="onEdit" v-if="!editing">Edit</button>
