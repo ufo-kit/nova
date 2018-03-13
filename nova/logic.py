@@ -53,19 +53,6 @@ def derive_dataset(dtype, dataset, user, name, path=None, permissions=[True,True
     return derived_dataset
 
 
-def import_sample_scan(name, user, path, description=None):
-    collection = models.Collection(name=name, description=description)
-    dataset = models.SampleScan(name=name, path=path, collection=collection,
-            genus=None, family=None, order=None)
-    dataset_permission = models.Permission(owner=user, dataset=dataset,
-                                           can_read=True, can_interact=True,
-                                           can_fork=False)
-    db.session.add_all([collection, dataset, collection_permission,
-                       dataset_permission])
-    db.session.commit()
-    return dataset
-
-
 def get_connection(from_id, to_id):
     connection = db.session.query(models.Connection).\
                    filter(models.Connection.from_id == from_id).\

@@ -71,31 +71,13 @@
 <div class="row">
   <div class="col-lg-12">
     <div class="page-header">
-      <h3>Data store</h3>
+      <h3>Search</h3>
     </div>
   </div>
 </div>
 <div class="row">
   <div class="col-lg-12">
-    <form class="form-inline" method="POST" action="{{ url_for("import_submission") }}">
-      <div class="form-group">
-        <label for="inputPathTemplate" class="control-label">Path</label>
-        <input type="text" id="inputPathTemplate" name="template" class="form-control">
-      </div>
-      <button type="submit" class="btn btn-primary">Import</button>
-    </form>
-  </div>
-  <div class="col-lg-12">
-    <form class="form-inline" method="POST" action="{{ url_for("update") }}">
-      <div class="form-group">
-        <label for="inputPathTemplate" class="control-label">CSV</label>
-        <input type="text" id="inputPathTemplate" name="csv" class="form-control">
-      </div>
-      <button type="submit" class="btn btn-primary">Update</button>
-    </form>
-  </div>
-  <div class="col-lg-12">
-    <a href="{{ url_for("reindex") }}">Re-index search</a>
+    <a href="{{ url_for("reindex") }}" class="btn btn-primary">Re-index</a>
   </div>
 </div>
 {% endblock %}

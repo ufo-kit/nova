@@ -75,10 +75,6 @@ class SearchForm(Form):
     query = StringField('query', validators=[DataRequired()])
 
 
-class ImportForm(Form):
-    path_template = StringField('template', validators=[DataRequired()])
-
-
 class InvalidUsage(Exception):
     status_code = 400
 
@@ -263,25 +259,6 @@ def create_collection():
         logic.create_collection(form.name.data, current_user, form.description.data)
         return redirect(url_for('index'))
     return render_template('collection/create.html', form=form)
-
-
-@app.route('/import', methods=['POST'])
-@login_required(admin=False)
-def import_submission():
-    form = ImportForm()
-
-    # FIXME: again this is not working
-    # if form.validate_on_submit():
-    #     pass
-    template = request.form['template']
-
-    # XXX: incredible danger zone!
-    for entry in (e for e in os.listdir(template) if os.path.isdir(os.path.join(template, e))):
-        path = os.path.join(template, entry)
-        app.logger.info("Importing {}".format(entry))
-        logic.import_sample_scan(entry, current_user, path)
-
-    return redirect(url_for('index'))
 
 
 @app.route('/update', methods=['POST'])
