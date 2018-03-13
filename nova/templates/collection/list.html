@@ -14,6 +14,8 @@
   <div class="col-lg-1">
     {% if dataset.has_thumbnail %}
     <img class="img-responsive" width="64" height="64" src="{{ url_for("show_dataset", user=dataset.permissions[0].owner.name, dataset=dataset.name, path='.thumb.jpg') }}"/>
+    {% elif thumbnail_service %}
+    <img class="img-responsive" src="{{ thumbnail_service.url }}/{{ dataset.permissions.owner.name}}/{{ dataset.name}}?size=64&token={{ current_user.token }}"/>
     {% else %}
     <img class="img-responsive" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=%C3%97&w=64&h=64"/>
     {% endif %}

@@ -461,8 +461,12 @@ def process(dataset_id):
 def show_collection(collection_name):
     collection= Collection.query.\
         filter(Collection.name == collection_name).first()
+
     if collection:
-        return render_template('collection/list.html', collection=collection)
+        service = resources.services.get('thumbnail-server')
+        return render_template('collection/list.html', collection=collection,
+                thumbnail_service=service)
+
     abort(404, 'collection {} not found'.format(collection_name))
 
 
