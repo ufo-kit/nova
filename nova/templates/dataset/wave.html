@@ -1,31 +1,45 @@
-<!doctype html>
-
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Wave</title>
-</head>
-
-<body style="background-color: #000;">
-    <div id="container" style="width:256px; height: 256px; background-color: #aaa;"></div>
-    <script
-        src="https://code.jquery.com/jquery-3.3.1.min.js"
-        crossorigin="anonymous"></script>
-    <script src="{{ url_for('static', filename='js/wave/three.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/wave/TrackballControls.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/wave/ejs.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/wave/volumeRaycaster.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/wave/stats.min.js') }}"></script>
-    <script>
+{% extends "layout.html" %}
+{% block body %}
+  <div class="col-md-12">
+    <div class="page-header">
+      <h2>
+{% if dataset.type == "samplescan" %}
+      Sample scan
+{% elif dataset.type == "volume" %}
+      Volume
+{% else %}
+      Information
+{% endif %}
+      - <a href="{{ url_for("show_collection", collection_name=collection) }}">{{ collection }}</a> / {{ dataset }}
+        <i class="clickable pull-right" :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }" @click="bookmark"></i>
+        <i class="clickable pull-right fa fa-clone" @click="beginDatasetDerive"></i>
+        <i class="clickable pull-right fa fa-eye" @click="openWave"></i>
+      </h2>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div id="wave-container">
+      <img id="loading-wave" src={{ url_for('static', filename='img/spinner.gif')}} />
+    </div>
+    <div id="wave-controls" class="col-md-12">
+      <h3>Controls</h3>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='js/wave/three.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/wave/TrackballControls.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/wave/ejs.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/wave/volumeRaycaster.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/wave/stats.min.js') }}"></script>
+  <script>
         function beginWave(slicemaps) {
             config = {
-                "dom_container": "container",
+                "dom_container": "wave-container",
                 "slicemaps_paths": slicemaps,
                 "steps" : 144,
                 "shader_name": "secondPassSoebel",
                 "slices_range": [0, 255],
                 "row_col": [16, 16],
-                "renderer_size": [256, 256],
+                "renderer_size": [512, 512],
                 "renderer_canvas_size": ['*','*'],
             };
 
@@ -43,25 +57,26 @@
                 } else {
                     $location = jqXHR.getResponseHeader('location');
                     slicemaps = [$location];
+                    $( "#loading-wave" ).remove();
                     beginWave(slicemaps)
                 }
             });
         }
         $( document ).ready(function() {
+            $("#wave-container").height($("#wave-container").width());
             $params = JSON.stringify({
                 "token": "{{token|safe}}",
                 "user": "{{owner}}",
                 "dataset": "{{dataset}}"
             });
             $.ajax("http://localhost:5001/maps", {
-                data:$params, 
-                contentType:"application/json", 
-                method:"POST", crossDomain:true, 
+                data:$params,
+                contentType:"application/json",
+                method:"POST"
             }).done(function(data, textStatus, jqXHR){
                 $location = jqXHR.getResponseHeader('location');
                 sendContinuousGetToLocationUntilDone($location)
             }).fail(function() { alert( "An error occured" ); });
          });
-    </script>
-</body>
-</html>
+  </script>
+{% endblock %}

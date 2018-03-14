@@ -349,3 +349,21 @@ a:hover {
 .form-group>label {
   text-align:right;
 }
+
+#wave-container {
+  position: absolute;
+  float:left;
+  border: 1px solid #ddd;
+  height:512px;
+  width: 512px;
+  padding:0;
+}
+
+#loading-wave {
+  display: block;
+  margin: 156px auto;
+}
+
+#wave-controls {
+  padding-left: 560px;
+}

@@ -561,4 +561,6 @@ def wave_it():
     token = current_user.token
     owner = request.args['user']
     dataset_name = request.args['dataset']
-    return render_template('dataset/wave.html', owner=owner, dataset=dataset_name, token=token) 
+    collection_name = request.args['collection']
+    return render_template('dataset/wave.html', owner=owner, dataset=dataset_name,
+                           collection=collection_name, token=token) 
