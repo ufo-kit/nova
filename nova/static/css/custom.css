@@ -65,6 +65,7 @@ a:hover {
   font-size: smaller;
   color: #99979c;
   background-color: #222222;
+  z-index:150;
 }
 
 .clickable {
@@ -357,6 +358,7 @@ a:hover {
   height:512px;
   width: 512px;
   padding:0;
+  z-index:100;
 }
 
 #loading-wave {
@@ -366,4 +368,28 @@ a:hover {
 
 #wave-controls {
   padding-left: 560px;
+  z-index:50;
+}
+
+.wave-control>div {
+  margin-bottom: 20px;
+}
+
+.slider-range-input {
+  max-width: 100%;
+  width:40px;
+  text-align:center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.ui-slider {
+  margin-top: 10px;
+}
+
+#box-wireframe-input {
+  margin-left: 30px;
+  background-color: #fff;
+  width: 20px;
+  height: 20px;
 }

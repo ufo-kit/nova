@@ -1,36 +1,59 @@
-{% extends "layout.html" %}
-{% block body %}
-  <div class="col-md-12">
-    <div class="page-header">
-      <h2>
-{% if dataset.type == "samplescan" %}
-      Sample scan
-{% elif dataset.type == "volume" %}
-      Volume
-{% else %}
-      Information
-{% endif %}
-      - <a href="{{ url_for("show_collection", collection_name=collection) }}">{{ collection }}</a> / {{ dataset }}
-        <i class="clickable pull-right" :class="{ 'fa fa-bookmark': bookmarked, 'fa fa-bookmark-o': !bookmarked }" @click="bookmark"></i>
-        <i class="clickable pull-right fa fa-clone" @click="beginDatasetDerive"></i>
-        <i class="clickable pull-right fa fa-eye" @click="openWave"></i>
-      </h2>
-    </div>
-  </div>
+{% extends "dataset/header.html" %}
+{% block dataset_content %}
   <div class="col-md-12">
     <div id="wave-container">
       <img id="loading-wave" src={{ url_for('static', filename='img/spinner.gif')}} />
     </div>
     <div id="wave-controls" class="col-md-12">
       <h3>Controls</h3>
+      <div class="wave-control">
+        <p>Gray Value Threshold</p>
+        <div class="col-sm-12">
+          <div class="col-sm-2"><input type="text" class="slider-range-input pull-right" id="gray-threshold-min-input" /></div>
+          <div class="col-sm-8" id="slider-gray-threshold"></div>
+          <div class="col-sm-2"><input type="text" class="slider-range-input" id="gray-threshold-max-input" /></div>
+        </div>
+      </div>
+      <div class="wave-control">
+        <p>X axis slicing</p>
+        <div class="col-sm-12">
+          <div class="col-sm-2"><input type="text" class="slider-range-input pull-right" id="x-min-input" /></div>
+          <div class="col-sm-8" id="slider-X"></div>
+          <div class="col-sm-2"><input type="text" class="slider-range-input" id="x-max-input" /></div>
+        </div>
+      </div>
+      <div class="wave-control">
+        <p>Y axis slicing</p>
+        <div class="col-sm-12">
+          <div class="col-sm-2"><input type="text" class="slider-range-input pull-right" id="y-min-input" /></div>
+          <div class="col-sm-8" id="slider-Y"></div>
+          <div class="col-sm-2"><input type="text" class="slider-range-input" id="y-max-input" /></div>
+        </div>
+      </div>
+      <div class="wave-control">
+        <p>Z axis slicing</p>
+        <div class="col-sm-12">
+          <div class="col-sm-2"><input type="text" class="slider-range-input pull-right" id="z-min-input" /></div>
+          <div class="col-sm-8" id="slider-Z"></div>
+          <div class="col-sm-2"><input type="text" class="slider-range-input" id="z-max-input" /></div>
+        </div>
+      </div>
     </div>
   </div>
+  <script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
   <script src="{{ url_for('static', filename='js/wave/three.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/wave/TrackballControls.js') }}"></script>
   <script src="{{ url_for('static', filename='js/wave/ejs.js') }}"></script>
   <script src="{{ url_for('static', filename='js/wave/volumeRaycaster.js') }}"></script>
   <script src="{{ url_for('static', filename='js/wave/stats.min.js') }}"></script>
   <script>
+        var collection_name = '{{ collection }}';
+        var dataset_name = '{{ dataset.name }}';
+        var user_name = '{{ owner.name }}';
+        var is_wave = true;
         function beginWave(slicemaps) {
             config = {
                 "dom_container": "wave-container",
@@ -66,8 +89,8 @@
             $("#wave-container").height($("#wave-container").width());
             $params = JSON.stringify({
                 "token": "{{token|safe}}",
-                "user": "{{owner}}",
-                "dataset": "{{dataset}}"
+                "user": user_name,
+                "dataset": dataset_name
             });
             $.ajax("http://localhost:5001/maps", {
                 data:$params,
@@ -77,6 +100,112 @@
                 $location = jqXHR.getResponseHeader('location');
                 sendContinuousGetToLocationUntilDone($location)
             }).fail(function() { alert( "An error occured" ); });
+            $("#slider-gray-threshold").slider ({
+                range: true,
+                min: 0,
+                max: 255,
+                values: [0, 255],
+                slide: function( event, ui ) {
+                    $min = ui.values[0];
+                    $max = ui.values[1];
+                    rcl2.setGrayMinValue($min/255);
+                    $("#gray-threshold-min-input").val($min);
+                    rcl2.setGrayMaxValue($max/255);
+                    $("#gray-threshold-max-input").val($max);
+                }
+            });
+            $("#slider-X").slider ({
+                range: true,
+                min: 0,
+                max: 100,
+                values: [0, 100],
+                slide: function( event, ui ) {
+                    $min = ui.values[0];
+                    $max = ui.values[1];
+                    rcl2.setGeometryMinX($min/100);
+                    $("#x-min-input").val($min);
+                    rcl2.setGeometryMaxX($max/100);
+                    $("#x-max-input").val($max);
+                }
+            });
+            $("#slider-Y").slider ({
+                range: true,
+                min: 0,
+                max: 100,
+                values: [0, 100],
+                slide: function( event, ui ) {
+                    $min = ui.values[0];
+                    $max = ui.values[1];
+                    rcl2.setGeometryMinY($min/100);
+                    $("#y-min-input").val($min);
+                    rcl2.setGeometryMaxY($max/100);
+                    $("#y-max-input").val($max);
+                }
+            });
+            $("#slider-Z").slider ({
+                range: true,
+                min: 0,
+                max: 100,
+                values: [0, 100],
+                slide: function( event, ui ) {
+                    $min = ui.values[0];
+                    $max = ui.values[1];
+                    rcl2.setGeometryMinZ($min/100);
+                    $("#z-min-input").val($min);
+                    rcl2.setGeometryMaxZ($max/100);
+                    $("#z-max-input").val($max);
+                }
+            });
+            $("#gray-threshold-min-input").val(0);
+            $("#gray-threshold-max-input").val(255);
+            $("#x-min-input").val(0);
+            $("#x-max-input").val(100);
+            $("#y-min-input").val(0);
+            $("#y-max-input").val(100);
+            $("#z-min-input").val(0);
+            $("#z-max-input").val(100);
+            $("#gray-threshold-min-input").change(function() {
+                $values = [$(this).val(), $("#slider-gray-threshold" ).slider("option", "values")[1]];
+                $("#slider-gray-threshold").slider("option", "values", $values);
+                rcl2.setGrayMinValue($(this).val()/255);
+            });
+            $("#gray-threshold-max-input").change(function() {
+                $values = [$("#slider-gray-threshold" ).slider("option", "values")[0], $(this).val()];
+                $("#slider-gray-threshold").slider("option", "values", $values);
+                rcl2.setGrayMaxValue($(this).val()/255);
+            });
+            $("#x-min-input").change(function() {
+                $values = [$(this).val(), $("#slider-X" ).slider("option", "values")[1]];
+                $("#slider-X").slider("option", "values", $values);
+                rcl2.setGeometryMinX($(this).val()/100);
+            });
+            $("#x-max-input").change(function() {
+                $values = [$("#slider-X" ).slider("option", "values")[0], $(this).val()];
+                $("#slider-X").slider("option", "values", $values);
+                rcl2.setGeometryMaxX($(this).val()/100);
+            });
+            $("#y-min-input").change(function() {
+                $values = [$(this).val(), $("#slider-Y" ).slider("option", "values")[1]];
+                $("#slider-Y").slider("option", "values", $values);
+                rcl2.setGeometryMinY($(this).val()/100);
+            });
+            $("#y-max-input").change(function() {
+                $values = [$("#slider-Y" ).slider("option", "values")[0], $(this).val()];
+                $("#slider-Y").slider("option", "values", $values);
+                rcl2.setGeometryMaxY($(this).val()/100);
+            });
+            $("#z-min-input").change(function() {
+                $values = [$(this).val(), $("#slider-Z" ).slider("option", "values")[1]];
+                $("#slider-Z").slider("option", "values", $values);
+                rcl2.setGeometryMinZ($(this).val()/100);
+            });
+            $("#z-max-input").change(function() {
+                $values = [$("#slider-Z" ).slider("option", "values")[0], $(this).val()];
+                $("#slider-Z").slider("option", "values", $values);
+                rcl2.setGeometryMaxZ($(this).val()/100);
+            });
          });
   </script>
+  <script>System.import('dataset.js')</script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 {% endblock %}

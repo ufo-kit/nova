@@ -562,5 +562,34 @@ def wave_it():
     owner = request.args['user']
     dataset_name = request.args['dataset']
     collection_name = request.args['collection']
-    return render_template('dataset/wave.html', owner=owner, dataset=dataset_name,
+
+    user = User.query.filter(User.name == owner).first()
+    dataset = Dataset.query.join(Permission).filter(Dataset.name == dataset_name).\
+            filter(Permission.owner == user).first()
+    if dataset is None:
+        abort(404, 'dataset {} not found'.format(dataset))
+    dataset_permissions = {}
+    name = None
+    permission = Permission.query.filter(Permission.dataset == dataset).first()
+    if permission:
+        if permission.can_read == True or permission.owner==current_user:
+            dataset_permissions = {'read': permission.can_read,
+                           'interact': permission.can_interact,
+                           'fork': permission.can_fork}
+    if dataset_permissions == {}:
+        direct_access = DirectAccess.query.\
+                      filter(DirectAccess.dataset == dataset).\
+                      filter(DirectAccess.user == current_user).\
+                      filter(DirectAccess.can_read == True).first()
+        if direct_access is None:
+            return render_template('base/accessrequest.html', access_name='read',
+                                   user=user, dataset=dataset,
+                                   collection=dataset.collection,
+                                   item={'type':'dataset', 'name':dataset,
+                                         'description':dataset.description,
+                                         'id':dataset.id,})
+        dataset_permissions = {'read': direct_access.can_read,
+                               'interact': direct_access.can_interact,
+                               'fork': direct_access.can_fork}
+    return render_template('dataset/wave.html', owner=user, dataset=dataset,
                            collection=collection_name, token=token) 

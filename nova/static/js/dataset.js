@@ -18,7 +18,8 @@ var meta = new Vue ({
     derived_read: true,
     derived_interact: true,
     derived_fork: false,
-    derived_name_available: false
+    derived_name_available: false,
+    show_wave_option: true
   },
   created: function() {
     var user_id = this.token.split('.')[0]
@@ -30,6 +31,7 @@ var meta = new Vue ({
     this.$http.get(api_str, {headers: headers}).then((response) => {
       this.bookmarked = response.body.hasOwnProperty("collection")
     })
+    if (is_wave) this.show_wave_option = false
   },
   watch: {
     derived_dataset_name: function (value) {
