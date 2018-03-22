@@ -1,26 +1,7 @@
-/**
- * @classdesc
- * NamespaceKTV
- *
- * @class NamespaceKTV
- * @this NamespaceKTV;
- * @author sogimu@nxt.ru Aleksandr Lizin aka sogimu
- * @version 0.1
- *
- */
-
 (function(namespace) {
 
 	namespace.VRC = {};
 })(window);
-/**
- * @classdesc
- * EventDispatcher
- *
- * @class EventDispatcher
- * @this {RC.EventDispatcher}
- * @author sogimu@nxt.ru Aleksandr Lizin aka sogimu
- */
 
 (function(namespace) {
     var EventDispatcher = function(O) {
@@ -109,15 +90,6 @@
     namespace.EventDispatcher = EventDispatcher;
 
 })(window.VRC);
-/**
- * @classdesc
- * AdaptationManager
- *
- * @class AdaptationManager
- * @this {AdaptationManager}
- * @author sogimu@nxt.ru Aleksandr Lizin aka sogimu
- *
- */
 
 (function(namespace) {
     var AdaptationManager = function() {
@@ -272,15 +244,6 @@
     namespace.AdaptationManager = AdaptationManager;
 
 })(window.VRC);
-
-/**
- * @classdesc
- * Core
- *
- * @class Core
- * @this {Core}
- * @author sogimu@nxt.ru Aleksandr Lizin aka sogimu
- */
 
 (function(namespace) {
     var GeometryHelper = function() {
@@ -538,7 +501,6 @@ var Core = function(conf) {
             z: 0.0
         }
     };
-
 
     this._materialFirstPass = {};
     this._materialSecondPass = {};
@@ -880,72 +842,74 @@ Core.prototype._secondPassSetUniformValue = function(key, value) {
 };
 
 
-Core.prototype._setSlicemapsTextures = function(images) {
-    var textures = [];
-
-    for(var i=0; i<images.length; i++) {
-        var texture = new THREE.Texture( images[i] );
-        texture.magFilter = THREE.LinearFilter;
-        texture.minFilter = THREE.LinearFilter;
-        texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
-        texture.generateMipmaps = false;
-        texture.flipY = false;
-        texture.needsUpdate = true;
-
-        textures.push(texture);
-    };
-    this._slicemaps_textures = textures;
-};
-
-
-Core.prototype.setTransferFunctionByImage = function(image) {
-    this._transfer_function_as_image = image;
-    var texture = new THREE.Texture(image);
-    texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearFilter;
-    texture.wrapS = texture.wrapT =  THREE.ClampToEdgeWrapping;
-    texture.generateMipmaps = false;
-    texture.flipY = true;
-    texture.needsUpdate = true;
-
-    if(this._mode == "3d") {
-        this._secondPassSetUniformValue("uTransferFunction", texture);
-    }
-    this.onChangeTransferFunction.call(image);
-};
+	Core.prototype._setSlicemapsTextures = function(images) {
+	    var textures = [];
+            var loader = new THREE.TextureLoader();
+            loader.crossOrigin = '';
+            for(var i=0; i<images.length; i++) {
+                this_img = images[i];
+                loader.load(this_img.src, function (texture) {
+                    texture.magFilter = THREE.LinearFilter;
+		    texture.minFilter = THREE.LinearFilter;
+                    texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+		    texture.generateMipmaps = false;
+		    texture.flipY = false;
+		    texture.needsUpdate = true;
+                    textures.push(texture);
+	        }, function (err) { console.log("error");} );
+            }
+	    this._slicemaps_textures = textures;
+	};
 
 
-Core.prototype.setTransferFunctionByColors = function(colors) {
-    this._transfer_function_colors = colors;
+	Core.prototype.setTransferFunctionByImage = function(image) {
+	    this._transfer_function_as_image = image;
+	    var texture = new THREE.Texture(image);
+	    texture.magFilter = THREE.LinearFilter;
+	    texture.minFilter = THREE.LinearFilter;
+	    texture.wrapS = texture.wrapT =  THREE.ClampToEdgeWrapping;
+	    texture.generateMipmaps = false;
+	    texture.flipY = true;
+	    texture.needsUpdate = true;
 
-    var canvas = document.createElement('canvas');
-    canvas.width  = 512;
-    canvas.height = 2;
-
-    var ctx = canvas.getContext('2d');
-
-    var grd = ctx.createLinearGradient(0, 0, canvas.width -1 , canvas.height - 1);
-
-    for(var i=0; i<colors.length; i++) {
-        grd.addColorStop(colors[i].pos, colors[i].color);
-    }
-
-    ctx.fillStyle = grd;
-    ctx.fillRect(0,0,canvas.width ,canvas.height);
-    var image = new Image();
-    image.src = canvas.toDataURL();
-    image.style.width = 20 + " px";
-    image.style.height = 512 + " px";
-
-    var transferTexture = this.setTransferFunctionByImage(image);
-
-    this.onChangeTransferFunction.call(image);
-};
+	    if(this._mode == "3d") {
+		this._secondPassSetUniformValue("uTransferFunction", texture);
+	    }
+	    this.onChangeTransferFunction.call(image);
+	};
 
 
-Core.prototype.getTransferFunctionAsImage = function() {
-    return this._transfer_function_as_image;
-};
+	Core.prototype.setTransferFunctionByColors = function(colors) {
+	    this._transfer_function_colors = colors;
+
+	    var canvas = document.createElement('canvas');
+	    canvas.width  = 512;
+	    canvas.height = 2;
+
+	    var ctx = canvas.getContext('2d');
+
+	    var grd = ctx.createLinearGradient(0, 0, canvas.width -1 , canvas.height - 1);
+
+	    for(var i=0; i<colors.length; i++) {
+		grd.addColorStop(colors[i].pos, colors[i].color);
+	    }
+
+	    ctx.fillStyle = grd;
+	    ctx.fillRect(0,0,canvas.width ,canvas.height);
+	    var image = new Image();
+	    image.src = canvas.toDataURL();
+	    image.style.width = 20 + " px";
+	    image.style.height = 512 + " px";
+
+	    var transferTexture = this.setTransferFunctionByImage(image);
+
+	    this.onChangeTransferFunction.call(image);
+	};
+
+
+	Core.prototype.getTransferFunctionAsImage = function() {
+	    return this._transfer_function_as_image;
+	};
 
 
 Core.prototype.getBase64 = function() {
@@ -1022,7 +986,6 @@ Core.prototype.setZoom = function(x1, x2, y1, y2) {
 }
 
 Core.prototype.set2DTexture = function(urls) {
-    THREE.ImageUtils.crossOrigin = '';
     var chosen_cm = THREE.ImageUtils.loadTexture( urls[0] );
     var chosen_cm2 = THREE.ImageUtils.loadTexture( urls[1] );
 
@@ -5075,17 +5038,6 @@ window.VRC.Core.prototype._shaders.secondPassStevenTri = {
 		' gl_FragColor = accum;',
 		'}'].join("\n")
 };
-
-/**
- * @classdesc
- * RaycasterLib
- *
- * @class RaycasterLib
- * @this {RaycasterLib}
- * @author sogimu@nxt.ru Aleksandr Lizin aka sogimu
- * @version 0.1
- *
- */
 
 (function(namespace) {
     var VolumeRaycaster = function(config) {
