@@ -49,6 +49,7 @@
   <script src="{{ url_for('static', filename='js/wave/ejs.js') }}"></script>
   <script src="{{ url_for('static', filename='js/wave/volumeRaycaster.js') }}"></script>
   <script src="{{ url_for('static', filename='js/wave/stats.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/dragslider.js') }}"></script>
   <script>
         var collection_name = '{{ collection }}';
         var dataset_name = '{{ dataset.name }}';
@@ -81,7 +82,7 @@
                     $location = jqXHR.getResponseHeader('location');
                     slicemaps = [$location];
                     $( "#loading-wave" ).remove();
-                    beginWave(slicemaps)
+                    beginWave(slicemaps);
                 }
             });
         }
@@ -114,8 +115,9 @@
                     $("#gray-threshold-max-input").val($max);
                 }
             });
-            $("#slider-X").slider ({
+            $("#slider-X").dragslider ({
                 range: true,
+                rangeDrag: true,
                 min: 0,
                 max: 100,
                 values: [0, 100],
@@ -128,8 +130,9 @@
                     $("#x-max-input").val($max);
                 }
             });
-            $("#slider-Y").slider ({
+            $("#slider-Y").dragslider ({
                 range: true,
+                rangeDrag: true,
                 min: 0,
                 max: 100,
                 values: [0, 100],
@@ -142,8 +145,9 @@
                     $("#y-max-input").val($max);
                 }
             });
-            $("#slider-Z").slider ({
+            $("#slider-Z").dragslider ({
                 range: true,
+                rangeDrag: true,
                 min: 0,
                 max: 100,
                 values: [0, 100],
@@ -165,43 +169,59 @@
             $("#z-min-input").val(0);
             $("#z-max-input").val(100);
             $("#gray-threshold-min-input").change(function() {
-                $values = [$(this).val(), $("#slider-gray-threshold" ).slider("option", "values")[1]];
+                $max = $("#slider-gray-threshold" ).slider("option", "values")[1];
+                $(this).val($(this).val() < $max ?$(this).val():$max);
+                $values = [$(this).val(), $max];
                 $("#slider-gray-threshold").slider("option", "values", $values);
                 rcl2.setGrayMinValue($(this).val()/255);
             });
             $("#gray-threshold-max-input").change(function() {
-                $values = [$("#slider-gray-threshold" ).slider("option", "values")[0], $(this).val()];
+                $min = $("#slider-gray-threshold" ).slider("option", "values")[0];
+                $(this).val($(this).val() > $min ?$(this).val():$min);
+                $values = [$min, $(this).val()];
                 $("#slider-gray-threshold").slider("option", "values", $values);
                 rcl2.setGrayMaxValue($(this).val()/255);
             });
             $("#x-min-input").change(function() {
-                $values = [$(this).val(), $("#slider-X" ).slider("option", "values")[1]];
-                $("#slider-X").slider("option", "values", $values);
+                $max = $("#slider-X" ).dragslider("option", "values")[1];
+                $(this).val($(this).val() < $max ?$(this).val():$max);
+                $values = [$(this).val(), $max];
+                $("#slider-X").dragslider("option", "values", $values);
                 rcl2.setGeometryMinX($(this).val()/100);
             });
             $("#x-max-input").change(function() {
-                $values = [$("#slider-X" ).slider("option", "values")[0], $(this).val()];
-                $("#slider-X").slider("option", "values", $values);
+                $min = $("#slider-X" ).dragslider("option", "values")[0];
+                $(this).val($(this).val() > $min ?$(this).val():$min);
+                $values = [$min, $(this).val()];
+                $("#slider-X").dragslider("option", "values", $values);
                 rcl2.setGeometryMaxX($(this).val()/100);
             });
             $("#y-min-input").change(function() {
-                $values = [$(this).val(), $("#slider-Y" ).slider("option", "values")[1]];
-                $("#slider-Y").slider("option", "values", $values);
+                $max = $("#slider-Y" ).dragslider("option", "values")[1];
+                $(this).val($(this).val() < $max ?$(this).val():$max);
+                $values = [$(this).val(), $max];
+                $("#slider-Y").dragslider("option", "values", $values);
                 rcl2.setGeometryMinY($(this).val()/100);
             });
             $("#y-max-input").change(function() {
-                $values = [$("#slider-Y" ).slider("option", "values")[0], $(this).val()];
-                $("#slider-Y").slider("option", "values", $values);
+                $min = $("#slider-Y" ).dragslider("option", "values")[0];
+                $(this).val($(this).val() > $min ?$(this).val():$min);
+                $values = [$min, $(this).val()];
+                $("#slider-Y").dragslider("option", "values", $values);
                 rcl2.setGeometryMaxY($(this).val()/100);
             });
             $("#z-min-input").change(function() {
-                $values = [$(this).val(), $("#slider-Z" ).slider("option", "values")[1]];
-                $("#slider-Z").slider("option", "values", $values);
+                $max = $("#slider-Z" ).dragslider("option", "values")[1];
+                $(this).val($(this).val() < $max ?$(this).val():$max);
+                $values = [$(this).val(), $max];
+                $("#slider-Z").dragslider("option", "values", $values);
                 rcl2.setGeometryMinZ($(this).val()/100);
             });
             $("#z-max-input").change(function() {
-                $values = [$("#slider-Z" ).slider("option", "values")[0], $(this).val()];
-                $("#slider-Z").slider("option", "values", $values);
+                $min = $("#slider-Z" ).dragslider("option", "values")[0];
+                $(this).val($(this).val() > $min ?$(this).val():$min);
+                $values = [$min, $(this).val()];
+                $("#slider-Z").dragslider("option", "values", $values);
                 rcl2.setGeometryMaxZ($(this).val()/100);
             });
          });
