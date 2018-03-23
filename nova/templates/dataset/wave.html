@@ -38,6 +38,9 @@
           <div class="col-sm-2"><input type="text" class="slider-range-input" id="z-max-input" /></div>
         </div>
       </div>
+      <div class="wave-control">
+        <button type="button" class="btn btn-dark" id="res-zoom-button">Zoom to Sliced Volume</button>
+      </div>
     </div>
   </div>
   <script
@@ -51,10 +54,12 @@
   <script src="{{ url_for('static', filename='js/wave/stats.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dragslider.js') }}"></script>
   <script>
+        var current_x = 0, current_y = 0, current_z = 0, current_dim = 100;
         var collection_name = '{{ collection }}';
         var dataset_name = '{{ dataset.name }}';
         var user_name = '{{ owner.name }}';
         var is_wave = true;
+        var ops = {{ ops|tojson|safe if ops!=None else 'null' }};
         function beginWave(slicemaps) {
             config = {
                 "dom_container": "wave-container",
@@ -68,6 +73,11 @@
             };
 
             rcl2 = new VRC.VolumeRaycaster(config);
+            gt = ops["gray-thresholds"];
+            if (gt != null) {
+                rcl2.setGrayMinValue(gt[0]/255);
+                rcl2.setGrayMaxValue(gt[1]/255);
+            }
         }
         function sendContinuousGetToLocationUntilDone(loc) {
             $.ajax(loc, {
@@ -87,12 +97,28 @@
             });
         }
         $( document ).ready(function() {
+            $minGT = 0, $maxGT = 255;
             $("#wave-container").height($("#wave-container").width());
-            $params = JSON.stringify({
+            $params = {
                 "token": "{{token|safe}}",
                 "user": user_name,
-                "dataset": dataset_name
-            });
+                "dataset": dataset_name,
+                "subset": 2
+            };
+            if (ops != null) {
+                current_x = ops["origin"][0];
+                current_y = ops["origin"][1];
+                current_z =ops["origin"][2];
+                current_dim = ops["dimensions"][0];
+                $params["origin"] = [current_x/100, current_y/100, current_z/100];
+                $params["dimensions"] = [current_dim/100, current_dim/100];
+                $gt = ops["gray-thresholds"];
+                if ($gt != null) {
+                    $minGT = $gt[0];
+                    $maxGT = $gt[1];
+                }
+            }
+            $params = JSON.stringify($params);
             $.ajax("http://localhost:5001/maps", {
                 data:$params,
                 contentType:"application/json",
@@ -105,7 +131,7 @@
                 range: true,
                 min: 0,
                 max: 255,
-                values: [0, 255],
+                values: [$minGT, $maxGT],
                 slide: function( event, ui ) {
                     $min = ui.values[0];
                     $max = ui.values[1];
@@ -160,8 +186,8 @@
                     $("#z-max-input").val($max);
                 }
             });
-            $("#gray-threshold-min-input").val(0);
-            $("#gray-threshold-max-input").val(255);
+            $("#gray-threshold-min-input").val($minGT);
+            $("#gray-threshold-max-input").val($maxGT);
             $("#x-min-input").val(0);
             $("#x-max-input").val(100);
             $("#y-min-input").val(0);
@@ -223,6 +249,22 @@
                 $values = [$min, $(this).val()];
                 $("#slider-Z").dragslider("option", "values", $values);
                 rcl2.setGeometryMaxZ($(this).val()/100);
+            });
+            $("#res-zoom-button").click( function() {
+                $x = $("#x-min-input").val();
+                $y = $("#y-min-input").val();
+                $z = $("#z-min-input").val();
+                $X = $("#x-max-input").val();
+                $Y = $("#y-max-input").val();
+                $Z = $("#z-max-input").val();
+                $size = Math.min(Math.abs($X-$x), Math.abs($Y-$y), Math.abs($Z-$z));
+                $adj_size = Math.round($size*current_dim/100);
+                $adj_x = Math.round(current_x + $x*current_dim/100);
+                $adj_y = Math.round(current_y + $y*current_dim/100);
+                $adj_z = Math.round(current_z + $z*current_dim/100);
+                $vol = [$adj_x, $adj_y, $adj_z, $adj_size];
+                $gray = [$("#gray-threshold-min-input").val(), $("#gray-threshold-max-input").val()];
+                window.location.href='/wave?user='+user_name+'&dataset='+dataset_name+'&collection='+collection_name+'&vol='+$vol+'&gt='+$gray;
             });
          });
   </script>

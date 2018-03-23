@@ -562,7 +562,20 @@ def wave_it():
     owner = request.args['user']
     dataset_name = request.args['dataset']
     collection_name = request.args['collection']
-
+    grayThresholds = request.args.get('gt');
+    volume = request.args.get('vol');
+    ops = None
+    if volume:
+        v = map(int, volume.split(','))
+        if v and len(v) is 4:
+            ops = ({
+                'origin': [v[0],v[1],v[2]],
+                'dimensions': [v[3], v[3]]
+            })
+    if grayThresholds:
+        gt = map(int, grayThresholds.split(','))
+        if gt and len(gt) is 2:
+            ops['gray-thresholds'] = gt
     user = User.query.filter(User.name == owner).first()
     dataset = Dataset.query.join(Permission).filter(Dataset.name == dataset_name).\
             filter(Permission.owner == user).first()
@@ -592,4 +605,4 @@ def wave_it():
                                'interact': direct_access.can_interact,
                                'fork': direct_access.can_fork}
     return render_template('dataset/wave.html', owner=user, dataset=dataset,
-                           collection=collection_name, token=token) 
+                           collection=collection_name, token=token, ops=ops) 
