@@ -60,7 +60,8 @@
         var user_name = '{{ owner.name }}';
         var is_wave = true;
         var ops = {{ ops|tojson|safe if ops!=None else 'null' }};
-        function beginWave(slicemaps) {
+        var slicemaps = [];
+        function beginWave() {
             config = {
                 "dom_container": "wave-container",
                 "slicemaps_paths": slicemaps,
@@ -90,21 +91,36 @@
                     }, 2000);
                 } else {
                     $location = jqXHR.getResponseHeader('location');
-                    slicemaps = [$location];
-                    $( "#loading-wave" ).remove();
-                    beginWave(slicemaps);
+                    slicemaps.push($location);
+                    if (slicemaps.length == $subsets) {
+                        $( "#loading-wave" ).remove();
+                        beginWave(slicemaps);
+                    }
                 }
             });
         }
         $( document ).ready(function() {
             $minGT = 0, $maxGT = 255;
             $("#wave-container").height($("#wave-container").width());
-            $params = {
-                "token": "{{token|safe}}",
-                "user": user_name,
-                "dataset": dataset_name,
-                "subset": 2
-            };
+            $subsets = 3;
+            for (var i = 1; i <= $subsets; i++) {
+                $params = {
+                    "token": "{{token|safe}}",
+                    "user": user_name,
+                    "dataset": dataset_name,
+                    "subset": i
+                };
+                $params = JSON.stringify($params);
+                $.ajax("http://localhost:5001/maps", {
+                    data:$params,
+                    contentType:"application/json",
+                    method:"POST"
+                }).done(function(data, textStatus, jqXHR){
+                    $location = jqXHR.getResponseHeader('location');
+                    sendContinuousGetToLocationUntilDone($location);
+                }).fail(function() { alert( "An error occured" ); });
+            }
+
             if (ops != null) {
                 current_x = ops["origin"][0];
                 current_y = ops["origin"][1];
@@ -118,15 +134,6 @@
                     $maxGT = $gt[1];
                 }
             }
-            $params = JSON.stringify($params);
-            $.ajax("http://localhost:5001/maps", {
-                data:$params,
-                contentType:"application/json",
-                method:"POST"
-            }).done(function(data, textStatus, jqXHR){
-                $location = jqXHR.getResponseHeader('location');
-                sendContinuousGetToLocationUntilDone($location)
-            }).fail(function() { alert( "An error occured" ); });
             $("#slider-gray-threshold").slider ({
                 range: true,
                 min: 0,
