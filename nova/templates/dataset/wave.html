@@ -54,80 +54,75 @@
   <script src="{{ url_for('static', filename='js/wave/stats.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dragslider.js') }}"></script>
   <script>
-        var current_x = 0, current_y = 0, current_z = 0, current_dim = 100;
+        $slicemaps = []
         var collection_name = '{{ collection }}';
         var dataset_name = '{{ dataset.name }}';
         var user_name = '{{ owner.name }}';
         var is_wave = true;
-        var ops = {{ ops|tojson|safe if ops!=None else 'null' }};
-        var slicemaps = [];
+
+        $minGT = 0, $maxGT = 255;
+        $current_x = 0, $current_y = 0, $current_z = 0, $current_dim = 100;
+        $subsets = 1;
+        $ops = {{ ops|tojson|safe if ops!=None else 'null' }};
+        if ($ops != null) {
+            $current_x = $ops["origin"][0];
+            $current_y = $ops["origin"][1];
+            $current_z = $ops["origin"][2];
+            $current_dim = $ops["dimensions"][0];
+            $gt = $ops["gray-thresholds"];
+            if ($gt != null) {
+                $minGT = $gt[0];
+                $maxGT = $gt[1];
+            }
+        }
         function beginWave() {
-            config = {
+            $config = {
                 "dom_container": "wave-container",
-                "slicemaps_paths": slicemaps,
+                "slicemaps_paths": $slicemaps,
                 "steps" : 144,
                 "shader_name": "secondPassSoebel",
                 "slices_range": [0, 255],
                 "row_col": [16, 16],
                 "renderer_size": [512, 512],
-                "renderer_canvas_size": ['*','*'],
+                "renderer_canvas_size": ['*','*']
             };
 
-            rcl2 = new VRC.VolumeRaycaster(config);
-            if (ops != null) {
-                gt = ops["gray-thresholds"];
-                if (gt != null) {
-                    rcl2.setGrayMinValue(gt[0]/255);
-                    rcl2.setGrayMaxValue(gt[1]/255);
-                }
-            }
+            $vrc = new VRC.VolumeRaycaster($config);
+            $vrc.setGrayMinValue($minGT/255);
+            $vrc.setGrayMaxValue($maxGT/255);
         }
-        function sendContinuousGetToLocationUntilDone(loc) {
-            $.ajax(loc, {
+        function sendContinuousGetToLocationUntilDone($loc) {
+            $.ajax($loc, {
                 method:"GET",
                 crossDomain:true
             }).done(function(data, textStatus, jqXHR) {
                 if (data.status == 'running') {
                     setTimeout(function() {
-                        sendContinuousGetToLocationUntilDone(loc);
+                        sendContinuousGetToLocationUntilDone($loc);
                     }, 2000);
                 } else {
                     $location = jqXHR.getResponseHeader('location');
-                    slicemaps.push($location);
-                    if (slicemaps.length == $subsets) {
+                    $slicemaps.push($location);
+                    if ($slicemaps.length == $subsets) {
                         $( "#loading-wave" ).remove();
-                        beginWave(slicemaps);
+                        beginWave();
                     }
                 }
             });
         }
         $( document ).ready(function() {
-            $minGT = 0, $maxGT = 255;
             $("#wave-container").height($("#wave-container").width());
-            $subsets = 1;
-            if (ops != null) {
-                current_x = ops["origin"][0];
-                current_y = ops["origin"][1];
-                current_z = ops["origin"][2];
-                current_dim = ops["dimensions"][0];
-                $gt = ops["gray-thresholds"];
-                if ($gt != null) {
-                    $minGT = $gt[0];
-                    $maxGT = $gt[1];
-                }
-            }
-            $origin_array = [current_x/100, current_y/100, current_z/100];
-            $dimensions_array = [current_dim/100, current_dim/100];
-            for (var i = 1; i <= $subsets; i++) {
-                $params = {
+            $origin_array = [$current_x/100, $current_y/100, $current_z/100];
+            $dimensions_array = [$current_dim/100, $current_dim/100];
+            for ($i = 1; $i <= $subsets; $i++) {
+                $params = JSON.stringify({
                     "token": "{{token|safe}}",
                     "user": user_name,
                     "dataset": dataset_name,
-                    "subset": i,
+                    "subset": $i,
                     "origin": $origin_array,
                     "dimensions": $dimensions_array
-                };
-                $params = JSON.stringify($params);
+                });
                 $.ajax("http://localhost:5001/maps", {
                     data:$params,
                     contentType:"application/json",
@@ -146,9 +141,9 @@
                 slide: function( event, ui ) {
                     $min = ui.values[0];
                     $max = ui.values[1];
-                    rcl2.setGrayMinValue($min/255);
+                    $vrc.setGrayMinValue($min/255);
                     $("#gray-threshold-min-input").val($min);
-                    rcl2.setGrayMaxValue($max/255);
+                    $vrc.setGrayMaxValue($max/255);
                     $("#gray-threshold-max-input").val($max);
                 }
             });
@@ -161,9 +156,9 @@
                 slide: function( event, ui ) {
                     $min = ui.values[0];
                     $max = ui.values[1];
-                    rcl2.setGeometryMinX($min/100);
+                    $vrc.setGeometryMinX($min/100);
                     $("#x-min-input").val($min);
-                    rcl2.setGeometryMaxX($max/100);
+                    $vrc.setGeometryMaxX($max/100);
                     $("#x-max-input").val($max);
                 }
             });
@@ -176,9 +171,9 @@
                 slide: function( event, ui ) {
                     $min = ui.values[0];
                     $max = ui.values[1];
-                    rcl2.setGeometryMinY($min/100);
+                    $vrc.setGeometryMinY($min/100);
                     $("#y-min-input").val($min);
-                    rcl2.setGeometryMaxY($max/100);
+                    $vrc.setGeometryMaxY($max/100);
                     $("#y-max-input").val($max);
                 }
             });
@@ -191,9 +186,9 @@
                 slide: function( event, ui ) {
                     $min = ui.values[0];
                     $max = ui.values[1];
-                    rcl2.setGeometryMinZ($min/100);
+                    $vrc.setGeometryMinZ($min/100);
                     $("#z-min-input").val($min);
-                    rcl2.setGeometryMaxZ($max/100);
+                    $vrc.setGeometryMaxZ($max/100);
                     $("#z-max-input").val($max);
                 }
             });
@@ -210,56 +205,56 @@
                 $(this).val($(this).val() < $max ?$(this).val():$max);
                 $values = [$(this).val(), $max];
                 $("#slider-gray-threshold").slider("option", "values", $values);
-                rcl2.setGrayMinValue($(this).val()/255);
+                $vrc.setGrayMinValue($(this).val()/255);
             });
             $("#gray-threshold-max-input").change(function() {
                 $min = $("#slider-gray-threshold" ).slider("option", "values")[0];
                 $(this).val($(this).val() > $min ?$(this).val():$min);
                 $values = [$min, $(this).val()];
                 $("#slider-gray-threshold").slider("option", "values", $values);
-                rcl2.setGrayMaxValue($(this).val()/255);
+                $vrc.setGrayMaxValue($(this).val()/255);
             });
             $("#x-min-input").change(function() {
                 $max = $("#slider-X" ).dragslider("option", "values")[1];
                 $(this).val($(this).val() < $max ?$(this).val():$max);
                 $values = [$(this).val(), $max];
                 $("#slider-X").dragslider("option", "values", $values);
-                rcl2.setGeometryMinX($(this).val()/100);
+                $vrc.setGeometryMinX($(this).val()/100);
             });
             $("#x-max-input").change(function() {
                 $min = $("#slider-X" ).dragslider("option", "values")[0];
                 $(this).val($(this).val() > $min ?$(this).val():$min);
                 $values = [$min, $(this).val()];
                 $("#slider-X").dragslider("option", "values", $values);
-                rcl2.setGeometryMaxX($(this).val()/100);
+                $vrc.setGeometryMaxX($(this).val()/100);
             });
             $("#y-min-input").change(function() {
                 $max = $("#slider-Y" ).dragslider("option", "values")[1];
                 $(this).val($(this).val() < $max ?$(this).val():$max);
                 $values = [$(this).val(), $max];
                 $("#slider-Y").dragslider("option", "values", $values);
-                rcl2.setGeometryMinY($(this).val()/100);
+                $vrc.setGeometryMinY($(this).val()/100);
             });
             $("#y-max-input").change(function() {
                 $min = $("#slider-Y" ).dragslider("option", "values")[0];
                 $(this).val($(this).val() > $min ?$(this).val():$min);
                 $values = [$min, $(this).val()];
                 $("#slider-Y").dragslider("option", "values", $values);
-                rcl2.setGeometryMaxY($(this).val()/100);
+                $vrc.setGeometryMaxY($(this).val()/100);
             });
             $("#z-min-input").change(function() {
                 $max = $("#slider-Z" ).dragslider("option", "values")[1];
                 $(this).val($(this).val() < $max ?$(this).val():$max);
                 $values = [$(this).val(), $max];
                 $("#slider-Z").dragslider("option", "values", $values);
-                rcl2.setGeometryMinZ($(this).val()/100);
+                $vrc.setGeometryMinZ($(this).val()/100);
             });
             $("#z-max-input").change(function() {
                 $min = $("#slider-Z" ).dragslider("option", "values")[0];
                 $(this).val($(this).val() > $min ?$(this).val():$min);
                 $values = [$min, $(this).val()];
                 $("#slider-Z").dragslider("option", "values", $values);
-                rcl2.setGeometryMaxZ($(this).val()/100);
+                $vrc.setGeometryMaxZ($(this).val()/100);
             });
             $("#res-zoom-button").click( function() {
                 $x = $("#x-min-input").val();
@@ -269,10 +264,10 @@
                 $Y = $("#y-max-input").val();
                 $Z = $("#z-max-input").val();
                 $size = Math.min(Math.abs($X-$x), Math.abs($Y-$y), Math.abs($Z-$z));
-                $adj_size = Math.round($size*current_dim/100);
-                $adj_x = Math.round(current_x + $x*current_dim/100);
-                $adj_y = Math.round(current_y + $y*current_dim/100);
-                $adj_z = Math.round(current_z + $z*current_dim/100);
+                $adj_size = Math.round($size*$current_dim/100);
+                $adj_x = Math.round($current_x + $x*$current_dim/100);
+                $adj_y = Math.round($current_y + $y*$current_dim/100);
+                $adj_z = Math.round($current_z + $z*$current_dim/100);
                 $vol = [$adj_x, $adj_y, $adj_z, $adj_size];
                 $gray = [$("#gray-threshold-min-input").val(), $("#gray-threshold-max-input").val()];
                 window.location.href='/wave?user='+user_name+'&dataset='+dataset_name+'&collection='+collection_name+'&vol='+$vol+'&gt='+$gray;
