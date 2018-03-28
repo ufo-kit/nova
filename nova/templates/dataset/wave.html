@@ -74,10 +74,12 @@
             };
 
             rcl2 = new VRC.VolumeRaycaster(config);
-            gt = ops["gray-thresholds"];
-            if (gt != null) {
-                rcl2.setGrayMinValue(gt[0]/255);
-                rcl2.setGrayMaxValue(gt[1]/255);
+            if (ops != null) {
+                gt = ops["gray-thresholds"];
+                if (gt != null) {
+                    rcl2.setGrayMinValue(gt[0]/255);
+                    rcl2.setGrayMaxValue(gt[1]/255);
+                }
             }
         }
         function sendContinuousGetToLocationUntilDone(loc) {
@@ -102,13 +104,28 @@
         $( document ).ready(function() {
             $minGT = 0, $maxGT = 255;
             $("#wave-container").height($("#wave-container").width());
-            $subsets = 3;
+            $subsets = 1;
+            if (ops != null) {
+                current_x = ops["origin"][0];
+                current_y = ops["origin"][1];
+                current_z = ops["origin"][2];
+                current_dim = ops["dimensions"][0];
+                $gt = ops["gray-thresholds"];
+                if ($gt != null) {
+                    $minGT = $gt[0];
+                    $maxGT = $gt[1];
+                }
+            }
+            $origin_array = [current_x/100, current_y/100, current_z/100];
+            $dimensions_array = [current_dim/100, current_dim/100];
             for (var i = 1; i <= $subsets; i++) {
                 $params = {
                     "token": "{{token|safe}}",
                     "user": user_name,
                     "dataset": dataset_name,
-                    "subset": i
+                    "subset": i,
+                    "origin": $origin_array,
+                    "dimensions": $dimensions_array
                 };
                 $params = JSON.stringify($params);
                 $.ajax("http://localhost:5001/maps", {
@@ -121,19 +138,6 @@
                 }).fail(function() { alert( "An error occured" ); });
             }
 
-            if (ops != null) {
-                current_x = ops["origin"][0];
-                current_y = ops["origin"][1];
-                current_z =ops["origin"][2];
-                current_dim = ops["dimensions"][0];
-                $params["origin"] = [current_x/100, current_y/100, current_z/100];
-                $params["dimensions"] = [current_dim/100, current_dim/100];
-                $gt = ops["gray-thresholds"];
-                if ($gt != null) {
-                    $minGT = $gt[0];
-                    $maxGT = $gt[1];
-                }
-            }
             $("#slider-gray-threshold").slider ({
                 range: true,
                 min: 0,
