@@ -68,7 +68,7 @@
   <script src="{{ url_for('static', filename='js/wave/stats.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dragslider.js') }}"></script>
   <script>
-        $slicemaps = []
+        $slicemaps = {};
         var collection_name = '{{ collection }}';
         var dataset_name = '{{ dataset.name }}';
         var user_name = '{{ owner.name }}';
@@ -91,10 +91,10 @@
             }
         }
 
-        function beginWave() {
+        function beginWave($a) {
             $config = {
                 "dom_container": "wave-container",
-                "slicemaps_paths": $slicemaps,
+                "slicemaps_paths": $a,
                 "steps" : 144,
                 "shader_name": "secondPassSoebel",
                 "slices_range": [0, $subsets * 256 - 1],
@@ -119,10 +119,16 @@
                     }, 2000);
                 } else {
                     $location = jqXHR.getResponseHeader('location');
-                    $slicemaps.push($location);
-                    if ($slicemaps.length == $subsets) {
+                    $slicemaps[data.subset] = $location;
+
+                    if (Object.keys($slicemaps).length == $subsets) {
                         $( "#loading-wave" ).remove();
-                        beginWave();
+                        $a = [];
+
+                        for ($i = 0; $i < $subsets; $i++)
+                            $a.push($slicemaps[$i]);
+
+                        beginWave($a);
                     }
                 }
             });
