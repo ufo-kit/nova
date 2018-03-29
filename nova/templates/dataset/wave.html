@@ -76,8 +76,9 @@
 
         $minGT = 0, $maxGT = 255;
         $current_x = 0, $current_y = 0, $current_z = 0, $current_dim = 100;
-        $subsets = 1;
+        $subsets = 5;
         $ops = {{ ops|tojson|safe if ops!=None else 'null' }};
+
         if ($ops != null) {
             $current_x = $ops["origin"][0];
             $current_y = $ops["origin"][1];
@@ -89,13 +90,14 @@
                 $maxGT = $gt[1];
             }
         }
+
         function beginWave() {
             $config = {
                 "dom_container": "wave-container",
                 "slicemaps_paths": $slicemaps,
                 "steps" : 144,
                 "shader_name": "secondPassSoebel",
-                "slices_range": [0, 255],
+                "slices_range": [0, $subsets * 256 - 1],
                 "row_col": [16, 16],
                 "renderer_size": [512, 512],
                 "renderer_canvas_size": ['*','*']
@@ -105,6 +107,7 @@
             $vrc.setGrayMinValue($minGT/255);
             $vrc.setGrayMaxValue($maxGT/255);
         }
+
         function sendContinuousGetToLocationUntilDone($loc) {
             $.ajax($loc, {
                 method:"GET",
@@ -128,7 +131,7 @@
             $("#wave-container").height($("#wave-container").width());
             $origin_array = [$current_x/100, $current_y/100, $current_z/100];
             $dimensions_array = [$current_dim/100, $current_dim/100];
-            for ($i = 1; $i <= $subsets; $i++) {
+            for ($i = 0; $i < $subsets; $i++) {
                 $params = JSON.stringify({
                     "token": "{{token|safe}}",
                     "user": user_name,
