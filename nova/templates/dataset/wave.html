@@ -14,6 +14,20 @@
           <div class="col-sm-2"><input type="text" class="slider-range-input" id="gray-threshold-max-input" /></div>
         </div>
       </div>
+      <div class="wave-control" id="zoom-controls">
+        <p>Zoom Control</p>
+        <div>
+          <div id="xy-zoom-control"><div id="xy-zoom-selection"></div></div>
+          <p><small>x-y plane</small></p>
+        </div>
+        <div>
+          <div id="yz-zoom-control"><div id="yz-zoom-selection"></div></div>
+          <p><small>y-z plane</small></p>
+        </div>
+      </div>
+      <div class="wave-control">
+        <button type="button" class="btn btn-dark" id="res-zoom-button-selection">Zoom to Selected Volume</button>
+      </div>
       <div class="wave-control">
         <p>X axis slicing</p>
         <div class="col-sm-12">
@@ -39,7 +53,7 @@
         </div>
       </div>
       <div class="wave-control">
-        <button type="button" class="btn btn-dark" id="res-zoom-button">Zoom to Sliced Volume</button>
+        <button type="button" class="btn btn-dark" id="res-zoom-button-slice">Zoom to Sliced Volume</button>
       </div>
     </div>
   </div>
@@ -256,7 +270,11 @@
                 $("#slider-Z").dragslider("option", "values", $values);
                 $vrc.setGeometryMaxZ($(this).val()/100);
             });
-            $("#res-zoom-button").click( function() {
+            function zoomToVolume($v) {
+                $gray = [$("#gray-threshold-min-input").val(), $("#gray-threshold-max-input").val()];
+                window.location.href='/wave?user='+user_name+'&dataset='+dataset_name+'&collection='+collection_name+'&vol='+$v+'&gt='+$gray;
+            }
+            $("#res-zoom-button-slice").click( function() {
                 $x = $("#x-min-input").val();
                 $y = $("#y-min-input").val();
                 $z = $("#z-min-input").val();
@@ -269,8 +287,62 @@
                 $adj_y = Math.round($current_y + $y*$current_dim/100);
                 $adj_z = Math.round($current_z + $z*$current_dim/100);
                 $vol = [$adj_x, $adj_y, $adj_z, $adj_size];
-                $gray = [$("#gray-threshold-min-input").val(), $("#gray-threshold-max-input").val()];
-                window.location.href='/wave?user='+user_name+'&dataset='+dataset_name+'&collection='+collection_name+'&vol='+$vol+'&gt='+$gray;
+                zoomToVolume($vol);
+            });
+            $("#res-zoom-button-selection").click( function() {
+                $W = $("#xy-zoom-selection").parent().width();
+                $x = Math.round(100*parseInt($("#xy-zoom-selection").css("left"), 10)/$W);
+                $y = Math.round(100*parseInt($("#xy-zoom-selection").css("top"), 10)/$W);
+                $z = Math.round(100*parseInt($("#yz-zoom-selection").css("top"), 10)/$W);
+                $size = Math.round(100*$("#yz-zoom-selection").width()/$W);
+                $vol = [$x, $y, $z, $size];
+                zoomToVolume($vol);
+            });
+            $("#xy-zoom-selection").resizable({
+                aspectRatio: 1,
+                containment: "parent",
+                create: function (event, ui ){
+                    $(this).css({
+                        'left': $current_x*$(this).parent().width()/100,
+                        'top': $current_y*$(this).parent().height()/100,
+                        'width': $current_dim*$(this).parent().width()/100,
+                        'height': $current_dim*$(this).parent().height()/100
+                    });
+                },
+                resize: function (event, ui ){
+                    h = ui.size.height;
+                    t = ui.position.top;
+                    $("#yz-zoom-selection").css({'height':h, 'width': h,'left': t});
+                }
+            }).draggable({
+                containment: "parent",
+                drag: function (event, ui) {
+                    t = ui.position.top;
+                    $("#yz-zoom-selection").css({'left': t});
+                }
+            });
+            $("#yz-zoom-selection").resizable({
+                aspectRatio: 1,
+                containment: "parent",
+                create: function (event, ui ){
+                    $(this).css({
+                        'left': $current_y*$(this).parent().width()/100,
+                        'top': $current_z*$(this).parent().height()/100,
+                        'width': $current_dim*$(this).parent().width()/100,
+                        'height': $current_dim*$(this).parent().height()/100
+                    });
+                },
+                resize: function (event, ui ){
+                    w = ui.size.width;
+                    l = ui.position.left;
+                    $("#xy-zoom-selection").css({'height':w, 'width': w,'top':l});
+                }
+            }).draggable({
+                containment: "parent",
+                drag: function (event, ui) {
+                    l = ui.position.left;
+                    $("#xy-zoom-selection").css({'top': l});
+                }
             });
          });
   </script>

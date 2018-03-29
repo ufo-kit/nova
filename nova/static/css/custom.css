@@ -393,3 +393,27 @@ a:hover {
   width: 20px;
   height: 20px;
 }
+
+#zoom-controls {
+  position: relative;
+}
+
+#zoom-controls>div {
+  display: inline-block;
+  margin-left:40px;
+}
+
+#xy-zoom-control, #yz-zoom-control {
+    overflow: hidden;
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border: 1px solid #ddd;
+}
+
+#xy-zoom-selection, #yz-zoom-selection {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border: 1px solid blue;
+}
