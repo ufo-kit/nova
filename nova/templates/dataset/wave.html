@@ -121,15 +121,15 @@
                     $location = jqXHR.getResponseHeader('location');
                     $slicemaps[data.subset] = $location;
 
-                    if (Object.keys($slicemaps).length == $subsets) {
-                        $( "#loading-wave" ).remove();
-                        $a = [];
+                    $( "#loading-wave" ).remove();
+                    $a = [];
 
-                        for ($i = 0; $i < $subsets; $i++)
-                            $a.push($slicemaps[$i]);
-
-                        beginWave($a);
+                    for ($i = 0; $i < $subsets; $i++) {
+                      $a.push($location + "/" + $i);
                     }
+
+                    console.log($a);
+                    beginWave($a);
                 }
             });
         }
@@ -137,24 +137,22 @@
             $("#wave-container").height($("#wave-container").width());
             $origin_array = [$current_x/100, $current_y/100, $current_z/100];
             $dimensions_array = [$current_dim/100, $current_dim/100];
-            for ($i = 0; $i < $subsets; $i++) {
-                $params = JSON.stringify({
-                    "token": "{{token|safe}}",
-                    "user": user_name,
-                    "dataset": dataset_name,
-                    "subset": $i,
-                    "origin": $origin_array,
-                    "dimensions": $dimensions_array
-                });
-                $.ajax("http://localhost:5001/maps", {
-                    data:$params,
-                    contentType:"application/json",
-                    method:"POST"
-                }).done(function(data, textStatus, jqXHR){
-                    $location = jqXHR.getResponseHeader('location');
-                    sendContinuousGetToLocationUntilDone($location);
-                }).fail(function() { alert( "An error occured" ); });
-            }
+            $params = JSON.stringify({
+                "token": "{{token|safe}}",
+                "user": user_name,
+                "dataset": dataset_name,
+                "origin": $origin_array,
+                "dimensions": $dimensions_array,
+                "subsets": $subsets
+            });
+            $.ajax("http://localhost:5001/maps", {
+                data:$params,
+                contentType:"application/json",
+                method:"POST"
+            }).done(function(data, textStatus, jqXHR){
+                $location = jqXHR.getResponseHeader('location');
+                sendContinuousGetToLocationUntilDone($location);
+            }).fail(function() { alert( "An error occured" ); });
 
             $("#slider-gray-threshold").slider ({
                 range: true,
