@@ -400,20 +400,45 @@ a:hover {
 
 #zoom-controls>div {
   display: inline-block;
-  margin-left:40px;
+  margin-left:60px;
+  position:relative;
+  margin-top:30px;
 }
 
 #xy-zoom-control, #yz-zoom-control {
-    overflow: hidden;
-    position: relative;
-    width: 150px;
-    height: 150px;
-    border: 1px solid #ddd;
+  overflow: hidden;
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border: 1px solid #ddd;
 }
 
 #xy-zoom-selection, #yz-zoom-selection {
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    border: 1px solid blue;
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border: 1px solid blue;
 }
+
+label.zc-mark {
+  position: absolute;
+  color: #555;
+  font-size:15px;
+}
+
+label.zc-zero-mark {
+  top: 0;
+  left: -10px;
+}
+
+label.zc-horizontal-one-mark {
+  right: -10px;
+  top: 0;
+}
+
+label.zc-vertical-one-mark {
+  bottom: 30px;
+  left: -10px;
+}
+
+
