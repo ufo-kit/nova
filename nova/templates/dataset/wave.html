@@ -14,20 +14,6 @@
           <div class="col-sm-2"><input type="text" class="slider-range-input" id="gray-threshold-max-input" /></div>
         </div>
       </div>
-      <div class="wave-control" id="zoom-controls">
-        <p>Zoom Control</p>
-        <div>
-          <div id="xy-zoom-control"><div id="xy-zoom-selection"></div></div>
-          <p><small>x-y plane</small></p>
-        </div>
-        <div>
-          <div id="yz-zoom-control"><div id="yz-zoom-selection"></div></div>
-          <p><small>y-z plane</small></p>
-        </div>
-      </div>
-      <div class="wave-control">
-        <button type="button" class="btn btn-dark" id="res-zoom-button-selection">Zoom to Selected Volume</button>
-      </div>
       <div class="wave-control">
         <p>X axis slicing</p>
         <div class="col-sm-12">
@@ -52,8 +38,19 @@
           <div class="col-sm-2"><input type="text" class="slider-range-input" id="z-max-input" /></div>
         </div>
       </div>
+      <div class="wave-control" id="zoom-controls">
+        <p>Zoom Control</p>
+        <div>
+          <div id="xy-zoom-control"><div id="xy-zoom-selection"></div></div>
+          <p><small>x-y plane</small></p>
+        </div>
+        <div>
+          <div id="yz-zoom-control"><div id="yz-zoom-selection"></div></div>
+          <p><small>y-z plane</small></p>
+        </div>
+      </div>
       <div class="wave-control">
-        <button type="button" class="btn btn-dark" id="res-zoom-button-slice">Zoom to Sliced Volume</button>
+        <button type="button" class="btn btn-dark" id="res-zoom-button-selection">Zoom to Selected Volume</button>
       </div>
     </div>
   </div>
@@ -229,7 +226,6 @@
       $("#z-min-input").val(0);
       $("#z-max-input").val(100);
 
-
       $("#gray-threshold-min-input").change(function() {
         var max = $("#slider-gray-threshold" ).slider("option", "values")[1];
         $(this).val($(this).val() < max ?$(this).val():max);
@@ -287,27 +283,10 @@
         vrc.setGeometryMaxZ($(this).val()/100);
       });
 
-
-      function zoomToVolume($v) {
-        $gray = [$("#gray-threshold-min-input").val(), $("#gray-threshold-max-input").val()];
-        window.location.href='/wave?user='+user_name+'&dataset='+dataset_name+'&collection='+collection_name+'&vol='+$v+'&gt='+$gray;
+      function zoomToVolume(v) {
+        var gray = [$("#gray-threshold-min-input").val(), $("#gray-threshold-max-input").val()];
+        window.location.href='/wave?user='+user_name+'&dataset='+dataset_name+'&collection='+collection_name+'&vol='+v+'&gt='+gray;
       }
-
-      $("#res-zoom-button-slice").click( function() {
-        var x = $("#x-min-input").val();
-        var y = $("#y-min-input").val();
-        var z = $("#z-min-input").val();
-        var X = $("#x-max-input").val();
-        var Y = $("#y-max-input").val();
-        var Z = $("#z-max-input").val();
-        var size = Math.min(Math.abs(X - x), Math.abs(Y - y), Math.abs(Z - z));
-        var adj_size = Math.round(size * current_dim / 100);
-        var adj_x = Math.round(current_x + x * current_dim / 100);
-        var adj_y = Math.round(current_y + y * current_dim / 100);
-        var adj_z = Math.round(current_z + z * current_dim / 100);
-        var vol = [adj_x, adj_y, adj_z, adj_size];
-        zoomToVolume(vol);
-      });
 
       $("#res-zoom-button-selection").click( function() {
         var W = $("#xy-zoom-selection").parent().width();
@@ -331,14 +310,14 @@
           });
         },
         resize: function (event, ui ){
-          h = ui.size.height;
-          t = ui.position.top;
+          var h = ui.size.height;
+          var t = ui.position.top;
           $("#yz-zoom-selection").css({'height':h, 'width': h,'left': t});
         }
       }).draggable({
         containment: "parent",
         drag: function (event, ui) {
-          t = ui.position.top;
+          var t = ui.position.top;
           $("#yz-zoom-selection").css({'left': t});
         }
       });
@@ -354,14 +333,14 @@
           });
         },
         resize: function (event, ui ){
-          w = ui.size.width;
-          l = ui.position.left;
+          var w = ui.size.width;
+          var l = ui.position.left;
           $("#xy-zoom-selection").css({'height':w, 'width': w,'top':l});
         }
       }).draggable({
         containment: "parent",
         drag: function (event, ui) {
-          l = ui.position.left;
+          var l = ui.position.left;
           $("#xy-zoom-selection").css({'top': l});
         }
       });
