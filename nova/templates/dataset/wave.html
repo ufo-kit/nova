@@ -318,7 +318,10 @@
         resize: function (event, ui ){
           var h = ui.size.height;
           var t = ui.position.top;
+          var W = $(this).parent().width();
           $("#yz-zoom-selection").css({'height':h, 'width': h,'left': t});
+          var t2 = Math.round(parseInt($("#yz-zoom-selection").css('top'), 10));
+          if (h+ t2 >= W) $("#yz-zoom-selection").css({'top':W-h});
         }
       }).draggable({
         containment: "parent",
@@ -341,7 +344,10 @@
         resize: function (event, ui ){
           var w = ui.size.width;
           var l = ui.position.left;
+          var H = $(this).parent().height()
           $("#xy-zoom-selection").css({'height':w, 'width': w,'top':l});
+          var l2 = Math.round(parseInt($("#xy-zoom-selection").css('left'), 10));
+          if (w+ l2 >= H) $("#xy-zoom-selection").css({'left':H-w});
         }
       }).draggable({
         containment: "parent",
