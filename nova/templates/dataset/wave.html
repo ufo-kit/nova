@@ -109,6 +109,7 @@
       vrc = new VRC.VolumeRaycaster(config);
       vrc.setGrayMinValue(minGT / 255);
       vrc.setGrayMaxValue(maxGT / 255);
+      vrc.showZoomBox(false);
     }
 
     function sendContinuousGetToLocationUntilDone(queryUrl) {
@@ -188,6 +189,14 @@
           $("#x-min-input").val(min);
           vrc.setGeometryMaxX(max / 100);
           $("#x-max-input").val(max);
+          vrc.setZoomXMinValue(min/100)
+          vrc.setZoomXMaxValue(max/100)
+        },
+        start: function( event, ui ){
+          vrc.showZoomBox(true);
+        },
+        stop: function( event, ui ){
+          vrc.showZoomBox(false);
         }
       });
 
@@ -204,6 +213,14 @@
           $("#y-min-input").val(min);
           vrc.setGeometryMaxY(max / 100);
           $("#y-max-input").val(max);
+          vrc.setZoomYMinValue(min/100)
+          vrc.setZoomYMaxValue(max/100)
+        },
+        start: function( event, ui ){
+          vrc.showZoomBox(true);
+        },
+        stop: function( event, ui ){
+          vrc.showZoomBox(false);
         }
       });
 
@@ -220,6 +237,14 @@
           $("#z-min-input").val(min);
           vrc.setGeometryMaxZ(max / 100);
           $("#z-max-input").val(max);
+          vrc.setZoomZMinValue(min/100)
+          vrc.setZoomZMaxValue(max/100)
+        },
+        start: function( event, ui ){
+          vrc.showZoomBox(true);
+        },
+        stop: function( event, ui ){
+          vrc.showZoomBox(false);
         }
       });
 
