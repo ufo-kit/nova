@@ -229,6 +229,65 @@
       $("#z-min-input").val(0);
       $("#z-max-input").val(100);
 
+
+      $("#gray-threshold-min-input").change(function() {
+        var max = $("#slider-gray-threshold" ).slider("option", "values")[1];
+        $(this).val($(this).val() < max ?$(this).val():max);
+        var values = [$(this).val(), max];
+        $("#slider-gray-threshold").slider("option", "values", values);
+        vrc.setGrayMinValue($(this).val()/255);
+      });
+      $("#gray-threshold-max-input").change(function() {
+        var min = $("#slider-gray-threshold" ).slider("option", "values")[0];
+        $(this).val($(this).val() > min ?$(this).val():min);
+        var values = [min, $(this).val()];
+        $("#slider-gray-threshold").slider("option", "values", values);
+        vrc.setGrayMaxValue($(this).val()/255);
+      });
+      $("#x-min-input").change(function() {
+        var max = $("#slider-X" ).dragslider("option", "values")[1];
+        $(this).val($(this).val() < max ?$(this).val():max);
+        var values = [$(this).val(), max];
+        $("#slider-X").dragslider("option", "values", values);
+        vrc.setGeometryMinX($(this).val()/100);
+      });
+      $("#x-max-input").change(function() {
+        var min = $("#slider-X" ).dragslider("option", "values")[0];
+        $(this).val($(this).val() > min ?$(this).val():min);
+        var values = [min, $(this).val()];
+        $("#slider-X").dragslider("option", "values", values);
+        vrc.setGeometryMaxX($(this).val()/100);
+      });
+      $("#y-min-input").change(function() {
+        var max = $("#slider-Y" ).dragslider("option", "values")[1];
+        $(this).val($(this).val() < max ?$(this).val():max);
+        var values = [$(this).val(), max];
+        $("#slider-Y").dragslider("option", "values", values);
+        vrc.setGeometryMinY($(this).val()/100);
+      });
+      $("#y-max-input").change(function() {
+        var min = $("#slider-Y" ).dragslider("option", "values")[0];
+        $(this).val($(this).val() > min ?$(this).val():min);
+        var values = [min, $(this).val()];
+        $("#slider-Y").dragslider("option", "values", values);
+        vrc.setGeometryMaxY($(this).val()/100);
+      });
+      $("#z-min-input").change(function() {
+        var max = $("#slider-Z" ).dragslider("option", "values")[1];
+        $(this).val($(this).val() < max ?$(this).val():max);
+        var values = [$(this).val(), max];
+        $("#slider-Z").dragslider("option", "values", values);
+        vrc.setGeometryMinZ($(this).val()/100);
+      });
+      $("#z-max-input").change(function() {
+        var min = $("#slider-Z" ).dragslider("option", "values")[0];
+        $(this).val($(this).val() > min ?$(this).val():min);
+        var values = [min, $(this).val()];
+        $("#slider-Z").dragslider("option", "values", values);
+        vrc.setGeometryMaxZ($(this).val()/100);
+      });
+
+
       function zoomToVolume($v) {
         $gray = [$("#gray-threshold-min-input").val(), $("#gray-threshold-max-input").val()];
         window.location.href='/wave?user='+user_name+'&dataset='+dataset_name+'&collection='+collection_name+'&vol='+$v+'&gt='+$gray;
