@@ -406,18 +406,14 @@ a:hover {
 }
 
 #xy-zoom-control, #yz-zoom-control {
-  overflow: hidden;
+  overflow: visible;
   position: relative;
-  width: 150px;
-  height: 150px;
-  border: 1px solid #ddd;
+  outline: 1px solid #ddd;
 }
 
 #xy-zoom-selection, #yz-zoom-selection {
   position: absolute;
-  width: 150px;
-  height: 150px;
-  border: 1px solid blue;
+  outline: 1px solid blue;
 }
 
 label.zc-mark {

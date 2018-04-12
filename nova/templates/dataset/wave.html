@@ -81,6 +81,8 @@
     var current_x = 0, current_y = 0, current_z = 0, current_dim = 100;
     var ops = {{ ops|tojson|safe if ops!=None else 'null' }};
 
+    var zoom_control_size = 150;
+
     if (ops != null) {
       current_x = ops["origin"][0];
       current_y = ops["origin"][1];
@@ -160,6 +162,11 @@
       }).fail(function() {
         alert("An error occured");
       });
+
+      $("#xy-zoom-control").css({"width": zoom_control_size, "height": zoom_control_size});
+      $("#yz-zoom-control").css({"width": zoom_control_size, "height": zoom_control_size});
+      $("#xy-zoom-selection").css({"width": zoom_control_size, "height": zoom_control_size});
+      $("#yz-zoom-selection").css({"width": zoom_control_size, "height": zoom_control_size});
 
       $("#slider-gray-threshold").slider ({
         range: true,
@@ -320,7 +327,7 @@
       }
 
       $("#res-zoom-button-selection").click( function() {
-        var W = $("#xy-zoom-selection").parent().width();
+        var W = zoom_control_size;
         var x = Math.round(100 * parseInt($("#xy-zoom-selection").css("left"), 10) / W);
         var y = Math.round(100 * parseInt($("#xy-zoom-selection").css("top"), 10) / W);
         var z = Math.round(100 * parseInt($("#yz-zoom-selection").css("top"), 10) / W);
@@ -331,19 +338,20 @@
 
       $("#xy-zoom-selection").resizable({
         aspectRatio: 1,
-        containment: "parent",
+        maxWidth: zoom_control_size,
+        maxHeight: zoom_control_size,
         create: function (event, ui ){
           $(this).css({
-            'left': current_x*$(this).parent().width()/100,
-            'top': current_y*$(this).parent().height()/100,
-            'width': current_dim*$(this).parent().width()/100,
-            'height': current_dim*$(this).parent().height()/100
+            'left': current_x*zoom_control_size/100,
+            'top': current_y*zoom_control_size/100,
+            'width': current_dim*zoom_control_size/100,
+            'height': current_dim*zoom_control_size/100
           });
         },
         resize: function (event, ui ){
           var h = ui.size.height;
           var t = ui.position.top;
-          var W = $(this).parent().width();
+          var W = zoom_control_size;
           $("#yz-zoom-selection").css({'height':h, 'width': h,'left': t});
           var t2 = Math.round(parseInt($("#yz-zoom-selection").css('top'), 10));
           if (h+ t2 >= W) $("#yz-zoom-selection").css({'top':W-h});
@@ -360,16 +368,16 @@
         containment: "parent",
         create: function (event, ui ){
           $(this).css({
-            'left': current_y*$(this).parent().width()/100,
-            'top': current_z*$(this).parent().height()/100,
-            'width': current_dim*$(this).parent().width()/100,
-            'height': current_dim*$(this).parent().height()/100
+            'left': current_y*zoom_control_size/100,
+            'top': current_z*zoom_control_size/100,
+            'width': current_dim*zoom_control_size/100,
+            'height': current_dim*zoom_control_size/100
           });
         },
         resize: function (event, ui ){
           var w = ui.size.width;
           var l = ui.position.left;
-          var H = $(this).parent().height()
+          var H = zoom_control_size
           $("#xy-zoom-selection").css({'height':w, 'width': w,'top':l});
           var l2 = Math.round(parseInt($("#xy-zoom-selection").css('left'), 10));
           if (w+ l2 >= H) $("#xy-zoom-selection").css({'left':H-w});
