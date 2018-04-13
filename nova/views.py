@@ -560,13 +560,10 @@ def create_group():
     return render_template('group/create.html', form=form)
 
 
-@app.route('/wave')
+@app.route('/dataset/<user>/<dataset>/wave')
 @login_required(admin=False)
-def wave_it():
+def wave(user, dataset):
     token = current_user.token
-    owner = request.args['user']
-    dataset_name = request.args['dataset']
-    collection_name = request.args['collection']
     grayThresholds = request.args.get('gt')
     volume = request.args.get('vol')
     colormap = request.args.get('colormap')
@@ -582,8 +579,8 @@ def wave_it():
         gt = map(int, grayThresholds.split(','))
         if gt and len(gt) is 2:
             ops['gray-thresholds'] = gt
-    user = User.query.filter(User.name == owner).first()
-    dataset = Dataset.query.join(Permission).filter(Dataset.name == dataset_name).\
+    user = User.query.filter(User.name == user).first()
+    dataset = Dataset.query.join(Permission).filter(Dataset.name == dataset).\
             filter(Permission.owner == user).first()
     if dataset is None:
         abort(404, 'dataset {} not found'.format(dataset))
@@ -611,5 +608,5 @@ def wave_it():
                                'interact': direct_access.can_interact,
                                'fork': direct_access.can_fork}
     return render_template('dataset/wave.html', owner=user, dataset=dataset,
-                           collection=collection_name, token=token, ops=ops,
-                           colormap=colormap) 
+                           collection=dataset.collection, token=token, ops=ops,
+                           colormap=colormap, permissions=dataset_permissions) 

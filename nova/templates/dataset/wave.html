@@ -72,7 +72,7 @@
   <script src="{{ url_for('static', filename='js/colormap/colormap.js') }}"></script>
   <script>
 
-    var collection_name = '{{ collection }}';
+    var collection_name = '{{ collection.name }}';
     var dataset_name = '{{ dataset.name }}';
     var user_name = '{{ owner.name }}';
     var use_iso = false;
@@ -303,7 +303,7 @@
 
       function zoomToVolume(v) {
         var gray = [$("#gray-threshold-min-input").val(), $("#gray-threshold-max-input").val()];
-        window.location.href='/wave?user='+user_name+'&dataset='+dataset_name+'&collection='+collection_name+'&vol='+v+'&gt='+gray;
+        window.location.href='?vol='+v+'&gt='+gray+'&colormap='+colormap;
       }
 
       $("#iso-selection").click(function() {
