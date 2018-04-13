@@ -230,9 +230,14 @@ def profile(name, page=1):
 
 
 @app.route('/user/<name>/bookmarks')
+@login_required(admin=False)
 def list_bookmarks(name):
     user = db.session.query(User).filter(User.name == name).first()
-    return render_template('user/bookmarks.html', user=user)
+    bookmarks = db.session.query(models.Bookmark).join(models.User).\
+              filter(models.User.name == name).all()
+    service = resources.services.get('thumbnail-server')
+    return render_template('user/bookmarks.html', user=user,
+            bookmarks=bookmarks, thumbnail_service=service)
 
 
 
