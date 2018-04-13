@@ -97,7 +97,7 @@ var meta = new Vue ({
       }
     },
     openWave: function () {
-        window.location.href='/wave?user='+user_name+'&dataset='+dataset_name+'&collection='+collection_name
+        window.location.href+='/wave'
     },
   }
 })
