@@ -28,6 +28,12 @@
           <div class="col-sm-12" id="slider-Z"></div>
         </div>
       </div>
+      <div class="wave-control" id="color-controls">
+        <p>Color Mapping</p>
+        <div class="col-sm-4"><button type="button" name="none" class="colormap-button btn btn-block">None</button></div>
+        <div class="col-sm-4"><button type="button" name="viridis" class="colormap-button btn btn-block">Viridis</button></div>
+        <div class="col-sm-4"><button type="button" name="jet" class="colormap-button btn btn-block">Jet</button></div>
+      </div>
       <div class="wave-control" id="zoom-controls">
         <p>Zoom Control</p>
         <div>
@@ -63,7 +69,9 @@
   <script src="{{ url_for('static', filename='js/wave/volumeRaycaster.js') }}"></script>
   <script src="{{ url_for('static', filename='js/wave/stats.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dragslider.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/colormap/colormap.js') }}"></script>
   <script>
+
     var collection_name = '{{ collection }}';
     var dataset_name = '{{ dataset.name }}';
     var user_name = '{{ owner.name }}';
@@ -74,7 +82,7 @@
     var minGT = 0, maxGT = 255;
     var current_x = 0, current_y = 0, current_z = 0, current_dim = 100;
     var ops = {{ ops|tojson|safe if ops!=None else 'null' }};
-
+    var colormap = "{{ colormap if colormap!=None else 'none'}}";
     var zoom_control_size = 150;
 
     if (ops != null) {
@@ -87,6 +95,28 @@
       if (gt != null) {
         minGT = gt[0];
         maxGT = gt[1];
+      }
+    }
+
+    function applyColormap(cmap, gt) {
+      colormap = cmap;
+      if (colormap == "none")
+        vrc.setTransferFunctionByColors([]);
+      else {
+        var range = gt[1] - gt[0];
+        let spec = {
+          colormap: colormap,
+          nshades: range + 1,
+          format: 'hex',
+          alpha: 1
+        };
+        var colorlist = createColormap(spec);
+        var formatted_colormap = [];
+        for (var i = 0; i<=range;i++) {
+          var current = {"color":colorlist[i], "pos":(gt[0]+i)/255};
+          formatted_colormap[i] = current
+        }
+        vrc.setTransferFunctionByColors(formatted_colormap);
       }
     }
 
@@ -106,6 +136,7 @@
       vrc.setGrayMinValue(minGT / 255);
       vrc.setGrayMaxValue(maxGT / 255);
       vrc.showZoomBox(false);
+      applyColormap(colormap, [minGT, maxGT]);
     }
 
     function sendContinuousGetToLocationUntilDone(queryUrl) {
@@ -157,6 +188,8 @@
         alert("An error occured");
       });
 
+      $("button[name="+colormap+"]").addClass("active");
+
       $("#xy-zoom-control").css({"width": zoom_control_size, "height": zoom_control_size});
       $("#yz-zoom-control").css({"width": zoom_control_size, "height": zoom_control_size});
       $("#xy-zoom-selection").css({"width": zoom_control_size, "height": zoom_control_size});
@@ -174,6 +207,7 @@
           $("#gray-threshold-min-input").val(min);
           vrc.setGrayMaxValue(max / 255);
           $("#gray-threshold-max-input").val(max);
+          applyColormap(colormap, [min, max]);
         }
       });
 
@@ -259,6 +293,12 @@
         var values = [min, $(this).val()];
         $("#slider-gray-threshold").slider("option", "values", values);
         vrc.setGrayMaxValue($(this).val()/255);
+      });
+
+      $(".colormap-button").click(function() {
+        $(".colormap-button").removeClass("active");
+        $(this).addClass("active");
+        applyColormap($(this).attr("name"), $("#slider-gray-threshold" ).slider("option", "values"));
       });
 
       function zoomToVolume(v) {
