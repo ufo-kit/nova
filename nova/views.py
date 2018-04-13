@@ -567,8 +567,9 @@ def wave_it():
     owner = request.args['user']
     dataset_name = request.args['dataset']
     collection_name = request.args['collection']
-    grayThresholds = request.args.get('gt');
-    volume = request.args.get('vol');
+    grayThresholds = request.args.get('gt')
+    volume = request.args.get('vol')
+    colormap = request.args.get('colormap')
     ops = None
     if volume:
         v = map(int, volume.split(','))
@@ -610,4 +611,5 @@ def wave_it():
                                'interact': direct_access.can_interact,
                                'fork': direct_access.can_fork}
     return render_template('dataset/wave.html', owner=user, dataset=dataset,
-                           collection=collection_name, token=token, ops=ops) 
+                           collection=collection_name, token=token, ops=ops,
+                           colormap=colormap) 

@@ -372,7 +372,9 @@ a:hover {
 }
 
 .wave-control>div {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  position:relative;
+  z-index:55;
 }
 
 .slider-range-input {
