@@ -51,6 +51,9 @@
       <div class="wave-control">
         <button type="button" class="btn btn-dark" id="res-zoom-button-selection">Zoom to Selected Volume</button>
       </div>
+      <div class="wave-control">
+        <button type="button" class="btn btn-dark" id="iso-selection">ISO rendered</button>
+      </div>
     </div>
   </div>
   <script
@@ -67,6 +70,7 @@
     var collection_name = '{{ collection }}';
     var dataset_name = '{{ dataset.name }}';
     var user_name = '{{ owner.name }}';
+    var use_iso = false;
     var is_wave = true;
     var subsets = 5;
 
@@ -276,6 +280,15 @@
         var gray = [$("#gray-threshold-min-input").val(), $("#gray-threshold-max-input").val()];
         window.location.href='/wave?user='+user_name+'&dataset='+dataset_name+'&collection='+collection_name+'&vol='+v+'&gt='+gray;
       }
+
+      $("#iso-selection").click(function() {
+        use_iso = !use_iso;
+        if (use_iso)
+          vrc.showISO();
+        else
+          vrc.showVolren();
+        $("#iso-selection").toggleClass("active", use_iso);
+      });
 
       $("#res-zoom-button-selection").click( function() {
         var W = zoom_control_size;
