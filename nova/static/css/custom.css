@@ -387,6 +387,10 @@ a:hover {
   margin-top: 10px;
 }
 
+#slicing-controls>div>p{
+  font-weight:bold;
+}
+
 #box-wireframe-input {
   margin-left: 30px;
   background-color: #fff;

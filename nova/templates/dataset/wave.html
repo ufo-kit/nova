@@ -13,22 +13,19 @@
           <div class="col-sm-2"><input type="text" class="slider-range-input" id="gray-threshold-max-input" /></div>
         </div>
       </div>
-      <div class="wave-control">
-        <p>X axis slicing</p>
-        <div class="col-sm-12">
-          <div class="col-sm-8 col-sm-offset-2" id="slider-X"></div>
+      <div class="wave-control" id="slicing-controls">
+        <p>Slicing</p>
+        <div class="col-sm-4">
+          <p>X axis</p>
+          <div class="col-sm-12" id="slider-X"></div>
         </div>
-      </div>
-      <div class="wave-control">
-        <p>Y axis slicing</p>
-        <div class="col-sm-12">
-          <div class="col-sm-8 col-sm-offset-2" id="slider-Y"></div>
+        <div class="col-sm-4">
+          <p>Y axis</p>
+          <div class="col-sm-12" id="slider-Y"></div>
         </div>
-      </div>
-      <div class="wave-control">
-        <p>Z axis slicing</p>
-        <div class="col-sm-12">
-          <div class="col-sm-8 col-sm-offset-2" id="slider-Z"></div>
+        <div class="col-sm-4">
+          <p>Z axis</p>
+          <div class="col-sm-12" id="slider-Z"></div>
         </div>
       </div>
       <div class="wave-control" id="zoom-controls">
@@ -187,14 +184,12 @@
         max: 100,
         values: [0, 100],
         slide: function( event, ui ) {
-          var min = ui.values[0];
-          var max = ui.values[1];
-          vrc.setGeometryMinX(min / 100);
-          $("#x-min-input").val(min);
-          vrc.setGeometryMaxX(max / 100);
-          $("#x-max-input").val(max);
-          vrc.setZoomXMinValue(min/100)
-          vrc.setZoomXMaxValue(max/100)
+          var min = ui.values[0]/100;
+          var max = ui.values[1]/100;
+          vrc.setGeometryMinX(min);
+          vrc.setGeometryMaxX(max);
+          vrc.setZoomXMinValue(min);
+          vrc.setZoomXMaxValue(max);
         },
         start: function( event, ui ){
           vrc.showZoomBox(true);
@@ -211,14 +206,12 @@
         max: 100,
         values: [0, 100],
         slide: function( event, ui ) {
-          min = ui.values[0];
-          max = ui.values[1];
-          vrc.setGeometryMinY(min / 100);
-          $("#y-min-input").val(min);
-          vrc.setGeometryMaxY(max / 100);
-          $("#y-max-input").val(max);
-          vrc.setZoomYMinValue(min/100)
-          vrc.setZoomYMaxValue(max/100)
+          min = ui.values[0]/100;
+          max = ui.values[1]/100;
+          vrc.setGeometryMinY(min);
+          vrc.setGeometryMaxY(max);
+          vrc.setZoomYMinValue(min);
+          vrc.setZoomYMaxValue(max);
         },
         start: function( event, ui ){
           vrc.showZoomBox(true);
@@ -235,14 +228,12 @@
         max: 100,
         values: [0, 100],
         slide: function( event, ui ) {
-          min = ui.values[0];
-          max = ui.values[1];
-          vrc.setGeometryMinZ(min / 100);
-          $("#z-min-input").val(min);
-          vrc.setGeometryMaxZ(max / 100);
-          $("#z-max-input").val(max);
-          vrc.setZoomZMinValue(min/100)
-          vrc.setZoomZMaxValue(max/100)
+          min = ui.values[0]/100;
+          max = ui.values[1]/100;
+          vrc.setGeometryMinZ(min);
+          vrc.setGeometryMaxZ(max);
+          vrc.setZoomZMinValue(min);
+          vrc.setZoomZMaxValue(max);
         },
         start: function( event, ui ){
           vrc.showZoomBox(true);
@@ -254,12 +245,6 @@
 
       $("#gray-threshold-min-input").val(minGT);
       $("#gray-threshold-max-input").val(maxGT);
-      $("#x-min-input").val(0);
-      $("#x-max-input").val(100);
-      $("#y-min-input").val(0);
-      $("#y-max-input").val(100);
-      $("#z-min-input").val(0);
-      $("#z-max-input").val(100);
 
       $("#gray-threshold-min-input").change(function() {
         var max = $("#slider-gray-threshold" ).slider("option", "values")[1];
