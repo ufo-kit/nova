@@ -379,9 +379,20 @@
           });
         },
         resize: function (event, ui ){
-          var h = ui.size.height;
-          var t = ui.position.top;
           var W = zoom_control_size;
+          var t = parseInt(ui.position.top, 10) + ((ui.originalSize.height - ui.size.height)) / 2;
+          var l = parseInt(ui.position.left, 10) + ((ui.originalSize.height - ui.size.height)) / 2;
+          var h = ui.size.height;
+          if (l < 0) l = 0;
+          else if (l + h > W) l = W - h;
+          if (t < 0) t = 0;
+          else if (t + h > W) t = W - h;
+          $(this).css({
+            'top': t,
+            'left': l
+          });
+          current_zoom_box_px[0] = l;
+          current_zoom_box_px[1] = t;
           current_zoom_box_px[3] = h;
           convertPixelToRelativeZoomBox();
           buildZoomBox();
@@ -417,7 +428,8 @@
       });
       $("#yz-zoom-selection").resizable({
         aspectRatio: 1,
-        containment: "parent",
+        maxWidth: zoom_control_size,
+        maxHeight: zoom_control_size,
         create: function (event, ui ){
           $(this).css({
             'left': current_y*zoom_control_size/100,
@@ -427,15 +439,26 @@
           });
         },
         resize: function (event, ui ){
-          var w = ui.size.width;
-          var l = ui.position.left;
-          var H = zoom_control_size;
-          current_zoom_box_px[3] = w;
+          var W = zoom_control_size;
+          var t = parseInt(ui.position.top, 10) + ((ui.originalSize.height - ui.size.height)) / 2;
+          var l = parseInt(ui.position.left, 10) + ((ui.originalSize.height - ui.size.height)) / 2;
+          var h = ui.size.height;
+          if (l < 0) l = 0;
+          else if (l + h > W) l = W - h;
+          if (t < 0) t = 0;
+          else if (t + h > W) t = W - h;
+          $(this).css({
+            'top': t,
+            'left': l
+          });
+          current_zoom_box_px[1] = l;
+          current_zoom_box_px[2] = t;
+          current_zoom_box_px[3] = h;
           convertPixelToRelativeZoomBox();
           buildZoomBox();
-          $("#xy-zoom-selection").css({'height':w, 'width': w,'top':l});
+          $("#xy-zoom-selection").css({'height':h, 'width': h,'top':l});
           var l2 = Math.round(parseInt($("#xy-zoom-selection").css('left'), 10));
-          if (w+ l2 >= H) $("#xy-zoom-selection").css({'left':H-w});
+          if (h+ l2 >= W) $("#xy-zoom-selection").css({'left':W-h});
         },
         start: function( event, ui ){
           buildZoomBox()
