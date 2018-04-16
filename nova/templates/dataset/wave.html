@@ -1,34 +1,34 @@
 {% extends "dataset/header.html" %}
 {% block dataset_content %}
-  <div class="col-md-12">
-    <div id="wave-container">
-      <img id="loading-wave" src={{ url_for('static', filename='img/spinner.gif')}} />
+  <div class="row">
+    <div class="col-xs-12 col-md-7 col-lg-6">
+      <div class="center-block" id="wave-container">
+        <img id="loading-wave" src={{ url_for('static', filename='img/spinner.gif')}} />
+      </div>
     </div>
-    <div id="wave-controls" class="col-md-12">
+    <div id="wave-controls">
       <div class="wave-control">
         <p>Gray Value Threshold</p>
-        <div class="col-sm-12">
-          <div class="col-sm-2"><input type="text" class="slider-range-input pull-right" id="gray-threshold-min-input" /></div>
-          <div class="col-sm-8" id="slider-gray-threshold"></div>
-          <div class="col-sm-2"><input type="text" class="slider-range-input" id="gray-threshold-max-input" /></div>
-        </div>
+        <div class="col-xs-2 col-md-1 col-lg-1"><input type="text" class="slider-range-input pull-left" id="gray-threshold-min-input" /></div>
+        <div class="col-xs-8 col-md-3 col-lg-4" id="slider-gray-threshold"></div>
+        <div class="col-xs-2 col-md-1 col-lg-1"><input type="text" class="slider-range-input pull-right" id="gray-threshold-max-input" /></div>
       </div>
       <div class="wave-control" id="slicing-controls">
         <p>Slicing</p>
-        <div class="col-sm-4">
+        <div class="col-xs-4 col-md-2">
           <p>X axis</p>
-          <div class="col-sm-12" id="slider-X"></div>
+          <div id="slider-X"></div>
         </div>
-        <div class="col-sm-4">
+        <div class="col-xs-4 col-md-2">
           <p>Y axis</p>
-          <div class="col-sm-12" id="slider-Y"></div>
+          <div id="slider-Y"></div>
         </div>
-        <div class="col-sm-4">
+        <div class="col-xs-4  col-md-2">
           <p>Z axis</p>
-          <div class="col-sm-12" id="slider-Z"></div>
+          <div id="slider-Z"></div>
         </div>
       </div>
-      <div class="wave-control" id="color-controls">
+      <div class="wave-control col-xs-7 col-md-4 col-lg-4" id="color-controls">
         <p>Color Mapping</p>
         <div class="btn-group" role="group">
           <button type="button" name="none" class="colormap-button btn btn-primary">None</button>
@@ -36,7 +36,11 @@
           <button type="button" name="jet" class="colormap-button btn btn-primary">Jet</button>
         </div>
       </div>
-      <div class="wave-control" id="zoom-controls">
+      <div class="wave-control col-xs-5 col-md-1 col-lg-2">
+        <p>ISO</p>
+        <button type="button" class="btn btn-primary" id="iso-selection">ISO rendered</button>
+      </div>
+      <div class="wave-control col-xs-12 col-md-5 col-lg-6" id="zoom-controls">
         <p>Zoom Control</p>
         <div>
           <div id="xy-zoom-control"><div id="xy-zoom-selection"></div></div>
@@ -52,12 +56,8 @@
           <label class="zc-mark zc-horizontal-one-mark">1,0</label>
           <label class="zc-mark zc-vertical-one-mark">0,1</label>
         </div>
-      </div>
-      <div class="wave-control">
+        <br />
         <button type="button" class="btn btn-primary" id="res-zoom-button-selection">Zoom to Selected Volume</button>
-      </div>
-      <div class="wave-control">
-        <button type="button" class="btn btn-primary" id="iso-selection">ISO rendered</button>
       </div>
     </div>
   </div>

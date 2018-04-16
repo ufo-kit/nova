@@ -352,13 +352,13 @@ a:hover {
 }
 
 #wave-container {
-  position: absolute;
-  float:left;
+  position: relative;
   border: 1px solid #ddd;
   height:512px;
   width: 512px;
   padding:0;
   z-index:100;
+  margin-bottom: 30px;
 }
 
 #loading-wave {
@@ -367,7 +367,6 @@ a:hover {
 }
 
 #wave-controls {
-  padding-left: 560px;
   z-index:50;
 }
 
@@ -378,7 +377,6 @@ a:hover {
 }
 
 .slider-range-input {
-  max-width: 100%;
   width:40px;
   text-align:center;
   border: 1px solid #ddd;
@@ -442,5 +440,4 @@ label.zc-vertical-one-mark {
   bottom: 30px;
   left: -10px;
 }
-
 
