@@ -354,14 +354,14 @@
 
       $("#voxel-selection").click(function() {
         vrc.showVolren();
-        $(".colormap-button").prop("disabled", true);
+        $(".colormap-button").prop("disabled", false);
         $("#surface-selection").removeClass("active");
         $(this).addClass("active");
       });
 
       $("#surface-selection").click(function() {
         vrc.showISO();
-        $(".colormap-button").prop("disabled", false);
+        $(".colormap-button").prop("disabled", true);
         $("#voxel-selection").removeClass("active");
         $(this).addClass("active");
       });
