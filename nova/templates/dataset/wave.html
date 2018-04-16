@@ -157,7 +157,6 @@
       vrc.setZoomZMaxValue(current_slice_box["z"][1]);
     }
 
-
     function beginWave(slicemaps) {
       var config = {
         "dom_container": "wave-container",
@@ -328,6 +327,7 @@
         $("#slider-gray-threshold").slider("option", "values", values);
         vrc.setGrayMinValue($(this).val()/255);
       });
+
       $("#gray-threshold-max-input").change(function() {
         var min = $("#slider-gray-threshold" ).slider("option", "values")[0];
         $(this).val($(this).val() > min ?$(this).val():min);
@@ -353,6 +353,8 @@
           vrc.showISO();
         else
           vrc.showVolren();
+
+        $(".colormap-button").prop("disabled", use_iso);
         $("#iso-selection").toggleClass("active", use_iso);
       });
 
