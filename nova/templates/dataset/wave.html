@@ -8,7 +8,7 @@
     </div>
     <div id="wave-controls">
       <div class="wave-control">
-        <p>Gray Value Threshold</p>
+        <p>Gray value threshold</p>
         <div class="col-xs-2 col-md-1 col-lg-1"><input type="text" class="slider-range-input pull-left" id="gray-threshold-min-input" /></div>
         <div class="col-xs-8 col-md-3 col-lg-4" id="slider-gray-threshold"></div>
         <div class="col-xs-2 col-md-1 col-lg-1"><input type="text" class="slider-range-input pull-right" id="gray-threshold-max-input" /></div>
@@ -29,19 +29,22 @@
         </div>
       </div>
       <div class="wave-control col-xs-7 col-md-4 col-lg-4" id="color-controls">
-        <p>Color Mapping</p>
+        <p>Color mapping</p>
         <div class="btn-group" role="group">
-          <button type="button" name="none" class="colormap-button btn btn-primary">None</button>
+          <button type="button" name="none" class="colormap-button btn btn-primary">Gray</button>
           <button type="button" name="viridis" class="colormap-button btn btn-primary">Viridis</button>
           <button type="button" name="jet" class="colormap-button btn btn-primary">Jet</button>
         </div>
       </div>
       <div class="wave-control col-xs-5 col-md-1 col-lg-2">
-        <p>ISO</p>
-        <button type="button" class="btn btn-primary" id="iso-selection">ISO rendered</button>
+        <p>Render mode</p>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-primary active" id="voxel-selection">Voxel</button>
+          <button type="button" class="btn btn-primary" id="surface-selection">Surface</button>
+        </div>
       </div>
       <div class="wave-control col-xs-12 col-md-5 col-lg-6" id="zoom-controls">
-        <p>Zoom Control</p>
+        <p>Zoom control</p>
         <div>
           <div id="xy-zoom-control"><div id="xy-zoom-selection"></div></div>
           <p><small>x-y plane</small></p>
@@ -57,7 +60,7 @@
           <label class="zc-mark zc-vertical-one-mark">0,1</label>
         </div>
         <br />
-        <button type="button" class="btn btn-primary" id="res-zoom-button-selection">Zoom to Selected Volume</button>
+        <button type="button" class="btn btn-primary" id="res-zoom-button-selection"><i class="fa fa-search-plus"></i></button>
       </div>
     </div>
   </div>
@@ -349,15 +352,18 @@
         window.location.href='?vol='+v+'&gt='+gray+'&colormap='+colormap;
       }
 
-      $("#iso-selection").click(function() {
-        use_iso = !use_iso;
-        if (use_iso)
-          vrc.showISO();
-        else
-          vrc.showVolren();
+      $("#voxel-selection").click(function() {
+        vrc.showVolren();
+        $(".colormap-button").prop("disabled", true);
+        $("#surface-selection").removeClass("active");
+        $(this).addClass("active");
+      });
 
-        $(".colormap-button").prop("disabled", use_iso);
-        $("#iso-selection").toggleClass("active", use_iso);
+      $("#surface-selection").click(function() {
+        vrc.showISO();
+        $(".colormap-button").prop("disabled", false);
+        $("#voxel-selection").removeClass("active");
+        $(this).addClass("active");
       });
 
       $("#res-zoom-button-selection").click( function() {
