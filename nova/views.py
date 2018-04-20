@@ -568,6 +568,7 @@ def wave(user, dataset):
     volume = request.args.get('vol')
     colormap = request.args.get('colormap')
     ops = None
+
     if volume:
         v = map(int, volume.split(','))
         if v and len(v) is 4:
@@ -575,28 +576,35 @@ def wave(user, dataset):
                 'origin': [v[0],v[1],v[2]],
                 'dimensions': [v[3], v[3]]
             })
+
     if grayThresholds:
         gt = map(int, grayThresholds.split(','))
         if gt and len(gt) is 2:
             ops['gray-thresholds'] = gt
+
     user = User.query.filter(User.name == user).first()
     dataset = Dataset.query.join(Permission).filter(Dataset.name == dataset).\
             filter(Permission.owner == user).first()
+
     if dataset is None:
         abort(404, 'dataset {} not found'.format(dataset))
+
     dataset_permissions = {}
     name = None
     permission = Permission.query.filter(Permission.dataset == dataset).first()
+
     if permission:
         if permission.can_read == True or permission.owner==current_user:
             dataset_permissions = {'read': permission.can_read,
                            'interact': permission.can_interact,
                            'fork': permission.can_fork}
+
     if dataset_permissions == {}:
         direct_access = DirectAccess.query.\
                       filter(DirectAccess.dataset == dataset).\
                       filter(DirectAccess.user == current_user).\
                       filter(DirectAccess.can_read == True).first()
+
         if direct_access is None:
             return render_template('base/accessrequest.html', access_name='read',
                                    user=user, dataset=dataset,
@@ -607,6 +615,11 @@ def wave(user, dataset):
         dataset_permissions = {'read': direct_access.can_read,
                                'interact': direct_access.can_interact,
                                'fork': direct_access.can_fork}
-    return render_template('dataset/wave.html', owner=user, dataset=dataset,
+
+    service = resources.services.get('wave-slicemap-server')
+
+    # TODO: don't even try to show wave is the slicemap server is not available
+
+    return render_template('dataset/wave.html', owner=user, dataset=dataset, service=service,
                            collection=dataset.collection, token=token, ops=ops,
                            colormap=colormap, permissions=dataset_permissions) 

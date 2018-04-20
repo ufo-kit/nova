@@ -220,7 +220,7 @@
         "subsets": subsets
       });
 
-      $.ajax("http://localhost:5001/maps", {
+      $.ajax("{{ service.url }}/maps", {
         data: params,
         contentType: "application/json",
         method: "POST"
