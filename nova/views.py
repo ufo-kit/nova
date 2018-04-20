@@ -564,7 +564,7 @@ def create_group():
 @login_required(admin=False)
 def wave(user, dataset):
     token = current_user.token
-    grayThresholds = request.args.get('gt')
+    thresholds = request.args.get('gt')
     volume = request.args.get('vol')
     colormap = request.args.get('colormap')
     ops = None
@@ -572,15 +572,12 @@ def wave(user, dataset):
     if volume:
         v = map(int, volume.split(','))
         if v and len(v) is 4:
-            ops = ({
-                'origin': [v[0],v[1],v[2]],
-                'dimensions': [v[3], v[3]]
-            })
+            ops = dict(origin=(v[0],v[1],v[2]), dimensions=(v[3], v[3]))
 
-    if grayThresholds:
-        gt = map(int, grayThresholds.split(','))
-        if gt and len(gt) is 2:
-            ops['gray-thresholds'] = gt
+    if thresholds:
+        thresholds = map(int, thresholds.split(','))
+        if thresholds and len(thresholds) is 2:
+            ops['gray-thresholds'] = thresholds
 
     user = User.query.filter(User.name == user).first()
     dataset = Dataset.query.join(Permission).filter(Dataset.name == dataset).\
