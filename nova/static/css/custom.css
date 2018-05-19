@@ -420,6 +420,24 @@ a:hover {
   outline: 1px solid blue;
 }
 
+#xy-zoom-x-line, #yz-zoom-y-line {
+  background-color: green;
+  width: 100%;
+  height: 1px;
+  left: 0px;
+  position:absolute;
+  visibility: hidden;
+}
+
+#xy-zoom-y-line, #yz-zoom-z-line {
+  background-color: green;
+  width: 1px;
+  height: 100%;
+  top: 0px;
+  position:absolute;
+  visibility: hidden;
+}
+
 label.zc-mark {
   position: absolute;
   color: #555;

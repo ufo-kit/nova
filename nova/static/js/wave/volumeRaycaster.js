@@ -415,6 +415,8 @@
 
 var Core = function(conf) {
 
+    this.version = "1.0.0";
+
     // Zoom Box parameters
     this._zoom_parameters = {
         xmin: 0.0,
@@ -605,7 +607,7 @@ Core.prototype.init = function() {
             //uColormap : {type:'t',value:cm },
             uSteps: { type: "i", value: this._steps },
             uSlicemapWidth: { type: "f", value: this._slicemaps_width },
-            uNumberOfSlices: { type: "f", value:  (parseFloat(this.getSlicesRange()[1]) + 1.0) },
+            uNumberOfSlices: { type: "f", value: parseFloat(this.getSlicesRange()[1]) },
             uSlicesOverX: { type: "f", value: this._slicemap_row_col[0] },
             uSlicesOverY: { type: "f", value: this._slicemap_row_col[1] },
             uOpacityVal: { type: "f", value: this._opacity_factor },
@@ -652,6 +654,32 @@ Core.prototype.init = function() {
         this._wireframe_zoom = new THREE.BoxHelper( mesh_zoom );
         this._wireframe_zoom.material.color.set( 0x0000ff );
         this._sceneSecondPass.add( this._wireframe_zoom );
+
+        var control_line_geometry = new THREE.Geometry();
+        control_line_geometry.vertices.push(new THREE.Vector3( -0.5, 0, 0) );
+        control_line_geometry.vertices.push(new THREE.Vector3( 0.5, 0, 0) );
+        this._zoom_control_line_x = new THREE.Line(
+            control_line_geometry,
+            new THREE.LineBasicMaterial({ color: 0x00ff00 })
+        );
+        control_line_geometry.dispose();
+
+        control_line_geometry = new THREE.Geometry();
+        control_line_geometry.vertices.push(new THREE.Vector3( 0, -0.5, 0) );
+        control_line_geometry.vertices.push(new THREE.Vector3( 0, 0.5, 0) );
+        this._zoom_control_line_y = new THREE.Line(
+            control_line_geometry,
+            new THREE.LineBasicMaterial({ color: 0x00ff00 })
+        );
+        control_line_geometry.dispose();
+
+        control_line_geometry = new THREE.Geometry();
+        control_line_geometry.vertices.push(new THREE.Vector3( 0, 0, -0.5) );
+        control_line_geometry.vertices.push(new THREE.Vector3( 0, 0, 0.5) );
+        this._zoom_control_line_z = new THREE.Line(
+            control_line_geometry,
+            new THREE.LineBasicMaterial({ color: 0x00ff00 })
+        );
 
         var sphere = new THREE.SphereGeometry( 0.1 );
         this._light1 = new THREE.PointLight( 0xff0040, 2, 50 );
@@ -714,6 +742,11 @@ Core.prototype.init = function() {
  * API
  *
  **/
+Core.prototype.getVersion = function() {
+    console.log(this.version);
+};
+
+
 Core.prototype._setUpBox = function(parameters) {
     width = parameters.xmax - parameters.xmin;
     height = parameters.ymax - parameters.ymin;
@@ -724,6 +757,15 @@ Core.prototype._setUpBox = function(parameters) {
     this._wireframe_zoom.position.x = (parameters.xmax - 0.5) - (width / 2.0 );
     this._wireframe_zoom.position.y = (parameters.ymax - 0.5) - (height / 2.0 );
     this._wireframe_zoom.position.z = (parameters.zmax - 0.5) - (depth / 2.0 );
+
+    this._zoom_control_line_x.position.y = this._wireframe_zoom.position.y;
+    this._zoom_control_line_x.position.z = this._wireframe_zoom.position.z;
+
+    this._zoom_control_line_y.position.x = this._wireframe_zoom.position.x;
+    this._zoom_control_line_y.position.z = this._wireframe_zoom.position.z;
+
+    this._zoom_control_line_z.position.x = this._wireframe_zoom.position.x;
+    this._zoom_control_line_z.position.y = this._wireframe_zoom.position.y;
 };
 
 
@@ -778,67 +820,79 @@ Core.prototype.showZoomBox = function(value) {
 };
 
 
+Core.prototype.showZoomControlLineX = function(value) {
+    if (value == true) {
+        this._sceneSecondPass.add( this._zoom_control_line_x );
+    } else {
+        this._sceneSecondPass.remove( this._zoom_control_line_x );
+    }
+    this._render.render( this._sceneSecondPass, this._camera );
+};
+
+
+Core.prototype.showZoomControlLineY = function(value) {
+    if (value == true) {
+        this._sceneSecondPass.add( this._zoom_control_line_y );
+    } else {
+        this._sceneSecondPass.remove( this._zoom_control_line_y );
+    }
+    this._render.render( this._sceneSecondPass, this._camera );
+};
+
+
+Core.prototype.showZoomControlLineZ = function(value) {
+    if (value == true) {
+        this._sceneSecondPass.add( this._zoom_control_line_z );
+    } else {
+        this._sceneSecondPass.remove( this._zoom_control_line_z );
+    }
+    this._render.render( this._sceneSecondPass, this._camera );
+};
+
+
 Core.prototype._secondPassSetUniformValue = function(key, value) {
     this._materialSecondPass.uniforms[key].value = value;
 };
 
 
-Core.prototype._setSlicemapsTexturesByPaths = function(imagesPaths) {
+Core.prototype._setSlicemapsTextures = function(imagePaths) {
     var allPromises = [];
     var me = this;
-    var samplepath = imagesPaths[0];
-    var link = document.createElement("a");
-    link.href = samplepath;
+    var textures = [];
     var loader = new THREE.TextureLoader();
-    var crossorigin_conf = false;
-    if (link.protocol!='file:') {
-        crossorigin_conf = true;
-        loader.crossOrigin = '';
-    }
+    loader.crossOrigin = '';
 
-    imagesPaths.forEach( function( image ) {
+    imagePaths.forEach( function( path ) {
         allPromises.push( new Promise( function( resolve, reject ) {
-            if (crossorigin_conf) {
-                loader.load(image, function (texture) {
-                    texture.magFilter = THREE.LinearFilter;
-                    texture.minFilter = THREE.LinearFilter;
-                    texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
-                    texture.generateMipmaps = false;
-                    texture.flipY = false;
-                    texture.needsUpdate = true;
-                    //textures.push(texture);
-                    resolve( texture );
-                },
-                function( xhr ) {
-                },
-                function (err) {
-                    console.log(err);
-                    console.log("error");
-                });
-            } else {
-                var img = new Image();
-                img.src = image
-                var texture = new THREE.Texture( img );
+
+            loader.load(path, function (texture) {
                 texture.magFilter = THREE.LinearFilter;
                 texture.minFilter = THREE.LinearFilter;
                 texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
                 texture.generateMipmaps = false;
                 texture.flipY = false;
-                texture.needsUpdate = false;
+                texture.needsUpdate = true;
+                //textures.push(texture);
                 resolve( texture );
-            }
+            },
+            function( xhr ) {
+               // Progress callback of TextureLoader
+               // ...
+            },
+            function (err) {
+                console.log(err);
+                console.log("error");
+            });
         }));
     });
-
     Promise.all( allPromises )
         .then( function( promises ) {
             // All textures are now loaded, and this array
             // contains all the materials that you created
-            console.log(promises);
             me._secondPassSetUniformValue("uSliceMaps", promises);
-            me._secondPassSetUniformValue("uSlicemapWidth", promises[0].image.width);
-            //me._slicemaps_textures = promises;
-            //console.log(me._slicemaps_textures);
+            this._slicemaps_textures = promises;
+            this._slicemaps_width = promises[0].image.width;
+            me._secondPassSetUniformValue("uSlicemapWidth", this._slicemaps_width);
         }, function( error ) {
             console.error( "Could not load all textures:", error );
         });
@@ -926,7 +980,7 @@ Core.prototype.setMode = function(conf) {
                 uSliceMaps: { type: "tv", value: this._slicemaps_textures },
                 uLightPos: {type:"v3", value: new THREE.Vector3() },
                 uSetViewMode: {type:"i", value: 0 },
-                uNumberOfSlices: { type: "f", value: (parseFloat(this.getSlicesRange()[1]) + 1.0) },
+                uNumberOfSlices: { type: "f", value: parseFloat(this.getSlicesRange()[1]) },
                 uSlicemapWidth: { type: "f", value: this._slicemaps_width},
                 uSlicesOverX: { type: "f", value: this._slicemap_row_col[0] },
                 uSlicesOverY: { type: "f", value: this._slicemap_row_col[1] },
@@ -984,7 +1038,7 @@ Core.prototype.setShaderName = function(value) {
 
                 uSteps: { type: "i", value: this._steps },
                 uSlicemapWidth: { type: "f", value: this._slicemaps_width },
-                uNumberOfSlices: { type: "f", value:  (parseFloat(this.getSlicesRange()[1]) + 1.0) },
+                uNumberOfSlices: { type: "f", value: parseFloat(this.getSlicesRange()[1]) },
                 uSlicesOverX: { type: "f", value: this._slicemap_row_col[0] },
                 uSlicesOverY: { type: "f", value: this._slicemap_row_col[1] },
                 uOpacityVal: { type: "f", value: this._opacity_factor },
@@ -1092,9 +1146,11 @@ Core.prototype._setGeometry = function(geometryDimensions, volumeSizes) {
 };
 
 
-Core.prototype.setSlicemapsPaths = function(paths) {
-    this._slicemaps_paths = paths;
-    this._setSlicemapsTexturesByPaths(paths);
+Core.prototype.setSlicemapsImages = function(images, imagesPaths) {
+    this._slicemaps_images = images;
+    this._slicemaps_paths = imagesPaths != undefined ? imagesPaths : this._slicemaps_paths;
+    this._setSlicemapsTextures(images);
+    this._secondPassSetUniformValue("uSliceMaps", this._slicemaps_textures);
 };
 
 
@@ -1106,7 +1162,7 @@ Core.prototype.setSteps = function(steps) {
 
 Core.prototype.setSlicesRange = function(from, to) {
     this._slices_gap = [from, to];
-    this._secondPassSetUniformValue("uNumberOfSlices", (parseFloat(this.getSlicesRange()[1]) + 1.0));
+    this._secondPassSetUniformValue("uNumberOfSlices", parseFloat(this.getSlicesRange()[1]));
 };
 
 
@@ -2564,6 +2620,15 @@ window.VRC.Core.prototype._shaders.secondPassSoebel = {
 		'//Acts like a texture3D using Z slices and trilinear filtering.',
 		'vec3 getVolumeValue(vec3 volpos)',
 		'{',
+		'    if ( (volpos.x < 1.0/255.0) || (volpos.x > (1.0 - 1.0/255.0)) ) {',
+		'        return vec3(0.0);',
+		'    }',
+		'    if ( (volpos.y < 1.0/255.0) || (volpos.y > (1.0 - 1.0/255.0)) ) {',
+		'        return vec3(0.0);',
+		'    }',
+		'    if ( (volpos.z < 1.0/255.0) || (volpos.z > (1.0 - 1.0/255.0)) ) {',
+		'        return vec3(0.0);',
+		'    }',
 		'    float s1Original, s2Original, s1, s2;',
 		'    float dx1, dy1;',
 		'    vec2 texpos1,texpos2;',
@@ -2573,6 +2638,7 @@ window.VRC.Core.prototype._shaders.secondPassSoebel = {
 		'    s1 = mod(s1Original, slicesPerSprite);',
 		'    dx1 = fract(s1/uSlicesOverX);',
 		'    dy1 = floor(s1/uSlicesOverY)/uSlicesOverY;',
+		'    ',
 		'    texpos1.x = dx1+(volpos.x/uSlicesOverX);',
 		'    texpos1.y = dy1+(volpos.y/uSlicesOverY);',
 		'    vec3 value = vec3(0.0,0.0,0.0);',
@@ -2876,7 +2942,7 @@ window.VRC.Core.prototype._shaders.secondPassSoebel = {
 		'        } // end of Mean filtering',
 		'        */',
 		'        ',
-		'        if(gray_val.z < 0.05 ||',
+		'        if(gray_val.z < 0.00 ||',
 		'           gray_val.x < uMinGrayVal ||',
 		'           gray_val.x > uMaxGrayVal) {',
 		'            colorValue = vec4(0.0);',
@@ -2893,7 +2959,6 @@ window.VRC.Core.prototype._shaders.secondPassSoebel = {
 		'            }',
 		'            sample.a = 1.0;',
 		'            */',
-		'            ',
 		'            ',
 		'            if ( uSetViewMode == 1 ) {',
 		'                vec3 V = normalize(cameraPosition - vpos.xyz);',
@@ -2922,7 +2987,7 @@ window.VRC.Core.prototype._shaders.secondPassSoebel = {
 		'        }',
 		'        //advance the current position',
 		'        vpos.xyz += Step;',
-		'        if(vpos.x > 1.0 || vpos.y > 1.0 || vpos.z > 1.0 || vpos.x < 0.0 || vpos.y < 0.0 || vpos.z < 0.0)',
+		'        if(vpos.x > 1.0 || vpos.y > 1.0 || vpos.z > (1.0 - pow(2.0,-16.0))|| vpos.x < 0.0 || vpos.y < 0.0 || vpos.z < 0.0)',
 		'            break;',
 		'    }',
 		'    gl_FragColor = accum;',
@@ -4908,15 +4973,77 @@ window.VRC.Core.prototype._shaders.secondPassStevenTri = {
 
         };
 
-        me.setSlicemapsImages = function(images) {
-            throw Error("Please configure slicemaps_paths instead of slicemaps_images");
+        me.setSlicemapsImages = function(images, imagesPaths) {
+            var maxTexSize = me._core.getMaxTextureSize();
+            var maxTexturesNumber = me._core.getMaxTexturesNumber();
+
+            var imagesNumber = images.length;
+
+            if( imagesNumber > maxTexturesNumber ) {
+                throw Error("Number of slicemaps bigger then number of available texture units. Available texture units: " + maxTexturesNumber);
+            };
+
+            me._core.setSlicemapsImages(imagesPaths);
+            me._needRedraw = true;
         };
 
-        me.setSlicemapsPaths = function(imagesPaths) {
-            me.stop();
-            me._core.setSlicemapsPaths(imagesPaths);
-            me.start();
-            me._needRedraw = true;
+        me.uploadSlicemapsImages = function(imagesPaths, userOnLoadImage, userOnLoadImages, userOnError) {
+
+            var downloadImages = function(imagesPaths, onLoadImage, onLoadImages, onError) {
+                var downloadedImages = [];
+                var downloadedImagesNumber = 0;
+
+                try {
+                    for (var imageIndex = 0; imageIndex < imagesPaths.length; imageIndex++) {
+                        var image = new Image();
+                        (function(image, imageIndex) {
+                            image.onload = function() {
+                                downloadedImages[imageIndex] = image;
+                                downloadedImagesNumber++;
+
+                                onLoadImage(image);
+
+                                if(downloadedImagesNumber == imagesPaths.length) {
+                                    onLoadImages(downloadedImages);
+                                };
+                            };
+                            image.onerror = onError;
+                            image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=";
+                        })(image, imageIndex);
+
+                    };
+                }
+                catch(e) {
+                    onError(e);
+                };
+            };
+            downloadImages(imagesPaths,
+                function(image) {
+                    // downloaded one of the images
+                    me._onLoadSlicemap.call(image);
+                    if(userOnLoadImage != undefined) userOnLoadImage(image);
+                },
+                function(images) {
+                    // downloaded all images
+                    me.setSlicemapsImages(images, imagesPaths);
+                    me.start();
+
+                    me._onLoadSlicemaps.call(images);
+
+                    if(userOnLoadImages != undefined) userOnLoadImages(images);
+
+                },
+                function(error) {
+                    // error appears
+                    if(userOnError != undefined) {
+                        userOnError(error);
+                    } else {
+                        console.error(error);
+
+                    }
+                }
+            )
+
         };
 
         me.start = function() {
@@ -5188,6 +5315,21 @@ window.VRC.Core.prototype._shaders.secondPassStevenTri = {
             me._needRedraw = true;
         };
 
+        me.showZoomControlLineX = function(value) {
+            me._core.showZoomControlLineX(value);
+            me._needRedraw = true;
+        };
+
+        me.showZoomControlLineY = function(value) {
+            me._core.showZoomControlLineY(value);
+            me._needRedraw = true;
+        };
+
+        me.showZoomControlLineZ = function(value) {
+            me._core.showZoomControlLineZ(value);
+            me._needRedraw = true;
+        };
+
         me.setGrayMinValue = function(value) {
             if(value > 1.0 || value < 0.0) {
                 throw Error("Gray value should be in range [0.0 - 1.0] !");
@@ -5310,6 +5452,10 @@ window.VRC.Core.prototype._shaders.secondPassStevenTri = {
             }
             me._needRedraw = true;
 
+        };
+
+        me.version = function() {
+            return me._core.getVersion();
         };
 
         me.getGrayMaxValue = function() {
@@ -5462,7 +5608,22 @@ window.VRC.Core.prototype._shaders.secondPassStevenTri = {
             }
 
             if(config['slicemaps_paths'] != undefined) {
-                me.setSlicemapsPaths(config['slicemaps_paths'] );
+                me.uploadSlicemapsImages(
+
+                    config['slicemaps_paths'],
+                    function(image) {
+                        if(onLoadImage != undefined) onLoadImage(image);
+                    },
+                    function(images) {
+                        if(config['slices_range'] != undefined) {
+                            me.setSlicesRange( config['slices_range'][0], config['slices_range'][1] );
+                        }
+                        me.stop();
+                        if(onLoadImages != undefined) onLoadImages(images);
+
+                        me.start();
+                    }
+                );
             }
 
             if(config['slices_range'] != undefined) {
