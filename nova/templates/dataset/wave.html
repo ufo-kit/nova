@@ -46,14 +46,22 @@
       <div class="wave-control col-xs-12 col-md-5 col-lg-6" id="zoom-controls">
         <p>Zoom control</p>
         <div>
-          <div id="xy-zoom-control"><div id="xy-zoom-selection"></div></div>
+          <div id="xy-zoom-control">
+            <div id="xy-zoom-selection"></div>
+            <div id="xy-zoom-x-line"></div>
+            <div id="xy-zoom-y-line"></div>
+          </div>
           <p><small>x-y plane</small></p>
           <label class="zc-mark zc-zero-mark">0,0</label>
           <label class="zc-mark zc-horizontal-one-mark">1,0</label>
           <label class="zc-mark zc-vertical-one-mark">0,1</label>
         </div>
         <div>
-          <div id="yz-zoom-control"><div id="yz-zoom-selection"></div></div>
+          <div id="yz-zoom-control">
+            <div id="yz-zoom-selection"></div>
+            <div id="yz-zoom-y-line"></div>
+            <div id="yz-zoom-z-line"></div>
+          </div>
           <p><small>y-z plane</small></p>
           <label class="zc-mark zc-zero-mark">0,0</label>
           <label class="zc-mark zc-horizontal-one-mark">1,0</label>
@@ -210,6 +218,12 @@
       $("#wave-container").height($("#wave-container").width());
       var origin_array = [current_x / 100, current_y / 100, current_z / 100];
       var dimensions_array = [current_dim / 100, current_dim / 100];
+      var shifted = false;
+      var zoombox_drag_start = [];
+      var zoombox_drag_direction_lock = false;
+      var drag_direction = "";
+
+      $(document).on("keyup keydown", function(e){shifted = e.shiftKey} );
 
       var params = JSON.stringify({
         "token": "{{token|safe}}",
@@ -420,6 +434,23 @@
       }).draggable({
         containment: "parent",
         drag: function (event, ui) {
+          if (shifted) {
+            if (!zoombox_drag_direction_lock) {
+              drag_direction = Math.abs(zoombox_drag_start[0] - ui.position.left) > Math.abs(zoombox_drag_start[1] - ui.position.top) ? "h":"v";
+              zoombox_drag_direction_lock = true;
+            }
+            if (drag_direction == "h") {
+              ui.position.top = zoombox_drag_start[1];
+              $("#xy-zoom-y-line").css({'visibility': 'hidden'});
+            }
+            else {
+              ui.position.left = zoombox_drag_start[0];
+              $("#xy-zoom-x-line").css({'visibility': 'hidden'});
+            }
+          } else {
+            $("#xy-zoom-x-line").css({'visibility': 'visible'});
+            $("#xy-zoom-y-line").css({'visibility': 'visible'});
+          }
           var t = ui.position.top;
           var l = ui.position.left;
           current_zoom_box_px[0] = l;
@@ -427,13 +458,26 @@
           convertPixelToRelativeZoomBox();
           buildZoomBox();
           $("#yz-zoom-selection").css({'left': t});
+          var half_box_size = Math.round(parseInt($("#yz-zoom-selection").css('height'), 10))/2;
+          $("#xy-zoom-x-line").css({'top': t + half_box_size});
+          $("#xy-zoom-y-line").css({'left': l + half_box_size});
         },
         start: function( event, ui ){
+          zoombox_drag_start = [ui.position.left, ui.position.top];
+          $("#xy-zoom-x-line").css({'visibility': 'visible'});
+          $("#xy-zoom-y-line").css({'visibility': 'visible'});
           buildZoomBox()
           vrc.showZoomBox(true);
+          vrc.showZoomControlLineX(true);
+          vrc.showZoomControlLineY(true);
         },
         stop: function( event, ui ){
+          $("#xy-zoom-x-line").css({'visibility': 'hidden'});
+          $("#xy-zoom-y-line").css({'visibility': 'hidden'});
+          zoombox_drag_direction_lock = false;
           vrc.showZoomBox(false);
+          vrc.showZoomControlLineX(false);
+          vrc.showZoomControlLineY(false);
         }
       });
       $("#yz-zoom-selection").resizable({
@@ -480,6 +524,23 @@
       }).draggable({
         containment: "parent",
         drag: function (event, ui) {
+          if (shifted) {
+            if (!zoombox_drag_direction_lock) {
+              drag_direction = Math.abs(zoombox_drag_start[0] - ui.position.left) > Math.abs(zoombox_drag_start[1] - ui.position.top) ? "h":"v";
+              zoombox_drag_direction_lock = true;
+            }
+            if (drag_direction == "h") {
+              ui.position.top = zoombox_drag_start[1];
+              $("#yz-zoom-z-line").css({'visibility': 'hidden'});
+            }
+            else if (drag_direction == "v") {
+              ui.position.left = zoombox_drag_start[0];
+              $("#yz-zoom-y-line").css({'visibility': 'hidden'});
+            }
+          } else {
+            $("#yz-zoom-z-line").css({'visibility': 'visible'});
+            $("#yz-zoom-y-line").css({'visibility': 'visible'});
+          }
           var l = ui.position.left;
           var t = ui.position.top;
           current_zoom_box_px[1] = l;
@@ -487,13 +548,26 @@
           convertPixelToRelativeZoomBox();
           buildZoomBox();
           $("#xy-zoom-selection").css({'top': l});
+          var half_box_size = Math.round(parseInt($("#yz-zoom-selection").css('height'), 10))/2;
+          $("#yz-zoom-y-line").css({'top': t + half_box_size});
+          $("#yz-zoom-z-line").css({'left': l + half_box_size});
         },
         start: function( event, ui ){
+          zoombox_drag_start = [ui.position.left, ui.position.top];
+          $("#yz-zoom-z-line").css({'visibility': 'visible'});
+          $("#yz-zoom-y-line").css({'visibility': 'visible'});
           buildZoomBox();
           vrc.showZoomBox(true);
+          vrc.showZoomControlLineY(true);
+          vrc.showZoomControlLineZ(true);
         },
         stop: function( event, ui ){
+          $("#yz-zoom-z-line").css({'visibility': 'hidden'});
+          $("#yz-zoom-y-line").css({'visibility': 'hidden'});
+          zoombox_drag_direction_lock = false;
           vrc.showZoomBox(false);
+          vrc.showZoomControlLineY(false);
+          vrc.showZoomControlLineZ(false);
         }
       });
     });
