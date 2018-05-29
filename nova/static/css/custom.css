@@ -437,25 +437,3 @@ a:hover {
   position:absolute;
   visibility: hidden;
 }
-
-label.zc-mark {
-  position: absolute;
-  color: #555;
-  font-size:15px;
-}
-
-label.zc-zero-mark {
-  top: 0;
-  left: -10px;
-}
-
-label.zc-horizontal-one-mark {
-  right: -10px;
-  top: 0;
-}
-
-label.zc-vertical-one-mark {
-  bottom: 30px;
-  left: -10px;
-}
-
