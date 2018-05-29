@@ -376,11 +376,11 @@
 
       $("#res-zoom-button-selection").click( function() {
         var W = zoom_control_size;
-        var x = Math.round(100 * parseInt($("#xy-zoom-selection").css("left"), 10) / W);
-        var y = Math.round(100 * parseInt($("#xy-zoom-selection").css("top"), 10) / W);
-        var z = Math.round(100 * parseInt($("#yz-zoom-selection").css("top"), 10) / W);
+        var x1 = Math.round(100 * parseInt($("#xy-zoom-selection").css("left"), 10) / W);
+        var y2 = Math.round(100 * parseInt($("#yz-zoom-selection").css("left"), 10) / W);
+        var z2 = Math.round(100 * parseInt($("#yz-zoom-selection").css("top"), 10) / W);
         var size = Math.round(100 * $("#yz-zoom-selection").width() / W);
-        var vol = [x, y, z, size];
+        var vol = [x1, y2, 100-z2-size, size];
         zoomToVolume(vol);
       });
 
@@ -391,7 +391,7 @@
         create: function (event, ui ){
           $(this).css({
             'left': current_x*zoom_control_size/100,
-            'top': current_y*zoom_control_size/100,
+            'top': zoom_control_size-current_dim*zoom_control_size/100-current_y*zoom_control_size/100,
             'width': current_dim*zoom_control_size/100,
             'height': current_dim*zoom_control_size/100
           });
@@ -410,11 +410,11 @@
             'left': l
           });
           current_zoom_box_px[0] = l;
-          current_zoom_box_px[1] = t;
+          current_zoom_box_px[1] = W-h-t;
           current_zoom_box_px[3] = h;
           convertPixelToRelativeZoomBox();
           buildZoomBox();
-          $("#yz-zoom-selection").css({'height':h, 'width': h,'left': t});
+          $("#yz-zoom-selection").css({'height':h, 'width': h,'left': W-h-t});
           var t2 = Math.round(parseInt($("#yz-zoom-selection").css('top'), 10));
           if (h+ t2 >= W) $("#yz-zoom-selection").css({'top':W-h});
         },
@@ -448,13 +448,15 @@
           var t = ui.position.top;
           var l = ui.position.left;
           current_zoom_box_px[0] = l;
-          current_zoom_box_px[1] = t;
+          var h = Math.round(parseInt($("#yz-zoom-selection").css('height'), 10));
+          var W = zoom_control_size;
+          current_zoom_box_px[1] = W-h-t;
           convertPixelToRelativeZoomBox();
           buildZoomBox();
-          $("#yz-zoom-selection").css({'left': t});
-          var half_box_size = Math.round(parseInt($("#yz-zoom-selection").css('height'), 10))/2;
-          $("#xy-zoom-x-line").css({'top': t + half_box_size});
-          $("#xy-zoom-y-line").css({'left': l + half_box_size});
+          $("#yz-zoom-selection").css({'left': W-h-t});
+
+          $("#xy-zoom-x-line").css({'top': t + h/2});
+          $("#xy-zoom-y-line").css({'left': l + h/2});
         },
         start: function( event, ui ){
           zoombox_drag_start = [ui.position.left, ui.position.top];
@@ -481,7 +483,7 @@
         create: function (event, ui ){
           $(this).css({
             'left': current_y*zoom_control_size/100,
-            'top': current_z*zoom_control_size/100,
+            'top': zoom_control_size-current_dim*zoom_control_size/100-current_z*zoom_control_size/100,
             'width': current_dim*zoom_control_size/100,
             'height': current_dim*zoom_control_size/100
           });
@@ -500,11 +502,11 @@
             'left': l
           });
           current_zoom_box_px[1] = l;
-          current_zoom_box_px[2] = t;
+          current_zoom_box_px[2] = W-h-t;
           current_zoom_box_px[3] = h;
           convertPixelToRelativeZoomBox();
           buildZoomBox();
-          $("#xy-zoom-selection").css({'height':h, 'width': h,'top':l});
+          $("#xy-zoom-selection").css({'height':h, 'width': h,'top':W-h-l});
           var l2 = Math.round(parseInt($("#xy-zoom-selection").css('left'), 10));
           if (h+ l2 >= W) $("#xy-zoom-selection").css({'left':W-h});
         },
@@ -537,14 +539,15 @@
           }
           var l = ui.position.left;
           var t = ui.position.top;
+          var W = zoom_control_size;
+          var h =  Math.round(parseInt($("#yz-zoom-selection").css('height'), 10))
           current_zoom_box_px[1] = l;
-          current_zoom_box_px[2] = t;
+          current_zoom_box_px[2] = W-h-t;
           convertPixelToRelativeZoomBox();
           buildZoomBox();
-          $("#xy-zoom-selection").css({'top': l});
-          var half_box_size = Math.round(parseInt($("#yz-zoom-selection").css('height'), 10))/2;
-          $("#yz-zoom-y-line").css({'top': t + half_box_size});
-          $("#yz-zoom-z-line").css({'left': l + half_box_size});
+          $("#xy-zoom-selection").css({'top': W-h-l});
+          $("#yz-zoom-y-line").css({'top': t + h/2});
+          $("#yz-zoom-z-line").css({'left': l + h/2});
         },
         start: function( event, ui ){
           zoombox_drag_start = [ui.position.left, ui.position.top];
