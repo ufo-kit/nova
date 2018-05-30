@@ -1,5 +1,13 @@
 {% extends "dataset/header.html" %}
 {% block dataset_content %}
+{% if service == None %}
+  <div class="row">
+    <div class="col-xs-12">
+      <h3>Wave Slicemap Server Unavailable</h3>
+      <p>Please start the slicemap server and try again</p>
+    </div>
+  </div>
+{% else %}
   <div class="row">
     <div class="col-xs-12 col-md-7 col-lg-6">
       <div class="center-block" id="wave-container">
@@ -83,7 +91,6 @@
     var dataset_name = '{{ dataset.name }}';
     var user_name = '{{ owner.name }}';
     var use_iso = false;
-    var is_wave = true;
     var subsets = 5;
 
     var minGT = 0, maxGT = 255;
@@ -569,6 +576,13 @@
       });
     });
   </script>
-  <script>System.import('dataset.js')</script>
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endif %}
+  <script>
+    var collection_name = '{{ collection.name }}';
+    var dataset_name = '{{ dataset.name }}';
+    var user_name = '{{ owner.name }}';
+    var is_wave = true;
+    System.import('dataset.js')
+  </script>
 {% endblock %}
