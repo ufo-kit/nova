@@ -1,6 +1,6 @@
 {% extends "dataset/header.html" %}
 {% block dataset_content %}
-{% if service == None %}
+{% if slicemap_service == None %}
   <div class="row">
     <div class="col-xs-12">
       <h3>Wave Slicemap Server Unavailable</h3>
@@ -55,6 +55,9 @@
         <p>Zoom control</p>
         <div>
           <div id="xy-zoom-control">
+            {% if thumbnail_service %}
+            <img id="xy-zoom-slice"></img>
+            {% endif %}
             <div id="xy-zoom-selection"></div>
             <div id="xy-zoom-x-line"></div>
             <div id="xy-zoom-y-line"></div>
@@ -63,6 +66,9 @@
         </div>
         <div>
           <div id="yz-zoom-control">
+            {% if thumbnail_service %}
+            <img id="yz-zoom-slice"></img>
+            {% endif %}
             <div id="yz-zoom-selection"></div>
             <div id="yz-zoom-y-line"></div>
             <div id="yz-zoom-z-line"></div>
@@ -214,6 +220,23 @@
         }
       });
     }
+    function getSliceUrl(axis, intercept, size, colormap, threshold) {
+      var sliceUrl = "{{ thumbnail_service.url }}/"+user_name+"/"+dataset_name+"/slice?token={{token|safe}}";
+      sliceUrl = sliceUrl+"&axis="+axis+"&intercept="+intercept+"&size="+size+"&mint="+threshold[0]+"&maxt="+threshold[1];
+      if (colormap != "none") sliceUrl = sliceUrl+"&colormap="+colormap;
+      return sliceUrl;
+    }
+
+    function getSlices() {
+      var thumbnail_service = {{ thumbnail_service|tojson|safe if thumbnail_service!=None else 'null' }};
+      if (thumbnail_service) {
+        var thresholds = [$("#gray-threshold-min-input").val(), $("#gray-threshold-max-input").val()];
+        xySliceUrl = getSliceUrl('z', 0.5, zoom_control_size, colormap, thresholds);
+        yzSliceUrl = getSliceUrl('x', 0.5, zoom_control_size, colormap, thresholds);
+        $("#xy-zoom-slice").attr("src",  xySliceUrl);
+        $("#yz-zoom-slice").attr("src",  yzSliceUrl);
+      }
+    }
 
     $(document).ready(function() {
       $("#wave-container").height($("#wave-container").width());
@@ -235,7 +258,7 @@
         "subsets": subsets
       });
 
-      $.ajax("{{ service.url }}/maps", {
+      $.ajax("{{ slicemap_service.url }}/maps", {
         data: params,
         contentType: "application/json",
         method: "POST"
@@ -265,6 +288,9 @@
           vrc.setGrayMaxValue(max / 255);
           $("#gray-threshold-max-input").val(max);
           applyColormap(colormap, [min, max]);
+        },
+        stop: function( event, ui ) {
+          getSlices();
         }
       });
 
@@ -346,6 +372,7 @@
         var values = [$(this).val(), max];
         $("#slider-gray-threshold").slider("option", "values", values);
         vrc.setGrayMinValue($(this).val()/255);
+        getSlices();
       });
 
       $("#gray-threshold-max-input").change(function() {
@@ -354,12 +381,14 @@
         var values = [min, $(this).val()];
         $("#slider-gray-threshold").slider("option", "values", values);
         vrc.setGrayMaxValue($(this).val()/255);
+        getSlices();
       });
 
       $(".colormap-button").click(function() {
         $(".colormap-button").removeClass("active");
         $(this).addClass("active");
         applyColormap($(this).attr("name"), $("#slider-gray-threshold" ).slider("option", "values"));
+        getSlices();
       });
 
       function zoomToVolume(v) {
@@ -574,6 +603,7 @@
           vrc.showZoomControlLineZ(false);
         }
       });
+      getSlices();
     });
   </script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">

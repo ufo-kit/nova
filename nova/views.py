@@ -613,10 +613,13 @@ def wave(user, dataset):
                                'interact': direct_access.can_interact,
                                'fork': direct_access.can_fork}
 
-    service = resources.services.get('wave-slicemap-server')
+    slicemap_service = resources.services.get('wave-slicemap-server')
+    thumbnail_service = resources.services.get('thumbnail-server')
 
     # TODO: don't even try to show wave is the slicemap server is not available
 
-    return render_template('dataset/wave.html', owner=user, dataset=dataset, service=service,
+    return render_template('dataset/wave.html', owner=user, dataset=dataset,
+                           slicemap_service=slicemap_service,
+                           thumbnail_service=thumbnail_service,
                            collection=dataset.collection, token=token, ops=ops,
                            colormap=colormap, permissions=dataset_permissions) 
