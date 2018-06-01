@@ -178,6 +178,7 @@
     }
 
     function beginWave(slicemaps) {
+      $("#loading-wave").remove();
       var config = {
         "dom_container": "wave-container",
         "slicemaps_paths": slicemaps,
@@ -209,8 +210,6 @@
         else {
           var slicemaps = [];
           var mapUrl = jqXHR.getResponseHeader('location');
-
-          $("#loading-wave").remove();
 
           for (var i = 0; i < subsets; i++) {
             slicemaps.push(mapUrl + "/" + i);

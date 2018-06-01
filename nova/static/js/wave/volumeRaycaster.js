@@ -561,7 +561,7 @@ Core.prototype.init = function() {
     this._controls.panSpeed = 2.0;
 
     this._controls.noZoom = false;
-    this._controls.noPan = true;
+    this._controls.noPan = false;
 
     this._controls.staticMoving = true;
     this._controls.dynamicDampingFactor = 0.1;
