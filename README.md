@@ -26,14 +26,12 @@ If you run from source make sure to upgrade the database with when pulling
     $ python manage.py db upgrade
 
 
-### Client
+### Dependencies
 
-1. Log in and generate a token
-2. Use the token to initialize a directory
-
-        $ cd path/to/dataset
-        $ nova init --token 1.xyz --remote http://localhost:5000
-
-3. Push the data to the remote
-
-        $ nova push
+All Python dependencies are listed in the `setup.py`. Full-text search requires
+a running [ElasticSearch](https://www.elastic.co) server (2.4.3 on Ubuntu
+16.04). Moreover, to be able to view thumbnails and 3D client visualization of
+synchrotron imaging data, you will have to run the
+[nova-thumbnail-server](https://github.com/ufo-kit/nova-wave-server/) and
+[nova-wave-server](https://github.com/ufo-kit/nova-thumbnail-server) and make
+them accessible by this server process.
